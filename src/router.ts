@@ -17,37 +17,56 @@ export type Provider =
 
 export type Spec = { provider: Provider; model: string };
 
-/** Default fallback chains. Consumers can override via createRouter(). */
+/**
+ * Default fallback chains. Cost-first wherever quality allows: free /
+ * local providers lead, paid cloud providers serve as fallbacks. Override
+ * per-service via createRouter({ aliases }).
+ *
+ * Cost reference (input / output per M tokens, May 2026):
+ *   ollama:*               free (compute amortised on dev host)
+ *   groq:llama-3.3-70b     free (rate-limited)
+ *   openrouter:*:free      free (small daily cap per account)
+ *   google:gemini-2.5-flash  $0.075 / $0.30
+ *   google:gemini-2.5-pro    $1.25  / $5.00
+ *   anthropic:claude-sonnet-4-6  $3 / $15
+ *   anthropic:claude-haiku-4-5   $1 / $5
+ *   openai:gpt-5-mini       ~$0.25 / $2
+ *   openai:gpt-5            ~$3   / $15
+ */
 export const DEFAULT_ALIASES: Record<string, Spec[]> = {
-  // Latency-sensitive chat. Google flash is the cheapest smart model;
-  // anthropic + openai are paid premium fallbacks. Groq sits at the
-  // bottom as a very-fast cheap option when available.
+  // Latency-sensitive chat. Cheapest smart-tier first; premium fallbacks
+  // pick up the slack only on real failure / quota events. Groq is a
+  // free option but rate-limited, so it lands at the bottom.
   'auto:smart': [
-    { provider: 'google', model: 'gemini-2.5-flash' },
-    { provider: 'anthropic', model: 'claude-sonnet-4-6' },
-    { provider: 'openai', model: 'gpt-5' },
-    { provider: 'groq', model: 'llama-3.3-70b-versatile' },
+    { provider: 'google', model: 'gemini-2.5-flash' },     // $0.075/$0.30 — primary
+    { provider: 'anthropic', model: 'claude-sonnet-4-6' }, // $3/$15 — fallback
+    { provider: 'openai', model: 'gpt-5' },                // $3/$15 — fallback
+    { provider: 'groq', model: 'llama-3.3-70b-versatile' }, // free — last-ditch
   ],
   // Cheap & fast for classification / language detection / short tasks.
+  // Free providers first, paid mini-tier as backup.
   'auto:fast': [
-    { provider: 'groq', model: 'llama-3.3-70b-versatile' },
-    { provider: 'google', model: 'gemini-2.5-flash' },
-    { provider: 'anthropic', model: 'claude-haiku-4-5-20251001' },
-    { provider: 'openai', model: 'gpt-5-mini' },
+    { provider: 'groq', model: 'llama-3.3-70b-versatile' }, // free + fastest
+    { provider: 'google', model: 'gemini-2.5-flash' },      // $0.075
+    { provider: 'anthropic', model: 'claude-haiku-4-5-20251001' }, // $1
+    { provider: 'openai', model: 'gpt-5-mini' },            // $0.25
   ],
-  // Batch translation. Free local Gemma first; cloud picks up the slack.
+  // Batch translation: latency doesn't matter, $$$ does. Free Gemma
+  // first, paid Gemini Flash as the smallest possible cloud spend.
   'auto:translate': [
-    { provider: 'ollama', model: 'gemma4:26b' },
-    { provider: 'google', model: 'gemini-2.5-flash' },
-    { provider: 'anthropic', model: 'claude-sonnet-4-6' },
+    { provider: 'ollama', model: 'gemma4:26b' },           // free
+    { provider: 'google', model: 'gemini-2.5-flash' },     // $0.075
+    { provider: 'anthropic', model: 'claude-sonnet-4-6' }, // $3 — last resort
   ],
-  // High-reasoning tier (planning, math, multi-step).
+  // High-reasoning tier (planning, math, multi-step). Quality matters
+  // here, but Gemini-Pro is good enough for ~80% of cases at ~50%
+  // the cost of gpt-5/sonnet.
   'auto:reasoning': [
-    { provider: 'openai', model: 'gpt-5' },
-    { provider: 'anthropic', model: 'claude-sonnet-4-6' },
-    { provider: 'google', model: 'gemini-2.5-pro' },
+    { provider: 'google', model: 'gemini-2.5-pro' },       // $1.25/$5
+    { provider: 'anthropic', model: 'claude-sonnet-4-6' }, // $3/$15
+    { provider: 'openai', model: 'gpt-5' },                // $3/$15
   ],
-  // OpenRouter-hosted free / OSS models when paid budget is tight.
+  // Cost-first: only free providers, falls into cheapest paid as last resort.
   'auto:cheap': [
     { provider: 'ollama', model: 'gemma4:26b' },
     { provider: 'groq', model: 'llama-3.3-70b-versatile' },

@@ -24,6 +24,18 @@
     "@ai-sdk/openai": { "optional": true },
     "ai-sdk-ollama": { "optional": true }
   },
+  "devDependencies": {
+    "@ai-sdk/anthropic": "^3.0.78",
+    "@ai-sdk/google": "^3.0.72",
+    "@ai-sdk/openai": "^3.0.63",
+    "@ai-sdk/provider": "^3.0.10",
+    "ai": "^6.0.177",
+    "ai-sdk-ollama": "^1.5.0",
+    "typescript": "^5"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
   "engines": {
     "node": ">=22"
   },
