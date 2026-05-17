@@ -1,4 +1,4 @@
-# @cco/llm-router
+# @cloud-computing-oy/llm-router
 
 Shared LLM router for Cloud-Computing-Oy services. Provider-fallback
 chains over Anthropic / Google / OpenAI / Groq / OpenRouter / Ollama,
@@ -15,7 +15,7 @@ The package is private — consume via git+ssh:
 ```json
 {
   "dependencies": {
-    "@cco/llm-router": "git+ssh://git@github.com:Cloud-Computing-Oy/cco-llm-router.git#main"
+    "@cloud-computing-oy/llm-router": "git+ssh://git@github.com:Cloud-Computing-Oy/cco-llm-router.git#main"
   }
 }
 ```
@@ -23,13 +23,13 @@ The package is private — consume via git+ssh:
 Pin to a tag for production stability:
 
 ```json
-"@cco/llm-router": "git+ssh://git@github.com:Cloud-Computing-Oy/cco-llm-router.git#v0.1.0"
+"@cloud-computing-oy/llm-router": "git+ssh://git@github.com:Cloud-Computing-Oy/cco-llm-router.git#v0.1.0"
 ```
 
 ## Usage
 
 ```ts
-import { resolveModel } from '@cco/llm-router';
+import { resolveModel } from '@cloud-computing-oy/llm-router';
 import { generateText } from 'ai';
 
 const { model } = resolveModel('auto:smart');
@@ -57,7 +57,7 @@ const { model } = resolveModel('anthropic:claude-sonnet-4-6');
 ### Custom aliases
 
 ```ts
-import { createRouter } from '@cco/llm-router';
+import { createRouter } from '@cloud-computing-oy/llm-router';
 
 const router = createRouter({
   aliases: {
@@ -73,7 +73,7 @@ const { model } = router.resolveModel('my-service:summarise');
 ### Cohere rerank
 
 ```ts
-import { rerank } from '@cco/llm-router/cohere';
+import { rerank } from '@cloud-computing-oy/llm-router/cohere';
 
 const ranked = await rerank({
   query: 'family reunification visa for non-EU spouse',
