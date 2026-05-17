@@ -1,6 +1,6 @@
 {
   "name": "@cloud-computing-oy/llm-router",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Shared LLM router for Cloud-Computing-Oy services. Provider-fallback chains over Anthropic / Google / OpenAI / Groq / OpenRouter / Ollama. Reads keys from /etc/cco/keys.env at runtime.",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com",

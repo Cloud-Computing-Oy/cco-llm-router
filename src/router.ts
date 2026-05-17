@@ -1,11 +1,11 @@
 import type { LanguageModel } from 'ai';
-import { anthropicAvailable, anthropicModel } from './providers/anthropic.js';
-import { googleAvailable, googleModel } from './providers/google.js';
-import { openaiAvailable, openaiModel } from './providers/openai.js';
-import { groqAvailable, groqModel } from './providers/groq.js';
-import { openrouterAvailable, openrouterModel } from './providers/openrouter.js';
-import { ollamaAvailable, ollamaModel } from './providers/ollama.js';
-import { createFallbackModel } from './fallback.js';
+import { anthropicAvailable, anthropicModel } from './providers/anthropic';
+import { googleAvailable, googleModel } from './providers/google';
+import { openaiAvailable, openaiModel } from './providers/openai';
+import { groqAvailable, groqModel } from './providers/groq';
+import { openrouterAvailable, openrouterModel } from './providers/openrouter';
+import { ollamaAvailable, ollamaModel } from './providers/ollama';
+import { createFallbackModel } from './fallback';
 
 export type Provider =
   | 'anthropic'
