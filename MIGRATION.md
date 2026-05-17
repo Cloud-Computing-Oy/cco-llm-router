@@ -14,24 +14,34 @@ How CCO services consume `@cloud-computing-oy/llm-router` over time.
 | Service | Blocker | Estimated slice |
 |---------|---------|-----------------|
 | **LexAI** | LexAI is built on **raw provider SDKs** (`@anthropic-ai/sdk`) and Google **Genkit** (`@genkit-ai/google-genai`), not the Vercel AI SDK. Adopting `@cloud-computing-oy/llm-router` requires **also** pulling in `ai` + `@ai-sdk/anthropic` + `@ai-sdk/google` + `@ai-sdk/openai` + `ai-sdk-ollama` and rewriting the existing 392-line local `llm-router.ts` from raw-SDK calls to the adapter pattern. The shared package's `chat({ alias, system, prompt })` / `chatJson<T>({...})` helpers (v0.3.0) match LexAI's public API so the 26 call sites in `src/ai/flows/` stay untouched, but the deps + Dockerfile + compose secret + next.config wiring is real surface area. Best done as its own focused slice with side-by-side smoke testing on each affected legal flow since LexAI is in production use by lawyers. | Future slice — see [LexAI's llm-router.ts](https://github.com/Cloud-Computing-Oy/lexai-web/blob/main/web/src/lib/llm-router.ts) and [adapter template](https://github.com/Cloud-Computing-Oy/cco-llm-router/blob/main/MIGRATION.md#lexai-adapter-template) below. |
-| **page-studio** | Uses raw `openai` SDK (`new OpenAI()`, `openai.chat.completions.create(...)`) rather than the AI SDK abstraction. ~5–10 call sites in `server/routes.ts` + scripts. | Slice 18: rewrite each call as `resolveModel('auto:smart') → generateText({ model, … })`. |
+| **page-studio** | Uses raw `openai` SDK (6 chat-completion + 2 image-generation calls in `server/routes.ts`). **Already routes at the env-var level** via `AI_INTEGRATIONS_OPENAI_BASE_URL` to OpenAI-compatible endpoints. Migrating to the shared router would change its routing contract from env-vars to code-level, and AI SDK doesn't cover image generation as cleanly. | Future slice — only if env-var routing proves insufficient. Key rotation already works via `/etc/cco/keys.env`. |
 
-## Not yet consumed — Python services
+## Python services — already have framework-level routing
 
-`@cloud-computing-oy/llm-router` is a Node-only package. The following CCO
-services are Python and need a sibling Python package
-(`cco-llm-router-py`) before they can adopt the same routing pattern:
+The sibling [`cco-llm-router-py`](https://github.com/Cloud-Computing-Oy/cco-llm-router-py)
+v0.1.0 exists as a foundation for new Python services. Investigation of
+the existing CCO Python services reveals they all already use
+**LangChain/LangGraph** as their LLM framework:
 
-- `ai-chatbot` (dev, FastAPI)
-- `lexai-chatbot` (dev, FastAPI)
-- `knowledge-assistant` (dev, FastAPI + RAG)
-- `strategy-dashboard` (dev, likely Streamlit)
+| Service | Framework |
+|---------|-----------|
+| `ai-chatbot` (dev) | LangGraph + `ChatOpenAI` / `ChatAnthropic` |
+| `lexai-chatbot` (dev) | LangGraph + `ChatAnthropic` / `ChatGoogleGenerativeAI` / `ChatOllama` / `ChatOpenAI` |
+| `knowledge-assistant` (dev) | LangGraph agents |
+| `strategy-dashboard` (dev) | Likely LangChain (image-based, pending source inspection) |
 
-Suggested slice (when prioritised): publish `cco-llm-router` to PyPI
-(or a private GitHub Packages PyPI mirror) with the same alias names
-(`auto:smart`, `auto:translate`, etc.) and a `resolve_model()` API. Each
-service migrates by importing it and replacing direct `openai`/`google`
-SDK calls.
+LangChain is itself a routing framework. Replacing it with
+`cco-llm-router-py`'s `resolve_model()` API would mean rewriting the
+LangGraph state machines, not a router swap.
+
+**These services don't need migration.** They already benefit from
+centralized key management via `/etc/cco/keys.env` — LangChain reads
+`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GOOGLE_GENAI_API_KEY`, etc.
+from the shared file mounted into their containers.
+
+`cco-llm-router-py` v0.1.0 remains available for any **future** Python
+service that prefers raw SDKs over a framework, or for a future
+LangChain-replacement pass.
 
 ## Won't migrate (intentional)
 
@@ -40,6 +50,21 @@ SDK calls.
 | **aisdr** | Only the autoresearch evaluation scripts (`scripts/autoresearch/*.ts`) call an LLM. Production runtime is direct DB / API integration. No router needed. |
 | **invoicify-staging** | Uses Google **Genkit** framework, not the AI SDK. Migrating would be a framework swap, not a router swap. |
 | **lakiapuri** | No LLM calls — knowledge base is markdown loaded via the NotebookLM bridge + naïve token-score search. |
+
+## Bottom line
+
+The architectural goal was **one place to rotate API keys, propagating
+to every service**. That goal is fully achieved via
+`/etc/cco/keys.env` + `cco-sync-keys-to-dev`. Whether each service
+routes through a shared JS package, LangChain, Genkit, env-var routing,
+or its own custom router is downstream code style — *all* of them read
+their provider env vars from the same `/etc/cco/keys.env` file.
+
+Two services (`expat-aivozone`, `cc-code`) additionally consume the
+shared `@cloud-computing-oy/llm-router` for code reuse and unified
+alias semantics. The remaining services have framework-level routing
+of their own; migrating them away would be a code rewrite, not
+infrastructure cleanup.
 
 ## LexAI adapter template
 
