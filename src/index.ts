@@ -8,6 +8,7 @@ export {
   type Router,
   type RouterOptions,
 } from './router';
+export { chat, chatJson, type ChatRequest } from './helpers';
 export { createFallbackModel } from './fallback';
 
 // Provider availability flags + raw constructors, for the rare service
