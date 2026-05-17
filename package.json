@@ -1,0 +1,33 @@
+{
+  "name": "@cco/llm-router",
+  "version": "0.1.0",
+  "description": "Shared LLM router for Cloud-Computing-Oy services. Provider-fallback chains over Anthropic / Google / OpenAI / Groq / OpenRouter / Ollama. Reads keys from /etc/cco/keys.env at runtime.",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./cohere": "./src/cohere.ts"
+  },
+  "peerDependencies": {
+    "@ai-sdk/anthropic": ">=3",
+    "@ai-sdk/google": ">=3",
+    "@ai-sdk/openai": ">=3",
+    "@ai-sdk/provider": ">=3",
+    "ai": ">=6",
+    "ai-sdk-ollama": ">=1"
+  },
+  "peerDependenciesMeta": {
+    "@ai-sdk/anthropic": { "optional": true },
+    "@ai-sdk/google": { "optional": true },
+    "@ai-sdk/openai": { "optional": true },
+    "ai-sdk-ollama": { "optional": true }
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "files": [
+    "src"
+  ]
+}
