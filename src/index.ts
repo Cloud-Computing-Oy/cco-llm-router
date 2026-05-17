@@ -15,6 +15,7 @@ export { createFallbackModel } from './fallback';
 // routed through resolveModel).
 export { anthropicAvailable, anthropicModel } from './providers/anthropic';
 export { googleAvailable, googleModel } from './providers/google';
+export { googlePaidAvailable, googlePaidModel } from './providers/google-paid';
 export { openaiAvailable, openaiModel } from './providers/openai';
 export { groqAvailable, groqModel } from './providers/groq';
 export { openrouterAvailable, openrouterModel } from './providers/openrouter';

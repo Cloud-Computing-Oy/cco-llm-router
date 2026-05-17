@@ -1,6 +1,7 @@
 import type { LanguageModel } from 'ai';
 import { anthropicAvailable, anthropicModel } from './providers/anthropic';
 import { googleAvailable, googleModel } from './providers/google';
+import { googlePaidAvailable, googlePaidModel } from './providers/google-paid';
 import { openaiAvailable, openaiModel } from './providers/openai';
 import { groqAvailable, groqModel } from './providers/groq';
 import { openrouterAvailable, openrouterModel } from './providers/openrouter';
@@ -10,6 +11,7 @@ import { createFallbackModel } from './fallback';
 export type Provider =
   | 'anthropic'
   | 'google'
+  | 'google-paid'
   | 'openai'
   | 'groq'
   | 'openrouter'
@@ -23,55 +25,95 @@ export type Spec = { provider: Provider; model: string };
  * per-service via createRouter({ aliases }).
  *
  * Cost reference (input / output per M tokens, May 2026):
- *   ollama:*               free (compute amortised on dev host)
+ *   ollama:*               free (compute on dev / local box)
  *   groq:llama-3.3-70b     free (rate-limited)
  *   openrouter:*:free      free (small daily cap per account)
- *   google:gemini-2.5-flash  $0.075 / $0.30
- *   google:gemini-2.5-pro    $1.25  / $5.00
+ *   google:gemini-2.5-flash      free tier — 1500 RPD per GCP project
+ *   google-paid:gemini-2.5-flash $0.075 / $0.30
+ *   google-paid:gemini-2.5-pro   $1.25  / $5.00
  *   anthropic:claude-sonnet-4-6  $3 / $15
  *   anthropic:claude-haiku-4-5   $1 / $5
- *   openai:gpt-5-mini       ~$0.25 / $2
- *   openai:gpt-5            ~$3   / $15
+ *   openai:gpt-5-mini      ~$0.25 / $2
+ *   openai:gpt-5           ~$3   / $15
  */
 export const DEFAULT_ALIASES: Record<string, Spec[]> = {
-  // Latency-sensitive chat. Cheapest smart-tier first; premium fallbacks
-  // pick up the slack only on real failure / quota events. Groq is a
-  // free option but rate-limited, so it lands at the bottom.
+  // Chat / generic. Free first; paid only when needed.
   'auto:smart': [
-    { provider: 'google', model: 'gemini-2.5-flash' },     // $0.075/$0.30 — primary
-    { provider: 'anthropic', model: 'claude-sonnet-4-6' }, // $3/$15 — fallback
-    { provider: 'openai', model: 'gpt-5' },                // $3/$15 — fallback
-    { provider: 'groq', model: 'llama-3.3-70b-versatile' }, // free — last-ditch
+    { provider: 'google', model: 'gemini-2.5-flash' },
+    { provider: 'openrouter', model: 'qwen/qwen3-next-80b-a3b-instruct:free' },
+    { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free' },
+    { provider: 'google-paid', model: 'gemini-2.5-flash' },
+    { provider: 'google', model: 'gemini-2.5-pro' },
+    { provider: 'google-paid', model: 'gemini-2.5-pro' },
+    { provider: 'anthropic', model: 'claude-sonnet-4-6' },
+    { provider: 'openai', model: 'gpt-5' },
+    { provider: 'ollama', model: 'qwen2.5-coder:14b' },
   ],
-  // Cheap & fast for classification / language detection / short tasks.
-  // Free providers first, paid mini-tier as backup.
+  // Classification, language detection, short tasks.
   'auto:fast': [
-    { provider: 'groq', model: 'llama-3.3-70b-versatile' }, // free + fastest
-    { provider: 'google', model: 'gemini-2.5-flash' },      // $0.075
-    { provider: 'anthropic', model: 'claude-haiku-4-5-20251001' }, // $1
-    { provider: 'openai', model: 'gpt-5-mini' },            // $0.25
+    { provider: 'groq', model: 'llama-3.3-70b-versatile' },
+    { provider: 'google', model: 'gemini-2.5-flash' },
+    { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free' },
+    { provider: 'openrouter', model: 'minimax/minimax-m2.5:free' },
+    { provider: 'google-paid', model: 'gemini-2.5-flash' },
+    { provider: 'openai', model: 'gpt-5-mini' },
+    { provider: 'anthropic', model: 'claude-haiku-4-5-20251001' },
+    { provider: 'ollama', model: 'gemma4:e4b' },
   ],
-  // Batch translation: latency doesn't matter, $$$ does. Free Gemma
-  // first, paid Gemini Flash as the smallest possible cloud spend.
+  // Batch translation: latency-tolerant, free first.
   'auto:translate': [
-    { provider: 'ollama', model: 'gemma4:26b' },           // free
-    { provider: 'google', model: 'gemini-2.5-flash' },     // $0.075
-    { provider: 'anthropic', model: 'claude-sonnet-4-6' }, // $3 — last resort
+    { provider: 'ollama', model: 'gemma4:26b' },
+    { provider: 'google', model: 'gemini-2.5-flash' },
+    { provider: 'google-paid', model: 'gemini-2.5-flash' },
+    { provider: 'anthropic', model: 'claude-sonnet-4-6' },
   ],
-  // High-reasoning tier (planning, math, multi-step). Quality matters
-  // here, but Gemini-Pro is good enough for ~80% of cases at ~50%
-  // the cost of gpt-5/sonnet.
+  // Code generation / completion.
+  'auto:code': [
+    { provider: 'google', model: 'gemini-2.5-flash' },
+    { provider: 'openrouter', model: 'qwen/qwen3-coder:free' },
+    { provider: 'groq', model: 'llama-3.3-70b-versatile' },
+    { provider: 'google-paid', model: 'gemini-2.5-flash' },
+    { provider: 'openai', model: 'gpt-5-mini' },
+    { provider: 'ollama', model: 'qwen2.5-coder:14b' },
+  ],
+  // Reasoning / planning / multi-step.
   'auto:reasoning': [
-    { provider: 'google', model: 'gemini-2.5-pro' },       // $1.25/$5
-    { provider: 'anthropic', model: 'claude-sonnet-4-6' }, // $3/$15
-    { provider: 'openai', model: 'gpt-5' },                // $3/$15
+    { provider: 'google', model: 'gemini-2.5-pro' },
+    { provider: 'google-paid', model: 'gemini-2.5-pro' },
+    { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free' },
+    { provider: 'openrouter', model: 'arcee-ai/trinity-large-thinking:free' },
+    { provider: 'anthropic', model: 'claude-sonnet-4-6' },
+    { provider: 'openai', model: 'gpt-5' },
+  ],
+  // Explicit paid only — for tasks where you want top quality and budget is approved.
+  'auto:paid': [
+    { provider: 'openai', model: 'gpt-5' },
+    { provider: 'openai', model: 'gpt-5-mini' },
+    { provider: 'anthropic', model: 'claude-sonnet-4-6' },
+    { provider: 'google-paid', model: 'gemini-2.5-pro' },
+  ],
+  // Large-context tasks (long docs, big diffs).
+  'auto:big': [
+    { provider: 'openrouter', model: 'google/gemma-4-31b-it:free' },
+    { provider: 'openrouter', model: 'google/gemma-4-26b-a4b-it:free' },
+    { provider: 'google', model: 'gemini-2.5-pro' },
+    { provider: 'google-paid', model: 'gemini-2.5-pro' },
+    { provider: 'openai', model: 'gpt-5' },
+    { provider: 'ollama', model: 'gemma4:26b' },
+  ],
+  // Local-only — for fully offline / air-gapped paths.
+  'auto:local': [
+    { provider: 'ollama', model: 'qwen2.5-coder:14b' },
+    { provider: 'ollama', model: 'gemma4:e4b' },
   ],
   // Cost-first: only free providers, falls into cheapest paid as last resort.
   'auto:cheap': [
-    { provider: 'ollama', model: 'gemma4:26b' },
+    { provider: 'ollama', model: 'gemma4:e4b' },
+    { provider: 'openrouter', model: 'minimax/minimax-m2.5:free' },
     { provider: 'groq', model: 'llama-3.3-70b-versatile' },
-    { provider: 'openrouter', model: 'qwen/qwen3-coder:free' },
     { provider: 'google', model: 'gemini-2.5-flash' },
+    { provider: 'google-paid', model: 'gemini-2.5-flash' },
+    { provider: 'openai', model: 'gpt-5-mini' },
   ],
 };
 
@@ -81,6 +123,8 @@ function providerAvailable(p: Provider): boolean {
       return anthropicAvailable;
     case 'google':
       return googleAvailable;
+    case 'google-paid':
+      return googlePaidAvailable;
     case 'openai':
       return openaiAvailable;
     case 'groq':
@@ -98,6 +142,8 @@ function instantiate(spec: Spec): LanguageModel {
       return anthropicModel(spec.model);
     case 'google':
       return googleModel(spec.model);
+    case 'google-paid':
+      return googlePaidModel(spec.model);
     case 'openai':
       return openaiModel(spec.model);
     case 'groq':
@@ -127,7 +173,9 @@ export function createRouter(opts: RouterOptions = {}): Router {
   const aliases = { ...DEFAULT_ALIASES, ...(opts.aliases ?? {}) };
 
   function resolveModel(alias: string): { model: LanguageModel; specs: Spec[] } {
-    const direct = alias.match(/^(anthropic|google|openai|groq|openrouter|ollama):(.+)$/);
+    const direct = alias.match(
+      /^(anthropic|google|google-paid|openai|groq|openrouter|ollama):(.+)$/,
+    );
     if (direct) {
       const spec: Spec = { provider: direct[1] as Provider, model: direct[2] };
       if (!providerAvailable(spec.provider)) {
@@ -157,8 +205,7 @@ export function createRouter(opts: RouterOptions = {}): Router {
   return { resolveModel, listAliases };
 }
 
-// Singleton with the default config, for the 80% case where no overrides
-// are needed.
+// Default singleton.
 const defaultRouter = createRouter();
 export const resolveModel = defaultRouter.resolveModel;
 export const listAliases = defaultRouter.listAliases;
