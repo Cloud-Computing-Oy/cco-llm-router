@@ -11,18 +11,8 @@ import { togetherAvailable, togetherModel } from './providers/together';
 import { createFallbackModel } from './fallback';
 import { withinBudget } from './budget';
 
-export type Provider =
-  | 'anthropic'
-  | 'google'
-  | 'google-paid'
-  | 'openai'
-  | 'groq'
-  | 'openrouter'
-  | 'ollama'
-  | 'deepinfra'
-  | 'together';
-
-export type Spec = { provider: Provider; model: string };
+export type { Provider, Spec } from './types';
+import type { Provider, Spec } from './types';
 
 /**
  * Default fallback chains. Cost-first wherever quality allows: free /

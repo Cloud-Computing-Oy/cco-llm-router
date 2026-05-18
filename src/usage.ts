@@ -11,7 +11,7 @@ import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
 import { estimateCostUSD } from './pricing';
-import type { Provider } from './router';
+import type { Provider } from './types';
 
 type ProviderUsage = {
   inputTokens: number;

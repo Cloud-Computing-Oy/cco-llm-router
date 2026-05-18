@@ -21,7 +21,7 @@
  *   CCO_LLM_BUDGET_OPENROUTER_USD
  *   CCO_LLM_BUDGET_GROQ_USD
  */
-import type { Provider } from './router';
+import type { Provider } from './types';
 import { getMonthlySpendUSD } from './usage';
 
 const SAFETY_MARGIN = 0.9;

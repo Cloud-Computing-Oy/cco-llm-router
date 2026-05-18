@@ -1,6 +1,6 @@
 import type { LanguageModelV3, LanguageModelV3Usage } from '@ai-sdk/provider';
 import type { LanguageModel } from 'ai';
-import type { Provider } from './router';
+import type { Provider } from './types';
 import { recordUsage } from './usage';
 
 type Inner = {

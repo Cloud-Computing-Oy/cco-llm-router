@@ -19,7 +19,7 @@
  */
 import { getCurrentMonthSpend } from '../usage';
 import { getBudgetUSD } from '../budget';
-import type { Provider } from '../router';
+import type { Provider } from '../types';
 
 const PROVIDERS: Provider[] = [
   'anthropic',

@@ -10,7 +10,7 @@
  * Used by usage.ts to convert (inputTokens, outputTokens) → USD spent,
  * which feeds the per-provider monthly budget enforced in budget.ts.
  */
-import type { Provider } from './router';
+import type { Provider } from './types';
 
 export type Price = { inputPerM: number; outputPerM: number };
 
