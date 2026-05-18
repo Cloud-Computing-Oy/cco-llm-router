@@ -5,7 +5,9 @@ import os
 import httpx
 
 
-def call(spec, *, system, prompt, temperature, max_tokens) -> str:
+def call(spec, *, system, prompt, temperature, max_tokens):
+    """Returns (text, usage_dict). Local compute → cost is zero, but we
+    still report token counts so consumers can see throughput."""
     base = os.environ.get("OLLAMA_BASE_URL")
     if not base:
         raise RuntimeError("OLLAMA_BASE_URL not set")
@@ -29,4 +31,9 @@ def call(spec, *, system, prompt, temperature, max_tokens) -> str:
         )
         resp.raise_for_status()
         data = resp.json()
-        return (data.get("message", {}).get("content", "") or "").strip()
+        text = (data.get("message", {}).get("content", "") or "").strip()
+        usage = {
+            "input_tokens": int(data.get("prompt_eval_count", 0) or 0),
+            "output_tokens": int(data.get("eval_count", 0) or 0),
+        }
+        return text, usage

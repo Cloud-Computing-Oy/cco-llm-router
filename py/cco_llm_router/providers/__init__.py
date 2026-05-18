@@ -1,8 +1,9 @@
 """Provider call dispatch.
 
-Each provider lives in its own submodule and exports a `call(spec, system,
-prompt, *, temperature, max_tokens) -> str`. The dispatcher here picks
-the right module based on `spec.provider`.
+Each provider lives in its own submodule and exports a
+`call(spec, system, prompt, *, temperature, max_tokens) -> (text, usage)`
+where `usage` is `{"input_tokens": int, "output_tokens": int} | None`.
+The dispatcher here picks the right module based on `spec.provider`.
 
 Classifies certain provider errors as TransientError so the router can
 fall through to the next chain entry instead of failing the whole call.
@@ -39,6 +40,9 @@ _FALLBACK_PATTERNS = [
         r"timeout",
         r"connection.*reset",
         r"connection.*refused",
+        r"insufficient.*quota",
+        r"payment.*required",
+        r"\b402\b",
     ]
 ]
 
@@ -48,14 +52,16 @@ def is_transient(exc: BaseException) -> bool:
     return any(p.search(msg) for p in _FALLBACK_PATTERNS)
 
 
-def call(spec, *, system: str, prompt: str, temperature, max_tokens) -> str:
+def call(spec, *, system: str, prompt: str, temperature, max_tokens):
+    """Returns (text, usage_dict). Raises TransientError on fall-through
+    conditions, propagates other exceptions as-is."""
     try:
         match spec.provider:
             case "anthropic":
                 from . import anthropic as p
             case "google" | "google-paid":
                 from . import google as p
-            case "openai" | "groq" | "openrouter":
+            case "openai" | "groq" | "openrouter" | "deepinfra" | "together":
                 from . import openai_compat as p
             case "ollama":
                 from . import ollama as p

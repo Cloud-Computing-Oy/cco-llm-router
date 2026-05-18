@@ -3,7 +3,8 @@ from __future__ import annotations
 import os
 
 
-def call(spec, *, system, prompt, temperature, max_tokens) -> str:
+def call(spec, *, system, prompt, temperature, max_tokens):
+    """Returns (text, usage_dict)."""
     try:
         from google import genai
         from google.genai import types
@@ -31,4 +32,12 @@ def call(spec, *, system, prompt, temperature, max_tokens) -> str:
         contents=prompt,
         config=config,
     )
-    return (resp.text or "").strip()
+    text = (resp.text or "").strip()
+    usage = None
+    meta = getattr(resp, "usage_metadata", None)
+    if meta is not None:
+        usage = {
+            "input_tokens": int(getattr(meta, "prompt_token_count", 0) or 0),
+            "output_tokens": int(getattr(meta, "candidates_token_count", 0) or 0),
+        }
+    return text, usage

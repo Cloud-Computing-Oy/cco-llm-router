@@ -1,7 +1,7 @@
 [project]
 name = "cco-llm-router"
-version = "0.1.0"
-description = "Python sibling of @cloud-computing-oy/llm-router — provider-fallback chains over Anthropic / Google / OpenAI / Groq / OpenRouter / Ollama with a Cohere rerank helper. Reads API keys from /etc/cco/keys.env at runtime."
+version = "0.2.0"
+description = "Python sibling of @cloud-computing-oy/llm-router — provider-fallback chains over Anthropic / Google / OpenAI / Groq / OpenRouter / Ollama / DeepInfra / Together with per-provider monthly budget enforcement and a Cohere rerank helper. Reads API keys from /etc/cco/keys.env at runtime."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "Proprietary" }
@@ -24,8 +24,11 @@ openai = ["openai>=1.40"]
 all = ["anthropic>=0.50", "google-genai>=1.0", "openai>=1.40"]
 dev = ["pytest>=8", "pytest-asyncio>=0.24", "ruff>=0.6"]
 
+[project.scripts]
+cco-llm-usage = "cco_llm_router.cli:main"
+
 [project.urls]
-Repository = "https://github.com/Cloud-Computing-Oy/cco-llm-router-py"
+Repository = "https://github.com/Cloud-Computing-Oy/cco-llm-router"
 
 [build-system]
 requires = ["hatchling"]

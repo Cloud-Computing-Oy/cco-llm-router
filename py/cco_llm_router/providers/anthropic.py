@@ -3,7 +3,8 @@ from __future__ import annotations
 import os
 
 
-def call(spec, *, system, prompt, temperature, max_tokens) -> str:
+def call(spec, *, system, prompt, temperature, max_tokens):
+    """Returns (text, usage_dict)."""
     try:
         from anthropic import Anthropic
     except ImportError as e:
@@ -19,4 +20,11 @@ def call(spec, *, system, prompt, temperature, max_tokens) -> str:
         messages=[{"role": "user", "content": prompt}],
     )
     parts = [b.text for b in resp.content if getattr(b, "type", "") == "text"]
-    return "".join(parts).strip()
+    text = "".join(parts).strip()
+    usage = None
+    if resp.usage is not None:
+        usage = {
+            "input_tokens": int(getattr(resp.usage, "input_tokens", 0) or 0),
+            "output_tokens": int(getattr(resp.usage, "output_tokens", 0) or 0),
+        }
+    return text, usage
