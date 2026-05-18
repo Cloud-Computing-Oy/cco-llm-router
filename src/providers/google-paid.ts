@@ -1,15 +1,15 @@
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 
-// Separate from the regular google provider so the router can chain
-// 'free key first, paid key on quota exhaustion'. Reads exclusively
-// from GOOGLE_GENERATIVE_AI_API_KEY_PAID.
-const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY_PAID;
+const envKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY_PAID;
 
-export const googlePaidAvailable = Boolean(apiKey);
+export const googlePaidAvailable = Boolean(envKey);
 
-const provider = apiKey ? createGoogleGenerativeAI({ apiKey }) : null;
+const envProvider = envKey ? createGoogleGenerativeAI({ apiKey: envKey }) : null;
 
-export function googlePaidModel(name: string) {
-  if (!provider) throw new Error('GOOGLE_GENERATIVE_AI_API_KEY_PAID not set');
-  return provider(name);
+export function googlePaidModel(name: string, opts?: { apiKey?: string }) {
+  if (opts?.apiKey) {
+    return createGoogleGenerativeAI({ apiKey: opts.apiKey })(name);
+  }
+  if (!envProvider) throw new Error('GOOGLE_GENERATIVE_AI_API_KEY_PAID not set');
+  return envProvider(name);
 }

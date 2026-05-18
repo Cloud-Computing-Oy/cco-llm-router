@@ -1,12 +1,15 @@
 import { createOpenAI } from '@ai-sdk/openai';
 
-const apiKey = process.env.OPENAI_API_KEY;
+const envKey = process.env.OPENAI_API_KEY;
 
-export const openaiAvailable = Boolean(apiKey);
+export const openaiAvailable = Boolean(envKey);
 
-const provider = apiKey ? createOpenAI({ apiKey }) : null;
+const envProvider = envKey ? createOpenAI({ apiKey: envKey }) : null;
 
-export function openaiModel(name: string) {
-  if (!provider) throw new Error('OPENAI_API_KEY not set');
-  return provider(name);
+export function openaiModel(name: string, opts?: { apiKey?: string }) {
+  if (opts?.apiKey) {
+    return createOpenAI({ apiKey: opts.apiKey })(name);
+  }
+  if (!envProvider) throw new Error('OPENAI_API_KEY not set');
+  return envProvider(name);
 }

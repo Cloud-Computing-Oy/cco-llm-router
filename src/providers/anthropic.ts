@@ -1,12 +1,15 @@
 import { createAnthropic } from '@ai-sdk/anthropic';
 
-const apiKey = process.env.ANTHROPIC_API_KEY;
+const envKey = process.env.ANTHROPIC_API_KEY;
 
-export const anthropicAvailable = Boolean(apiKey);
+export const anthropicAvailable = Boolean(envKey);
 
-const provider = apiKey ? createAnthropic({ apiKey }) : null;
+const envProvider = envKey ? createAnthropic({ apiKey: envKey }) : null;
 
-export function anthropicModel(name: string) {
-  if (!provider) throw new Error('ANTHROPIC_API_KEY not set');
-  return provider(name);
+export function anthropicModel(name: string, opts?: { apiKey?: string }) {
+  if (opts?.apiKey) {
+    return createAnthropic({ apiKey: opts.apiKey })(name);
+  }
+  if (!envProvider) throw new Error('ANTHROPIC_API_KEY not set');
+  return envProvider(name);
 }

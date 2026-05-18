@@ -7,7 +7,7 @@
  * the AI SDK once, and return the text (or a parsed JSON).
  */
 import { generateText as aiGenerateText } from 'ai';
-import { resolveModel } from './router';
+import { resolveModel, type PerCallKeys } from './router';
 
 export type ChatRequest = {
   /** Alias from the router (auto:smart, auto:fast, auto:translate, …).
@@ -17,10 +17,12 @@ export type ChatRequest = {
   prompt: string;
   temperature?: number;
   maxTokens?: number;
+  /** Per-call API key overrides for BYOK consumers. See resolveModel docs. */
+  perCallKeys?: PerCallKeys;
 };
 
 export async function chat(req: ChatRequest): Promise<string> {
-  const { model } = resolveModel(req.alias ?? 'auto:smart');
+  const { model } = resolveModel(req.alias ?? 'auto:smart', { perCallKeys: req.perCallKeys });
   const { text } = await aiGenerateText({
     model,
     system: req.system,

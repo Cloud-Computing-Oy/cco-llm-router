@@ -7,6 +7,8 @@ export {
   type Spec,
   type Router,
   type RouterOptions,
+  type ResolveOptions,
+  type PerCallKeys,
 } from './router';
 export { chat, chatJson, type ChatRequest } from './helpers';
 export { createFallbackModel } from './fallback';

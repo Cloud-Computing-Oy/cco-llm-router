@@ -162,26 +162,31 @@ function providerAvailable(p: Provider): boolean {
   return hasKey(p) && withinBudget(p);
 }
 
-function instantiate(spec: Spec): LanguageModel {
+export type PerCallKeys = Partial<Record<Exclude<Provider, 'ollama'>, string>>;
+
+function instantiate(spec: Spec, perCallKeys?: PerCallKeys): LanguageModel {
+  const opts = perCallKeys?.[spec.provider as keyof PerCallKeys]
+    ? { apiKey: perCallKeys[spec.provider as keyof PerCallKeys]! }
+    : undefined;
   switch (spec.provider) {
     case 'anthropic':
-      return anthropicModel(spec.model);
+      return anthropicModel(spec.model, opts);
     case 'google':
-      return googleModel(spec.model);
+      return googleModel(spec.model, opts);
     case 'google-paid':
-      return googlePaidModel(spec.model);
+      return googlePaidModel(spec.model, opts);
     case 'openai':
-      return openaiModel(spec.model);
+      return openaiModel(spec.model, opts);
     case 'groq':
-      return groqModel(spec.model);
+      return groqModel(spec.model, opts);
     case 'openrouter':
-      return openrouterModel(spec.model);
+      return openrouterModel(spec.model, opts);
     case 'ollama':
       return ollamaModel(spec.model);
     case 'deepinfra':
-      return deepinfraModel(spec.model);
+      return deepinfraModel(spec.model, opts);
     case 'together':
-      return togetherModel(spec.model);
+      return togetherModel(spec.model, opts);
   }
 }
 
@@ -194,8 +199,17 @@ export type RouterOptions = {
   aliases?: Record<string, Spec[]>;
 };
 
+export type ResolveOptions = {
+  /**
+   * Per-call API key overrides. Use for BYOK consumers where each request
+   * has tenant-scoped credentials (e.g. AsyncLocalStorage-backed keys).
+   * Overridden providers count as available even when their env key is unset.
+   */
+  perCallKeys?: PerCallKeys;
+};
+
 export type Router = {
-  resolveModel: (alias: string) => { model: LanguageModel; specs: Spec[] };
+  resolveModel: (alias: string, opts?: ResolveOptions) => { model: LanguageModel; specs: Spec[] };
   listAliases: () => Array<{ alias: string; chain: Spec[]; availableCount: number }>;
 };
 
@@ -205,28 +219,39 @@ const DIRECT_RE =
 export function createRouter(opts: RouterOptions = {}): Router {
   const aliases = { ...DEFAULT_ALIASES, ...(opts.aliases ?? {}) };
 
-  function resolveModel(alias: string): { model: LanguageModel; specs: Spec[] } {
+  function isAvailable(p: Provider, perCallKeys?: PerCallKeys): boolean {
+    if (perCallKeys?.[p as keyof PerCallKeys]) return withinBudget(p);
+    return providerAvailable(p);
+  }
+
+  function resolveModel(
+    alias: string,
+    callOpts: ResolveOptions = {},
+  ): { model: LanguageModel; specs: Spec[] } {
+    const perCallKeys = callOpts.perCallKeys;
     const direct = alias.match(DIRECT_RE);
     if (direct) {
       const spec: Spec = { provider: direct[1] as Provider, model: direct[2] };
-      if (!hasKey(spec.provider)) {
+      if (!hasKey(spec.provider) && !perCallKeys?.[spec.provider as keyof PerCallKeys]) {
         throw new Error(`Provider not available: ${spec.provider} (missing API key?)`);
       }
       // Direct calls bypass budget checks — caller asked for this exact model.
-      return { model: instantiate(spec), specs: [spec] };
+      return { model: instantiate(spec, perCallKeys), specs: [spec] };
     }
     const chain = aliases[alias];
     if (!chain) throw new Error(`Unknown model alias: ${alias}`);
-    const available = chain.filter((s) => providerAvailable(s.provider));
+    const available = chain.filter((s) => isAvailable(s.provider, perCallKeys));
     if (available.length === 0) {
       throw new Error(`No available provider for alias ${alias} — set at least one API key`);
     }
-    if (available.length === 1) return { model: instantiate(available[0]), specs: available };
+    if (available.length === 1) {
+      return { model: instantiate(available[0], perCallKeys), specs: available };
+    }
     const inner = available.map((s) => ({
       label: specLabel(s),
       provider: s.provider,
       modelId: s.model,
-      model: instantiate(s),
+      model: instantiate(s, perCallKeys),
     }));
     return { model: createFallbackModel(inner) as LanguageModel, specs: available };
   }
