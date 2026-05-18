@@ -1,7 +1,7 @@
 {
   "name": "@cloud-computing-oy/llm-router",
-  "version": "0.3.1",
-  "description": "Shared LLM router for Cloud-Computing-Oy services. Provider-fallback chains over Anthropic / Google / OpenAI / Groq / OpenRouter / Ollama. Reads keys from /etc/cco/keys.env at runtime.",
+  "version": "0.4.0",
+  "description": "Shared LLM router for Cloud-Computing-Oy services. Provider-fallback chains over Anthropic / Google / OpenAI / Groq / OpenRouter / Ollama / DeepInfra / Together with per-provider monthly budget enforcement. Reads keys from /etc/cco/keys.env at runtime.",
   "publishConfig": {
     "registry": "https://npm.pkg.github.com",
     "access": "restricted"
@@ -17,6 +17,9 @@
     ".": "./src/index.ts",
     "./cohere": "./src/cohere.ts"
   },
+  "bin": {
+    "cco-llm-usage": "./src/bin/usage.ts"
+  },
   "peerDependencies": {
     "@ai-sdk/anthropic": ">=3",
     "@ai-sdk/google": ">=3",
@@ -26,16 +29,25 @@
     "ai-sdk-ollama": ">=3"
   },
   "peerDependenciesMeta": {
-    "@ai-sdk/anthropic": { "optional": true },
-    "@ai-sdk/google": { "optional": true },
-    "@ai-sdk/openai": { "optional": true },
-    "ai-sdk-ollama": { "optional": true }
+    "@ai-sdk/anthropic": {
+      "optional": true
+    },
+    "@ai-sdk/google": {
+      "optional": true
+    },
+    "@ai-sdk/openai": {
+      "optional": true
+    },
+    "ai-sdk-ollama": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@ai-sdk/anthropic": "^3.0.78",
     "@ai-sdk/google": "^3.0.72",
     "@ai-sdk/openai": "^3.0.63",
     "@ai-sdk/provider": "^3.0.10",
+    "@types/node": "^22.19.19",
     "ai": "^6.0.177",
     "ai-sdk-ollama": "^3.8.4",
     "typescript": "^5"

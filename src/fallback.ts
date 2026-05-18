@@ -1,7 +1,14 @@
-import type { LanguageModelV3 } from '@ai-sdk/provider';
+import type { LanguageModelV3, LanguageModelV3Usage } from '@ai-sdk/provider';
 import type { LanguageModel } from 'ai';
+import type { Provider } from './router';
+import { recordUsage } from './usage';
 
-type Inner = { label: string; model: LanguageModel };
+type Inner = {
+  label: string;
+  provider: Provider;
+  modelId: string;
+  model: LanguageModel;
+};
 
 const SHOULD_FALLBACK_PATTERNS = [
   /invalid.*api.?key/i,
@@ -26,6 +33,9 @@ const SHOULD_FALLBACK_PATTERNS = [
   /etimedout/i,
   /socket hang up/i,
   /fetch failed/i,
+  /insufficient.*quota/i,
+  /payment.*required/i,
+  /402/,
 ];
 
 function shouldFallback(err: unknown): boolean {
@@ -42,16 +52,32 @@ function isTransientRateLimit(err: unknown): boolean {
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
-async function attemptChain<T>(
+function tryRecord(c: Inner, usage: LanguageModelV3Usage | undefined): void {
+  if (!usage) return;
+  const inT = usage.inputTokens?.total ?? 0;
+  const outT = usage.outputTokens?.total ?? 0;
+  if (inT === 0 && outT === 0) return;
+  try {
+    recordUsage(c.provider, c.modelId, inT, outT);
+  } catch {
+    // Usage tracking must never break inference.
+  }
+}
+
+type GenerateResult = Awaited<ReturnType<LanguageModelV3['doGenerate']>>;
+type StreamResult = Awaited<ReturnType<LanguageModelV3['doStream']>>;
+
+async function attemptGenerate(
   candidates: Inner[],
-  call: (m: LanguageModelV3) => Promise<T>,
-): Promise<{ value?: T; lastErr?: unknown }> {
+  options: Parameters<LanguageModelV3['doGenerate']>[0],
+): Promise<{ value?: GenerateResult; lastErr?: unknown }> {
   let lastErr: unknown;
   for (let i = 0; i < candidates.length; i++) {
     const c = candidates[i];
     try {
-      const value = await call(c.model as LanguageModelV3);
-      return { value };
+      const result = await (c.model as LanguageModelV3).doGenerate(options);
+      tryRecord(c, result.usage);
+      return { value: result };
     } catch (err) {
       lastErr = err;
       const reason = err instanceof Error ? err.message.slice(0, 120) : String(err).slice(0, 120);
@@ -65,21 +91,54 @@ async function attemptChain<T>(
   return { lastErr };
 }
 
+async function attemptStream(
+  candidates: Inner[],
+  options: Parameters<LanguageModelV3['doStream']>[0],
+): Promise<{ value?: StreamResult; lastErr?: unknown }> {
+  let lastErr: unknown;
+  for (let i = 0; i < candidates.length; i++) {
+    const c = candidates[i];
+    try {
+      const result = await (c.model as LanguageModelV3).doStream(options);
+      // Tap the stream: forward all parts to the consumer while capturing
+      // the final usage block, then record on completion. This requires
+      // teeing the stream through a TransformStream.
+      const tapped = tapStreamForUsage(result.stream, c);
+      return { value: { ...result, stream: tapped } };
+    } catch (err) {
+      lastErr = err;
+      const reason = err instanceof Error ? err.message.slice(0, 120) : String(err).slice(0, 120);
+      if (!shouldFallback(err) || i === candidates.length - 1) {
+        console.warn(`[fallback] ${c.label} failed (terminal): ${reason}`);
+        return { lastErr: err };
+      }
+      console.warn(`[fallback] ${c.label} failed: ${reason} — trying next`);
+    }
+  }
+  return { lastErr };
+}
+
+function tapStreamForUsage(
+  stream: StreamResult['stream'],
+  c: Inner,
+): StreamResult['stream'] {
+  return stream.pipeThrough(
+    new TransformStream({
+      transform(chunk, controller) {
+        const part = chunk as { type?: string; usage?: LanguageModelV3Usage };
+        if (part?.type === 'finish' && part.usage) {
+          tryRecord(c, part.usage);
+        }
+        controller.enqueue(chunk);
+      },
+    }),
+  );
+}
+
 export function createFallbackModel(candidates: Inner[]): LanguageModelV3 {
   if (candidates.length === 0) throw new Error('createFallbackModel: empty candidate list');
 
   const first = candidates[0].model as LanguageModelV3;
-
-  const runWithRetry = async <T>(call: (m: LanguageModelV3) => Promise<T>): Promise<T> => {
-    const r1 = await attemptChain(candidates, call);
-    if (r1.value !== undefined) return r1.value;
-    if (!isTransientRateLimit(r1.lastErr)) throw r1.lastErr;
-    console.warn(`[fallback] entire chain rate-limited, waiting ${RETRY_DELAY_MS}ms then retrying once`);
-    await sleep(RETRY_DELAY_MS);
-    const r2 = await attemptChain(candidates, call);
-    if (r2.value !== undefined) return r2.value;
-    throw r2.lastErr;
-  };
 
   return {
     specificationVersion: 'v3',
@@ -93,10 +152,24 @@ export function createFallbackModel(candidates: Inner[]): LanguageModelV3 {
       return first.supportedUrls;
     },
     async doGenerate(options) {
-      return runWithRetry((m) => Promise.resolve(m.doGenerate(options)));
+      const r1 = await attemptGenerate(candidates, options);
+      if (r1.value !== undefined) return r1.value;
+      if (!isTransientRateLimit(r1.lastErr)) throw r1.lastErr;
+      console.warn(`[fallback] entire chain rate-limited, waiting ${RETRY_DELAY_MS}ms then retrying once`);
+      await sleep(RETRY_DELAY_MS);
+      const r2 = await attemptGenerate(candidates, options);
+      if (r2.value !== undefined) return r2.value;
+      throw r2.lastErr;
     },
     async doStream(options) {
-      return runWithRetry((m) => Promise.resolve(m.doStream(options)));
+      const r1 = await attemptStream(candidates, options);
+      if (r1.value !== undefined) return r1.value;
+      if (!isTransientRateLimit(r1.lastErr)) throw r1.lastErr;
+      console.warn(`[fallback] entire chain rate-limited, waiting ${RETRY_DELAY_MS}ms then retrying once`);
+      await sleep(RETRY_DELAY_MS);
+      const r2 = await attemptStream(candidates, options);
+      if (r2.value !== undefined) return r2.value;
+      throw r2.lastErr;
     },
   };
 }
