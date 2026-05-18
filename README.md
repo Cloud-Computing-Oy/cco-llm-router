@@ -8,6 +8,22 @@ Reads API keys from `process.env` at runtime. On the CCO prod / dev
 hosts, these come from `/etc/cco/keys.env` (pulled in by every service's
 docker-compose `env_file:`).
 
+## Repo layout
+
+This repo carries both language bindings of the router:
+
+- **Root (TypeScript / Node)** — published to GitHub Packages as
+  `@cloud-computing-oy/llm-router`. The Next.js / TypeScript services
+  (Invoicify, LexAI, expat-aivozone, cc-code) depend on this.
+- **[`py/`](./py)** — Python sibling, published to PyPI / consumed
+  via `pip` by the Python services (was previously the standalone repo
+  `Cloud-Computing-Oy/cco-llm-router-py`, merged here with history).
+
+Each subdirectory owns its own packaging (`package.json` for TS at root,
+`pyproject.toml` under `py/`). The default alias chains in
+`src/router.ts` and `py/cco_llm_router/router.py` should stay in sync
+when adding new providers or shifting model defaults.
+
 ## Install
 
 The package is private — consume via git+ssh:
