@@ -60,9 +60,15 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
     { provider: 'anthropic', model: 'claude-haiku-4-5-20251001' },
     { provider: 'ollama', model: 'gemma4:e4b' },
   ],
-  // Batch translation: latency-tolerant, free first.
+  // Batch translation: latency-tolerant, free first. Qwen2.5:14b is the
+  // primary translator after the expat-aivozone corpus build showed
+  // Gemma 26B occasionally returns HTTP 200 with an empty body for
+  // legal-text chunks — qwen2.5:14b did not exhibit that on the same
+  // workload and ran ~5× faster on GPU-capable hosts than gemma 26B on
+  // CPU-only Ollama hosts. Falls through to Gemini/Anthropic if Ollama
+  // is unreachable or the model isn't pulled.
   'auto:translate': [
-    { provider: 'ollama', model: 'gemma4:26b' },
+    { provider: 'ollama', model: 'qwen2.5:14b' },
     { provider: 'google', model: 'gemini-2.5-flash' },
     { provider: 'google-paid', model: 'gemini-2.5-flash' },
     { provider: 'anthropic', model: 'claude-sonnet-4-6' },
