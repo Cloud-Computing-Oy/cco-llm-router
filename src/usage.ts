@@ -24,6 +24,8 @@ type MonthlyUsage = {
   /** YYYY-MM in UTC — month boundary triggers reset. */
   month: string;
   providers: Partial<Record<Provider, ProviderUsage>>;
+  /** Tracks which budget-warning thresholds have already fired this month, per provider. */
+  thresholds?: Partial<Record<Provider, number[]>>;
 };
 
 function stateDir(): string {
@@ -41,7 +43,7 @@ function currentMonth(): string {
 }
 
 function emptyState(): MonthlyUsage {
-  return { month: currentMonth(), providers: {} };
+  return { month: currentMonth(), providers: {}, thresholds: {} };
 }
 
 function loadState(): MonthlyUsage {
@@ -50,6 +52,7 @@ function loadState(): MonthlyUsage {
   try {
     const raw = JSON.parse(readFileSync(p, 'utf8')) as MonthlyUsage;
     if (raw.month !== currentMonth()) return emptyState();
+    if (!raw.thresholds) raw.thresholds = {};
     return raw;
   } catch {
     return emptyState();
@@ -88,10 +91,26 @@ export function getMonthlySpendUSD(provider: Provider): number {
   return s.providers[provider]?.costUSD ?? 0;
 }
 
-export function getCurrentMonthSpend(): { month: string; totalUSD: number; perProvider: MonthlyUsage['providers'] } {
+export function getCurrentMonthSpend(): {
+  month: string;
+  totalUSD: number;
+  perProvider: MonthlyUsage['providers'];
+  thresholds: MonthlyUsage['thresholds'];
+} {
   const s = loadState();
   const totalUSD = Object.values(s.providers).reduce((sum, u) => sum + (u?.costUSD ?? 0), 0);
-  return { month: s.month, totalUSD, perProvider: s.providers };
+  return { month: s.month, totalUSD, perProvider: s.providers, thresholds: s.thresholds };
+}
+
+export function markThresholdNotified(provider: Provider, threshold: number): void {
+  const s = loadState();
+  if (!s.thresholds) s.thresholds = {};
+  const list = s.thresholds[provider] ?? [];
+  if (!list.includes(threshold)) {
+    list.push(threshold);
+    s.thresholds[provider] = list;
+    saveState(s);
+  }
 }
 
 export function resetUsage(): void {

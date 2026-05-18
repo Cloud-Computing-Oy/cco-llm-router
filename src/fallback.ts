@@ -2,6 +2,7 @@ import type { LanguageModelV3, LanguageModelV3Usage } from '@ai-sdk/provider';
 import type { LanguageModel } from 'ai';
 import type { Provider } from './types';
 import { recordUsage } from './usage';
+import { checkThresholds } from './budget';
 
 type Inner = {
   label: string;
@@ -59,6 +60,7 @@ function tryRecord(c: Inner, usage: LanguageModelV3Usage | undefined): void {
   if (inT === 0 && outT === 0) return;
   try {
     recordUsage(c.provider, c.modelId, inT, outT);
+    checkThresholds(c.provider);
   } catch {
     // Usage tracking must never break inference.
   }

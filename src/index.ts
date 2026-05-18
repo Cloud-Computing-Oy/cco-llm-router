@@ -19,7 +19,7 @@ export {
   getCurrentMonthSpend,
   resetUsage,
 } from './usage';
-export { getBudgetUSD, withinBudget } from './budget';
+export { getBudgetUSD, withinBudget, onBudgetWarning, type BudgetWarning } from './budget';
 export { PRICING, priceOf, estimateCostUSD, type Price } from './pricing';
 
 // Provider availability flags + raw constructors, for the rare service

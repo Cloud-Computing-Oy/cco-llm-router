@@ -20,11 +20,17 @@
  *   CCO_LLM_BUDGET_TOGETHER_USD
  *   CCO_LLM_BUDGET_OPENROUTER_USD
  *   CCO_LLM_BUDGET_GROQ_USD
+ *
+ * Threshold warnings: when local spend crosses 50% / 75% / 90% / 100% of
+ * a provider's cap, a single warning is logged (via console.warn or
+ * onBudgetWarning callback if set). State is tracked in usage.json so
+ * the same threshold doesn't fire on every request.
  */
 import type { Provider } from './types';
-import { getMonthlySpendUSD } from './usage';
+import { getMonthlySpendUSD, getCurrentMonthSpend, markThresholdNotified } from './usage';
 
 const SAFETY_MARGIN = 0.9;
+const THRESHOLDS = [0.5, 0.75, 0.9, 1.0] as const;
 
 const ENV_KEY: Record<Provider, string> = {
   anthropic: 'CCO_LLM_BUDGET_ANTHROPIC_USD',
@@ -38,6 +44,22 @@ const ENV_KEY: Record<Provider, string> = {
   together: 'CCO_LLM_BUDGET_TOGETHER_USD',
 };
 
+export type BudgetWarning = {
+  provider: Provider;
+  threshold: number;       // 0.5 / 0.75 / 0.9 / 1.0
+  spentUSD: number;
+  budgetUSD: number;
+  percent: number;         // actual percentage at warning time
+};
+
+type WarningHandler = (w: BudgetWarning) => void;
+
+let warningHandler: WarningHandler | null = null;
+
+export function onBudgetWarning(handler: WarningHandler | null): void {
+  warningHandler = handler;
+}
+
 export function getBudgetUSD(provider: Provider): number {
   const raw = process.env[ENV_KEY[provider]];
   if (!raw) return 0;
@@ -50,4 +72,44 @@ export function withinBudget(provider: Provider): boolean {
   if (cap === 0) return true;
   const spent = getMonthlySpendUSD(provider);
   return spent < cap * SAFETY_MARGIN;
+}
+
+/**
+ * Called after each successful recordUsage to check whether the new spend
+ * has crossed a warning threshold. Emits a one-shot warning per threshold
+ * per month. Safe to call unconditionally; no-op when no budget is set.
+ */
+export function checkThresholds(provider: Provider): void {
+  const cap = getBudgetUSD(provider);
+  if (cap === 0) return;
+
+  const spent = getMonthlySpendUSD(provider);
+  const percent = spent / cap;
+  const state = getCurrentMonthSpend();
+  const notified = state.thresholds?.[provider] ?? [];
+
+  for (const t of THRESHOLDS) {
+    if (percent >= t && !notified.includes(t)) {
+      const warning: BudgetWarning = {
+        provider,
+        threshold: t,
+        spentUSD: Number(spent.toFixed(4)),
+        budgetUSD: cap,
+        percent: Number((percent * 100).toFixed(1)),
+      };
+      markThresholdNotified(provider, t);
+      if (warningHandler) {
+        try {
+          warningHandler(warning);
+        } catch (err) {
+          // Don't let handler errors break the call path.
+          console.warn(`[budget] warning handler threw: ${err instanceof Error ? err.message : err}`);
+        }
+      } else {
+        console.warn(
+          `[cco-llm-router] budget ${Math.round(t * 100)}% threshold reached: ${provider} spent $${warning.spentUSD} / $${cap} (${warning.percent}%)`,
+        );
+      }
+    }
+  }
 }
