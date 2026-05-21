@@ -1,6 +1,6 @@
 import type { LanguageModel } from 'ai';
 import { anthropicAvailable, anthropicModel } from './providers/anthropic';
-import { googleAvailable, googleModel } from './providers/google';
+import { googleAvailable, googleKeyCount, googleModel } from './providers/google';
 import { googlePaidAvailable, googlePaidModel } from './providers/google-paid';
 import { openaiAvailable, openaiModel } from './providers/openai';
 import { groqAvailable, groqModel } from './providers/groq';
@@ -39,8 +39,13 @@ import type { Provider, Spec } from './types';
  * 5–10× pricier provider tiers.
  */
 export const DEFAULT_ALIASES: Record<string, Spec[]> = {
-  // Chat / generic. Free first; deepinfra as ultra-cheap buffer before paid.
+  // Chat / generic. Strict cost-first: own-server Ollama leads (zero
+  // marginal cost on GPU-capable dev/prod hosts), then free cloud tiers,
+  // then DeepInfra as ultra-cheap paid buffer before Google paid /
+  // Anthropic / OpenAI. Ollama spec at the head is no-op on hosts where
+  // OLLAMA_BASE_URL is unset (e.g. CI), since `providerAvailable` skips it.
   'auto:smart': [
+    { provider: 'ollama', model: 'qwen2.5:14b' },
     { provider: 'google', model: 'gemini-2.5-flash' },
     { provider: 'openrouter', model: 'qwen/qwen3-next-80b-a3b-instruct:free' },
     { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free' },
@@ -51,11 +56,11 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
     { provider: 'google-paid', model: 'gemini-2.5-pro' },
     { provider: 'anthropic', model: 'claude-sonnet-4-6' },
     { provider: 'openai', model: 'gpt-5' },
-    { provider: 'ollama', model: 'qwen2.5-coder:14b' },
   ],
-  // Classification, language detection, short tasks. Cheapest 8B first
-  // among paid options — these calls are short so latency matters most.
+  // Classification, language detection, short tasks. Local 2B model
+  // first (tiny, GPU-cached), then Groq / free cloud / paid fallbacks.
   'auto:fast': [
+    { provider: 'ollama', model: 'gemma4:e2b' },
     { provider: 'groq', model: 'llama-3.3-70b-versatile' },
     { provider: 'google', model: 'gemini-2.5-flash' },
     { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free' },
@@ -64,7 +69,6 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
     { provider: 'google-paid', model: 'gemini-2.5-flash' },
     { provider: 'openai', model: 'gpt-5-mini' },
     { provider: 'anthropic', model: 'claude-haiku-4-5-20251001' },
-    { provider: 'ollama', model: 'gemma4:e4b' },
   ],
   // Batch translation: latency-tolerant, free first. Qwen2.5:14b is the
   // primary translator after the expat-aivozone corpus build showed
@@ -80,18 +84,25 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
     { provider: 'google-paid', model: 'gemini-2.5-flash' },
     { provider: 'anthropic', model: 'claude-sonnet-4-6' },
   ],
-  // Code generation / completion.
+  // Code generation / completion. qwen2.5:14b on Ollama is a competent
+  // local default (no coder variant installed on the fleet — see fleet
+  // ollama inventory). Falls through to Gemini / OpenRouter qwen-coder
+  // free / Groq, then paid.
   'auto:code': [
+    { provider: 'ollama', model: 'qwen2.5:14b' },
     { provider: 'google', model: 'gemini-2.5-flash' },
     { provider: 'openrouter', model: 'qwen/qwen3-coder:free' },
     { provider: 'groq', model: 'llama-3.3-70b-versatile' },
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.3-70B-Instruct' },
     { provider: 'google-paid', model: 'gemini-2.5-flash' },
     { provider: 'openai', model: 'gpt-5-mini' },
-    { provider: 'ollama', model: 'qwen2.5-coder:14b' },
   ],
-  // Reasoning / planning / multi-step. DeepSeek-V3 on DeepInfra is the
-  // cheapest "thinking-grade" model after free tiers.
+  // Reasoning / planning / multi-step. Cloud-first because no
+  // installed local model is reasoning-grade (qwen2.5 has no thinking
+  // mode, gemma4:26b is large but lacks chain-of-thought structure).
+  // DeepSeek-V3 on DeepInfra is the cheapest "thinking-grade" model
+  // after free tiers. Ollama appended as final fallback so an
+  // air-gapped path still resolves.
   'auto:reasoning': [
     { provider: 'google', model: 'gemini-2.5-pro' },
     { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free' },
@@ -100,6 +111,7 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
     { provider: 'google-paid', model: 'gemini-2.5-pro' },
     { provider: 'anthropic', model: 'claude-sonnet-4-6' },
     { provider: 'openai', model: 'gpt-5' },
+    { provider: 'ollama', model: 'qwen2.5:14b' },
   ],
   // Explicit paid only — for tasks where top quality is needed and budget approved.
   'auto:paid': [
@@ -108,24 +120,27 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
     { provider: 'anthropic', model: 'claude-sonnet-4-6' },
     { provider: 'google-paid', model: 'gemini-2.5-pro' },
   ],
-  // Large-context tasks (long docs, big diffs).
+  // Large-context tasks (long docs, big diffs). Local gemma4:26b leads
+  // because long-context prompts on the cloud free tier consume the
+  // 1500-RPD quota quickly.
   'auto:big': [
+    { provider: 'ollama', model: 'gemma4:26b' },
     { provider: 'openrouter', model: 'google/gemma-4-31b-it:free' },
     { provider: 'openrouter', model: 'google/gemma-4-26b-a4b-it:free' },
     { provider: 'google', model: 'gemini-2.5-pro' },
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.3-70B-Instruct' },
     { provider: 'google-paid', model: 'gemini-2.5-pro' },
     { provider: 'openai', model: 'gpt-5' },
-    { provider: 'ollama', model: 'gemma4:26b' },
   ],
-  // Local-only — for fully offline / air-gapped paths.
+  // Local-only — for fully offline / air-gapped paths. Both models on
+  // the dev/prod ollama inventory (see fleet docs).
   'auto:local': [
-    { provider: 'ollama', model: 'qwen2.5-coder:14b' },
-    { provider: 'ollama', model: 'gemma4:e4b' },
+    { provider: 'ollama', model: 'qwen2.5:14b' },
+    { provider: 'ollama', model: 'gemma4:e2b' },
   ],
   // Cost-first: only free + ultra-cheap providers; expensive tiers excluded.
   'auto:cheap': [
-    { provider: 'ollama', model: 'gemma4:e4b' },
+    { provider: 'ollama', model: 'gemma4:e2b' },
     { provider: 'openrouter', model: 'minimax/minimax-m2.5:free' },
     { provider: 'groq', model: 'llama-3.3-70b-versatile' },
     { provider: 'google', model: 'gemini-2.5-flash' },
@@ -172,7 +187,7 @@ function instantiate(spec: Spec, perCallKeys?: PerCallKeys): LanguageModel {
     case 'anthropic':
       return anthropicModel(spec.model, opts);
     case 'google':
-      return googleModel(spec.model, opts);
+      return googleModel(spec.model, { ...opts, keyIndex: spec.keyIndex ?? 0 });
     case 'google-paid':
       return googlePaidModel(spec.model, opts);
     case 'openai':
@@ -191,7 +206,32 @@ function instantiate(spec: Spec, perCallKeys?: PerCallKeys): LanguageModel {
 }
 
 function specLabel(s: Spec): string {
-  return `${s.provider}:${s.model}`;
+  const keyTag = s.provider === 'google' && (s.keyIndex ?? 0) > 0 ? `#${s.keyIndex}` : '';
+  return `${s.provider}:${s.model}${keyTag}`;
+}
+
+/**
+ * Expand each `google` spec into N copies — one per available Google API
+ * key. The fallback chain (createFallbackModel) rotates through them on
+ * per-day quota / 429 errors before moving on to the next provider in
+ * the chain. The original spec stays at its position; additional keys
+ * are inserted immediately after it.
+ *
+ * No-op when fewer than 2 Google keys are configured.
+ */
+function expandGoogleKeys(chain: Spec[]): Spec[] {
+  if (googleKeyCount <= 1) return chain;
+  const out: Spec[] = [];
+  for (const s of chain) {
+    if (s.provider !== 'google') {
+      out.push(s);
+      continue;
+    }
+    for (let i = 0; i < googleKeyCount; i++) {
+      out.push({ ...s, keyIndex: i });
+    }
+  }
+  return out;
 }
 
 export type RouterOptions = {
@@ -240,7 +280,10 @@ export function createRouter(opts: RouterOptions = {}): Router {
     }
     const chain = aliases[alias];
     if (!chain) throw new Error(`Unknown model alias: ${alias}`);
-    const available = chain.filter((s) => isAvailable(s.provider, perCallKeys));
+    // When per-call keys are supplied, skip the env-pool expansion for
+    // `google` — a BYOK key is a single concrete credential, not a pool.
+    const filtered = chain.filter((s) => isAvailable(s.provider, perCallKeys));
+    const available = perCallKeys?.google ? filtered : expandGoogleKeys(filtered);
     if (available.length === 0) {
       throw new Error(`No available provider for alias ${alias} — set at least one API key`);
     }
@@ -257,11 +300,10 @@ export function createRouter(opts: RouterOptions = {}): Router {
   }
 
   function listAliases() {
-    return Object.entries(aliases).map(([alias, chain]) => ({
-      alias,
-      chain,
-      availableCount: chain.filter((s) => providerAvailable(s.provider)).length,
-    }));
+    return Object.entries(aliases).map(([alias, chain]) => {
+      const available = expandGoogleKeys(chain.filter((s) => providerAvailable(s.provider)));
+      return { alias, chain, availableCount: available.length };
+    });
   }
 
   return { resolveModel, listAliases };

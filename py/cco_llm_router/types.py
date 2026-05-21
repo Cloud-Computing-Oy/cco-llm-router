@@ -25,7 +25,14 @@ Provider = Literal[
 class Spec:
     provider: str  # one of the Provider literals; kept as str for flexibility
     model: str
+    # Meaningful only for the Google free provider: when the env has
+    # multiple keys (GOOGLE_GENERATIVE_AI_API_KEY + _2/_3/…), the router
+    # expands each `google:` spec into N copies with rising key_index,
+    # so the fallback chain rotates through them on per-project 429s
+    # before falling through to the next provider.
+    key_index: int = 0
 
     @property
     def label(self) -> str:
-        return f"{self.provider}:{self.model}"
+        tag = f"#{self.key_index}" if self.provider == "google" and self.key_index > 0 else ""
+        return f"{self.provider}:{self.model}{tag}"

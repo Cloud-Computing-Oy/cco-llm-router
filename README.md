@@ -53,19 +53,27 @@ const { model } = resolveModel('auto:smart');
 const { text } = await generateText({ model, prompt: 'hello' });
 ```
 
-Available default aliases (always free → ultra-cheap → cheap → expensive):
+Available default aliases — strict cost-first: own-server Ollama leads,
+then free cloud tiers, then ultra-cheap DeepInfra/Together buffer, then
+Google paid / Anthropic / OpenAI as fallbacks:
 
-| Alias | Use case | Chain (cost-optimised) |
-|-------|----------|------------------------|
-| `auto:smart` | Chat, generic | google-free → openrouter-free → **deepinfra-70b** → google-paid → together → anthropic → openai |
-| `auto:fast` | Classification, short tasks | groq-free → google-free → openrouter-free → **deepinfra-8b** → google-paid → openai-mini |
+| Alias | Use case | Chain (cost-first) |
+|-------|----------|--------------------|
+| `auto:smart` | Chat, generic | ollama → google-free → openrouter-free → **deepinfra-70b** → google-paid → together → anthropic → openai |
+| `auto:fast` | Classification, short tasks | ollama-e2b → groq-free → google-free → openrouter-free → **deepinfra-8b** → google-paid → openai-mini |
 | `auto:translate` | Batch translation | ollama → google-free → **deepinfra-70b** → google-paid → anthropic |
-| `auto:code` | Code generation | google-free → openrouter-free → groq-free → **deepinfra-70b** → google-paid → openai-mini |
-| `auto:reasoning` | Planning, multi-step | google-free-pro → openrouter-free → **deepinfra-deepseek-v3** → google-paid-pro → anthropic → openai |
-| `auto:big` | Long context | openrouter-free → google-free-pro → **deepinfra-70b** → google-paid-pro → openai |
+| `auto:code` | Code generation | ollama → google-free → openrouter-free → groq-free → **deepinfra-70b** → google-paid → openai-mini |
+| `auto:reasoning` | Planning, multi-step (cloud-first — no thinking-grade local) | google-free-pro → openrouter-free → **deepinfra-deepseek-v3** → google-paid-pro → anthropic → openai → ollama |
+| `auto:big` | Long context | ollama-26b → openrouter-free → google-free-pro → **deepinfra-70b** → google-paid-pro → openai |
 | `auto:cheap` | Cost-first, strict | ollama → openrouter-free → groq-free → google-free → **deepinfra-8b** → **deepinfra-70b** → google-paid-flash |
 | `auto:paid` | Top quality, opt-in | openai → anthropic → google-paid-pro |
 | `auto:local` | Air-gapped | ollama only |
+
+Ollama specs are no-op on hosts without `OLLAMA_BASE_URL` set — the router
+skips unavailable providers. On hosts where the URL is set but the
+server is down, the fallback walks past it after the immediate
+connection refusal. There is no active health check; the fallback layer
+handles outages by transparently moving to the next slot.
 
 You can also call a provider directly without going through the fallback
 chain (useful when you genuinely need a specific model and don't want
@@ -111,7 +119,8 @@ A provider is considered available iff its env var is set:
 | Provider | Env var |
 |----------|---------|
 | anthropic | `ANTHROPIC_API_KEY` |
-| google | `GOOGLE_GENERATIVE_AI_API_KEY_PAID` ▸ `GOOGLE_GENERATIVE_AI_API_KEY` ▸ `GOOGLE_GENAI_API_KEY` ▸ `GEMINI_API_KEY` |
+| google (free pool) | `GOOGLE_GENERATIVE_AI_API_KEY` (or `GOOGLE_GENAI_API_KEY` / `GEMINI_API_KEY`) for the primary slot, then `GOOGLE_GENERATIVE_AI_API_KEY_2`, `_3`, … for extra slots — each slot should come from a distinct GCP project to actually expand the free-tier 1500-RPD quota |
+| google-paid | `GOOGLE_GENERATIVE_AI_API_KEY_PAID` |
 | openai | `OPENAI_API_KEY` |
 | groq | `GROQ_API_KEY` |
 | openrouter | `OPENROUTER_API_KEY` |
@@ -119,6 +128,14 @@ A provider is considered available iff its env var is set:
 | deepinfra | `DEEPINFRA_API_KEY` |
 | together | `TOGETHER_API_KEY` |
 | cohere | `COHERE_API_KEY` |
+
+When more than one Google free key is present, the router expands each
+`google:` spec in the chain into one fallback slot per key — so a chain
+like `auto:smart` with 4 keys gets 4 Google attempts before falling
+through to OpenRouter / DeepInfra / Google-paid. Slots in the log are
+tagged `google:gemini-2.5-flash#2` etc. Pool keys live in the separate
+`google-paid` provider so paid usage never starts until the entire free
+pool is exhausted.
 
 The router skips unavailable providers when building the fallback chain.
 If no provider in an alias is available, `resolveModel` throws — which

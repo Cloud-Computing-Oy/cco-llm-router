@@ -17,4 +17,11 @@ export type Provider =
   | 'deepinfra'
   | 'together';
 
-export type Spec = { provider: Provider; model: string };
+/**
+ * `keyIndex` is meaningful only for the Google free provider: when the
+ * env has multiple keys (`GOOGLE_GENERATIVE_AI_API_KEY` + `_2`/`_3`/…),
+ * the router expands each `google:` spec into N copies with rising
+ * `keyIndex`, so the fallback chain rotates through them on per-project
+ * 429s before falling through to the next provider.
+ */
+export type Spec = { provider: Provider; model: string; keyIndex?: number };

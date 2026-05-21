@@ -17,6 +17,7 @@ from typing import Any, Callable
 
 from . import providers
 from .budget import within_budget
+from .providers.google import google_key_count
 from .types import Provider, Spec
 from .usage import record_usage
 
@@ -37,7 +38,13 @@ from .usage import record_usage
 #   anthropic:claude-sonnet-4-6      $3     / $15
 #   openai:gpt-5                     $3     / $15
 DEFAULT_ALIASES: dict[str, list[Spec]] = {
+    # Cost-first: own-server Ollama leads (zero marginal cost on
+    # GPU-capable hosts), then free cloud tiers, then DeepInfra as
+    # ultra-cheap paid buffer before Google paid / Anthropic / OpenAI.
+    # Ollama specs are no-op on hosts without OLLAMA_BASE_URL (CI etc.)
+    # since `_provider_available` skips them.
     "auto:smart": [
+        Spec("ollama", "qwen2.5:14b"),
         Spec("google", "gemini-2.5-flash"),
         Spec("openrouter", "qwen/qwen3-next-80b-a3b-instruct:free"),
         Spec("openrouter", "nvidia/nemotron-3-super-120b-a12b:free"),
@@ -48,9 +55,9 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
         Spec("google-paid", "gemini-2.5-pro"),
         Spec("anthropic", "claude-sonnet-4-6"),
         Spec("openai", "gpt-5"),
-        Spec("ollama", "qwen2.5-coder:14b"),
     ],
     "auto:fast": [
+        Spec("ollama", "gemma4:e2b"),
         Spec("groq", "llama-3.3-70b-versatile"),
         Spec("google", "gemini-2.5-flash"),
         Spec("openrouter", "nvidia/nemotron-3-nano-30b-a3b:free"),
@@ -59,7 +66,6 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
         Spec("google-paid", "gemini-2.5-flash"),
         Spec("openai", "gpt-5-mini"),
         Spec("anthropic", "claude-haiku-4-5-20251001"),
-        Spec("ollama", "gemma4:e4b"),
     ],
     "auto:translate": [
         Spec("ollama", "qwen2.5:14b"),
@@ -69,14 +75,16 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
         Spec("anthropic", "claude-sonnet-4-6"),
     ],
     "auto:code": [
+        Spec("ollama", "qwen2.5:14b"),
         Spec("google", "gemini-2.5-flash"),
         Spec("openrouter", "qwen/qwen3-coder:free"),
         Spec("groq", "llama-3.3-70b-versatile"),
         Spec("deepinfra", "meta-llama/Meta-Llama-3.3-70B-Instruct"),
         Spec("google-paid", "gemini-2.5-flash"),
         Spec("openai", "gpt-5-mini"),
-        Spec("ollama", "qwen2.5-coder:14b"),
     ],
+    # Reasoning is cloud-first because no installed local model is
+    # reasoning-grade. Ollama is appended as last resort.
     "auto:reasoning": [
         Spec("google", "gemini-2.5-pro"),
         Spec("openrouter", "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"),
@@ -85,6 +93,7 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
         Spec("google-paid", "gemini-2.5-pro"),
         Spec("anthropic", "claude-sonnet-4-6"),
         Spec("openai", "gpt-5"),
+        Spec("ollama", "qwen2.5:14b"),
     ],
     "auto:paid": [
         Spec("openai", "gpt-5"),
@@ -93,20 +102,20 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
         Spec("google-paid", "gemini-2.5-pro"),
     ],
     "auto:big": [
+        Spec("ollama", "gemma4:26b"),
         Spec("openrouter", "google/gemma-4-31b-it:free"),
         Spec("openrouter", "google/gemma-4-26b-a4b-it:free"),
         Spec("google", "gemini-2.5-pro"),
         Spec("deepinfra", "meta-llama/Meta-Llama-3.3-70B-Instruct"),
         Spec("google-paid", "gemini-2.5-pro"),
         Spec("openai", "gpt-5"),
-        Spec("ollama", "gemma4:26b"),
     ],
     "auto:local": [
-        Spec("ollama", "qwen2.5-coder:14b"),
-        Spec("ollama", "gemma4:e4b"),
+        Spec("ollama", "qwen2.5:14b"),
+        Spec("ollama", "gemma4:e2b"),
     ],
     "auto:cheap": [
-        Spec("ollama", "gemma4:e4b"),
+        Spec("ollama", "gemma4:e2b"),
         Spec("openrouter", "minimax/minimax-m2.5:free"),
         Spec("groq", "llama-3.3-70b-versatile"),
         Spec("google", "gemini-2.5-flash"),
@@ -220,7 +229,7 @@ def resolve_model(alias: str, *, aliases: dict[str, list[Spec]] | None = None) -
     if chain is None:
         raise RuntimeError(f"Unknown model alias: {alias}")
 
-    available = [s for s in chain if _provider_available(s.provider)]
+    available = _expand_google_keys([s for s in chain if _provider_available(s.provider)])
     if not available:
         raise RuntimeError(
             f"No available provider for alias {alias} — set at least one API key"
@@ -228,16 +237,32 @@ def resolve_model(alias: str, *, aliases: dict[str, list[Spec]] | None = None) -
     return CallSpec(available)
 
 
+def _expand_google_keys(chain: list[Spec]) -> list[Spec]:
+    """Expand each `google` spec into one per available Google free key
+    so the fallback chain rotates through them on per-project 429s. No-op
+    when fewer than 2 keys are configured. Mirrors expandGoogleKeys in
+    src/router.ts.
+    """
+    n = google_key_count()
+    if n <= 1:
+        return chain
+    out: list[Spec] = []
+    for s in chain:
+        if s.provider != "google":
+            out.append(s)
+            continue
+        for i in range(n):
+            out.append(Spec(s.provider, s.model, key_index=i))
+    return out
+
+
 def list_aliases(aliases: dict[str, list[Spec]] | None = None) -> list[dict[str, Any]]:
     table = aliases if aliases is not None else DEFAULT_ALIASES
-    return [
-        {
-            "alias": alias,
-            "chain": chain,
-            "available_count": sum(1 for s in chain if _provider_available(s.provider)),
-        }
-        for alias, chain in table.items()
-    ]
+    out = []
+    for alias, chain in table.items():
+        expanded = _expand_google_keys([s for s in chain if _provider_available(s.provider)])
+        out.append({"alias": alias, "chain": chain, "available_count": len(expanded)})
+    return out
 
 
 def create_router(*, aliases: dict[str, list[Spec]] | None = None):
