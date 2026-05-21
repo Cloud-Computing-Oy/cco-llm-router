@@ -66,27 +66,25 @@ jobs:
           path: .repo-auditor
           token: ${{ secrets.REPO_AUDITOR_TOKEN }}
 
-      - name: Install repo-auditor
+      - name: Install repo-auditor deps
         working-directory: .repo-auditor
-        run: |
-          # --ignore-scripts prevents dep-postinstall code execution from
-          # untrusted transitive deps, but skips repo-auditor's own
-          # `prepare` build hook — so run the build explicitly before
-          # linking so the bin's target (`dist/index.js`) exists.
-          npm ci --ignore-scripts
-          npm run build
-          npm link
+        run: npm ci --ignore-scripts
 
       - name: Run audit (PR scope)
+        working-directory: .repo-auditor
         env:
           GH_TOKEN: ${{ secrets.REPO_AUDITOR_TOKEN }}
+        # Run via tsx directly rather than the built bin — repo-auditor's
+        # `npm run build` currently fails (src imports from scripts/ which
+        # is outside rootDir) and bin packaging is moot for CI anyway. tsx
+        # transpiles on-demand and doesn't enforce rootDir.
         run: |
-          repo-auditor run "https://github.com/${REPO_FULL}" \
+          node --import tsx src/index.ts run "https://github.com/${REPO_FULL}" \
             --branch "${HEAD_REF}" \
             --base "origin/${BASE_REF}" \
             --no-agents \
             --sarif \
-            --output reports
+            --output ../reports
 
       - name: Find report dir
         id: report
@@ -97,11 +95,12 @@ jobs:
           echo "dir=$report_dir" >> "$GITHUB_OUTPUT"
 
       - name: Publish check-run
+        working-directory: .repo-auditor
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # writing checks on THIS repo — default token is enough
           REPORT_DIR: ${{ steps.report.outputs.dir }}
         run: |
-          repo-auditor check-run "${REPORT_DIR}" \
+          node --import tsx src/index.ts check-run "../${REPORT_DIR}" \
             --repo "${REPO_FULL}" \
             --head-sha "${HEAD_SHA}" \
             --pr "${PR_NUMBER}"
