@@ -69,7 +69,12 @@ jobs:
       - name: Install repo-auditor
         working-directory: .repo-auditor
         run: |
+          # --ignore-scripts prevents dep-postinstall code execution from
+          # untrusted transitive deps, but skips repo-auditor's own
+          # `prepare` build hook — so run the build explicitly before
+          # linking so the bin's target (`dist/index.js`) exists.
           npm ci --ignore-scripts
+          npm run build
           npm link
 
       - name: Run audit (PR scope)
