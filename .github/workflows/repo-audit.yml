@@ -1,0 +1,91 @@
+# Audits pull requests with Cloud-Computing-Oy/repo-auditor. Posts findings
+# as a GitHub Check Run on the PR head SHA, scoped to files changed vs the
+# base branch.
+#
+# Deterministic-only mode (--no-agents) — no LLM API keys required. To
+# enable LLM agent verification, add OPENAI_API_KEY / GROQ_API_KEY etc.
+# as repo secrets and drop --no-agents from the run command.
+
+name: repo-audit
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: audit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: read
+      actions: read           # codeql-action reads workflow-run metadata
+      security-events: write  # codeql-action uploads SARIF to Code Scanning
+
+    # Route every github.* expression through env: so user-controlled values
+    # (branch names from fork PRs) cannot escape bash quoting and inject
+    # commands. See:
+    # https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-an-intermediate-environment-variable
+    env:
+      REPO_FULL: ${{ github.repository }}
+      HEAD_REF: ${{ github.head_ref }}
+      BASE_REF: ${{ github.base_ref }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install repo-auditor
+        run: npm install -g github:Cloud-Computing-Oy/repo-auditor
+
+      - name: Run audit (PR scope)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          repo-auditor run "https://github.com/${REPO_FULL}" \
+            --branch "${HEAD_REF}" \
+            --base "origin/${BASE_REF}" \
+            --no-agents \
+            --sarif \
+            --output reports
+
+      - name: Find report dir
+        id: report
+        run: |
+          # Report layout: reports/<owner>/<timestamp>/. Use find -type d
+          # so we don't accidentally pick up summary.md or findings.json.
+          report_dir=$(find reports -mindepth 2 -maxdepth 2 -type d 2>/dev/null | sort -r | head -1)
+          echo "dir=$report_dir" >> "$GITHUB_OUTPUT"
+
+      - name: Publish check-run
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPORT_DIR: ${{ steps.report.outputs.dir }}
+        run: |
+          repo-auditor check-run "${REPORT_DIR}" \
+            --repo "${REPO_FULL}" \
+            --head-sha "${HEAD_SHA}" \
+            --pr "${PR_NUMBER}"
+
+      # GitHub Advanced Security isn't enabled on Cloud-Computing-Oy
+      # private repos — see memory `github-advanced-security-disabled`.
+      # Keep non-blocking so the check-run still publishes if SARIF upload
+      # is rejected.
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always() && steps.report.outputs.dir != ''
+        continue-on-error: true
+        with:
+          sarif_file: ${{ steps.report.outputs.dir }}/findings.sarif.json
+          category: repo-audit
