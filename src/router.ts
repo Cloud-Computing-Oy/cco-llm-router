@@ -38,17 +38,22 @@ import type { Provider, Spec } from './types';
  * tier (DeepInfra) is a critical buffer between exhausted free tiers and
  * 5–10× pricier provider tiers.
  */
+// Default fallback chains.
+//
+// **OpenRouter free-tier models and Ollama are EXCLUDED from every default
+// alias** (as of 0.8.0). Field-tested 2026-05-22:
+//   - OpenRouter free models (qwen3-next, nemotron-3, gemma-4-*-it:free)
+//     ignore structured-output instructions and emit prose, which crashes
+//     downstream JSON.parse in caller flows. No SLA on free tier.
+//   - Ollama on CPU-only dev/hub hosts (no GPU drivers, 3.7 GB RAM on hub)
+//     does not satisfy a 60 s timeout on real prompts.
+// They remain selectable via `auto:local` and explicit aliases below for
+// callers who can guarantee a GPU host / tolerate prose. They will be
+// re-enabled in defaults once they pass a smoke-test SLA.
 export const DEFAULT_ALIASES: Record<string, Spec[]> = {
-  // Chat / generic. Strict cost-first: own-server Ollama leads (zero
-  // marginal cost on GPU-capable dev/prod hosts), then free cloud tiers,
-  // then DeepInfra as ultra-cheap paid buffer before Google paid /
-  // Anthropic / OpenAI. Ollama spec at the head is no-op on hosts where
-  // OLLAMA_BASE_URL is unset (e.g. CI), since `providerAvailable` skips it.
+  // Chat / generic. Reliable providers first.
   'auto:smart': [
-    { provider: 'ollama', model: 'qwen2.5:14b' },
     { provider: 'google', model: 'gemini-2.5-flash' },
-    { provider: 'openrouter', model: 'qwen/qwen3-next-80b-a3b-instruct:free' },
-    { provider: 'openrouter', model: 'nvidia/nemotron-3-super-120b-a12b:free' },
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.3-70B-Instruct' },
     { provider: 'google-paid', model: 'gemini-2.5-flash' },
     { provider: 'together', model: 'meta-llama/Llama-3.3-70B-Instruct-Lite' },
@@ -57,61 +62,37 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
     { provider: 'anthropic', model: 'claude-sonnet-4-6' },
     { provider: 'openai', model: 'gpt-5' },
   ],
-  // Classification, language detection, short tasks. Local 2B model
-  // first (tiny, GPU-cached), then Groq / free cloud / paid fallbacks.
+  // Classification, language detection, short tasks.
   'auto:fast': [
-    { provider: 'ollama', model: 'gemma4:e2b' },
     { provider: 'groq', model: 'llama-3.3-70b-versatile' },
     { provider: 'google', model: 'gemini-2.5-flash' },
-    { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-30b-a3b:free' },
-    { provider: 'openrouter', model: 'minimax/minimax-m2.5:free' },
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.1-8B-Instruct' },
     { provider: 'google-paid', model: 'gemini-2.5-flash' },
     { provider: 'openai', model: 'gpt-5-mini' },
     { provider: 'anthropic', model: 'claude-haiku-4-5-20251001' },
   ],
-  // Batch translation: latency-tolerant, free first. Qwen2.5:14b is the
-  // primary translator after the expat-aivozone corpus build showed
-  // Gemma 26B occasionally returns HTTP 200 with an empty body for
-  // legal-text chunks — qwen2.5:14b did not exhibit that on the same
-  // workload and ran ~5× faster on GPU-capable hosts than gemma 26B on
-  // CPU-only Ollama hosts. Falls through to Gemini/DeepInfra/Anthropic
-  // if Ollama is unreachable or the model isn't pulled.
+  // Batch translation: latency-tolerant, free Google quota first.
   'auto:translate': [
-    { provider: 'ollama', model: 'qwen2.5:14b' },
     { provider: 'google', model: 'gemini-2.5-flash' },
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.3-70B-Instruct' },
     { provider: 'google-paid', model: 'gemini-2.5-flash' },
     { provider: 'anthropic', model: 'claude-sonnet-4-6' },
   ],
-  // Code generation / completion. qwen2.5:14b on Ollama is a competent
-  // local default (no coder variant installed on the fleet — see fleet
-  // ollama inventory). Falls through to Gemini / OpenRouter qwen-coder
-  // free / Groq, then paid.
+  // Code generation / completion.
   'auto:code': [
-    { provider: 'ollama', model: 'qwen2.5:14b' },
     { provider: 'google', model: 'gemini-2.5-flash' },
-    { provider: 'openrouter', model: 'qwen/qwen3-coder:free' },
     { provider: 'groq', model: 'llama-3.3-70b-versatile' },
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.3-70B-Instruct' },
     { provider: 'google-paid', model: 'gemini-2.5-flash' },
     { provider: 'openai', model: 'gpt-5-mini' },
   ],
-  // Reasoning / planning / multi-step. Cloud-first because no
-  // installed local model is reasoning-grade (qwen2.5 has no thinking
-  // mode, gemma4:26b is large but lacks chain-of-thought structure).
-  // DeepSeek-V3 on DeepInfra is the cheapest "thinking-grade" model
-  // after free tiers. Ollama appended as final fallback so an
-  // air-gapped path still resolves.
+  // Reasoning / planning / multi-step.
   'auto:reasoning': [
     { provider: 'google', model: 'gemini-2.5-pro' },
-    { provider: 'openrouter', model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free' },
-    { provider: 'openrouter', model: 'arcee-ai/trinity-large-thinking:free' },
     { provider: 'deepinfra', model: 'deepseek-ai/DeepSeek-V3' },
     { provider: 'google-paid', model: 'gemini-2.5-pro' },
     { provider: 'anthropic', model: 'claude-sonnet-4-6' },
     { provider: 'openai', model: 'gpt-5' },
-    { provider: 'ollama', model: 'qwen2.5:14b' },
   ],
   // Explicit paid only — for tasks where top quality is needed and budget approved.
   'auto:paid': [
@@ -123,25 +104,23 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
   // Large-context tasks (long docs, big diffs). Local gemma4:26b leads
   // because long-context prompts on the cloud free tier consume the
   // 1500-RPD quota quickly.
+  // Large-context tasks (long docs, big diffs).
   'auto:big': [
-    { provider: 'ollama', model: 'gemma4:26b' },
-    { provider: 'openrouter', model: 'google/gemma-4-31b-it:free' },
-    { provider: 'openrouter', model: 'google/gemma-4-26b-a4b-it:free' },
     { provider: 'google', model: 'gemini-2.5-pro' },
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.3-70B-Instruct' },
     { provider: 'google-paid', model: 'gemini-2.5-pro' },
     { provider: 'openai', model: 'gpt-5' },
   ],
-  // Local-only — for fully offline / air-gapped paths. Both models on
-  // the dev/prod ollama inventory (see fleet docs).
+  // Local-only — for fully offline / air-gapped paths. Opt-in: callers must
+  // explicitly select this alias. Not safe as a default fallback because
+  // CPU-only hosts (current dev/hub fleet) miss the 60 s timeout.
   'auto:local': [
     { provider: 'ollama', model: 'qwen2.5:14b' },
     { provider: 'ollama', model: 'gemma4:e2b' },
   ],
-  // Cost-first: only free + ultra-cheap providers; expensive tiers excluded.
+  // Cost-first: free + ultra-cheap providers; expensive tiers excluded.
+  // Excludes ollama (unreliable on CPU hosts) and openrouter:free (prose).
   'auto:cheap': [
-    { provider: 'ollama', model: 'gemma4:e2b' },
-    { provider: 'openrouter', model: 'minimax/minimax-m2.5:free' },
     { provider: 'groq', model: 'llama-3.3-70b-versatile' },
     { provider: 'google', model: 'gemini-2.5-flash' },
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.1-8B-Instruct' },

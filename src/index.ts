@@ -10,7 +10,14 @@ export {
   type ResolveOptions,
   type PerCallKeys,
 } from './router';
-export { chat, chatJson, type ChatRequest } from './helpers';
+export {
+  chat,
+  chatJson,
+  chatJsonStrict,
+  extractJson,
+  DEFAULT_CALL_TIMEOUT_MS,
+  type ChatRequest,
+} from './helpers';
 export { createFallbackModel } from './fallback';
 
 // Cost & budget surface — exposed so callers can build dashboards,
