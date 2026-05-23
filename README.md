@@ -99,6 +99,38 @@ const router = createRouter({
 const { model } = router.resolveModel('my-service:summarise');
 ```
 
+### Prompt-size cap
+
+Every `chat`, `chatJson`, and `chatJsonStrict` call truncates `prompt` to
+`DEFAULT_MAX_PROMPT_CHARS` (380k chars ≈ 120k tokens — sized for the
+smallest context in our default fallback chains). The head of the prompt
+is preserved; a clear marker is appended; a `console.warn` records the
+original/truncated sizes. The `system` field is never truncated.
+
+```ts
+import { chat } from '@cloud-computing-oy/llm-router';
+
+// Default cap (380k chars) — applied automatically.
+await chat({ system: 'You are a summariser.', prompt: hugePdfText });
+
+// Tighten the cap for a 32k-token local model.
+await chat({ alias: 'auto:local', system: '…', prompt: text, maxPromptChars: 95_000 });
+
+// Opt out (e.g. for million-token Gemini Pro with structured outputs).
+await chat({ alias: 'google:gemini-2.5-pro', system: '…', prompt: text, maxPromptChars: Infinity });
+```
+
+For prompts assembled from multiple fields where a head-preserving cap
+would drop critical tail content (e.g. JSON-schema instructions at the
+end of the prompt), call `truncateForLlm(field, cap)` on the unbounded
+field before concatenation and pass the result into the prompt template.
+
+```ts
+import { truncateForLlm } from '@cloud-computing-oy/llm-router';
+
+const prompt = `Analyse:\n${truncateForLlm(documentText, 300_000)}\n\nReturn JSON.`;
+```
+
 ### Cohere rerank
 
 ```ts

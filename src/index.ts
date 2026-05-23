@@ -18,6 +18,11 @@ export {
   DEFAULT_CALL_TIMEOUT_MS,
   type ChatRequest,
 } from './helpers';
+export {
+  truncateForLlm,
+  truncateForLlmWithWarning,
+  DEFAULT_MAX_PROMPT_CHARS,
+} from './truncate';
 export { createFallbackModel } from './fallback';
 
 // Cost & budget surface — exposed so callers can build dashboards,
