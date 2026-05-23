@@ -11,6 +11,7 @@
 import { generateText as aiGenerateText, generateObject as aiGenerateObject } from 'ai';
 import type { z } from 'zod';
 import { resolveModel, type PerCallKeys } from './router';
+import { DEFAULT_MAX_PROMPT_CHARS, truncateForLlmWithWarning } from './truncate';
 
 /** Default per-call abort timeout. Without this an unresponsive
  *  provider can hang the request indefinitely (observed 2026-05-22
@@ -29,14 +30,30 @@ export type ChatRequest = {
   perCallKeys?: PerCallKeys;
   /** Overall abort signal. Defaults to AbortSignal.timeout(DEFAULT_CALL_TIMEOUT_MS). */
   abortSignal?: AbortSignal;
+  /**
+   * Maximum characters for `prompt` before sending to the model. Defaults to
+   * DEFAULT_MAX_PROMPT_CHARS (380k chars ≈ 120k tokens) — sized for the
+   * smallest context in our default fallback chains. When the cap kicks in,
+   * the head of the prompt is preserved and a truncation marker is appended.
+   * Pass `Infinity` to disable. The `system` field is never truncated.
+   */
+  maxPromptChars?: number;
 };
+
+function applyPromptCap(req: ChatRequest): string {
+  return truncateForLlmWithWarning(
+    req.prompt,
+    req.maxPromptChars ?? DEFAULT_MAX_PROMPT_CHARS,
+    req.alias ?? 'auto:smart',
+  );
+}
 
 export async function chat(req: ChatRequest): Promise<string> {
   const { model } = resolveModel(req.alias ?? 'auto:smart', { perCallKeys: req.perCallKeys });
   const { text } = await aiGenerateText({
     model,
     system: req.system,
-    prompt: req.prompt,
+    prompt: applyPromptCap(req),
     temperature: req.temperature,
     maxOutputTokens: req.maxTokens,
     abortSignal: req.abortSignal ?? AbortSignal.timeout(DEFAULT_CALL_TIMEOUT_MS),
@@ -80,7 +97,7 @@ export async function chatJsonStrict<T>(req: ChatRequest & { schema: z.ZodSchema
     model,
     schema: req.schema,
     system: req.system,
-    prompt: req.prompt,
+    prompt: applyPromptCap(req),
     temperature: req.temperature,
     maxOutputTokens: req.maxTokens,
     abortSignal: req.abortSignal ?? AbortSignal.timeout(DEFAULT_CALL_TIMEOUT_MS),
