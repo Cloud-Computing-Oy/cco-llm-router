@@ -22,78 +22,78 @@ from .types import Provider, Spec
 from .usage import record_usage
 
 
-# Same chains as the Node package — cost-first wherever quality allows.
+# Default fallback chains — mirror src/router.ts (the TS sibling is the
+# source of truth; keep these in sync).
+#
+# Reliable-only (matches TS 0.8.0+): OpenRouter ":free" models and Ollama
+# are EXCLUDED from every default chain — free OpenRouter models emit
+# prose instead of structured output, and CPU-only dev/hub Ollama misses
+# real-prompt timeouts. Both remain selectable via auto:local / explicit
+# aliases.
+#
+# DeepSeek V4 Flash/Pro think by default (chain-of-thought, verified
+# 2026-05-27 against api.deepseek.com), so they sit only where reasoning
+# earns its latency + output-token cost (auto:smart/code/big/reasoning)
+# and are kept OUT of auto:fast/translate/cheap. Non-thinking needs
+# thinking:{type:"disabled"} in the request body, which a plain Spec
+# can't carry.
+#
 # Cost reference (input / output per M tokens, May 2026):
-#   ollama:*                         free (compute amortised)
 #   groq:llama-3.3-70b               free (rate-limited)
-#   openrouter:*:free                free (small daily cap per account)
 #   google:gemini-2.5-flash          free tier — 1500 RPD per GCP project
-#   deepinfra:llama-3.1-8b           $0.04 / $0.04   (ultra-cheap tier)
+#   deepinfra:llama-3.1-8b           $0.04  / $0.04
+#   deepseek:deepseek-v4-flash       $0.14  / $0.28   (reasoning, thinks by default)
 #   google-paid:gemini-2.5-flash     $0.075 / $0.30
 #   deepinfra:llama-3.3-70b          $0.23  / $0.40
+#   deepseek:deepseek-v4-pro         $0.435 / $0.87
 #   together:llama-3.3-70b-lite      $0.54  / $0.88
 #   openai:gpt-5-mini                $0.25  / $2
 #   google-paid:gemini-2.5-pro       $1.25  / $5
-#   anthropic:claude-haiku-4-5       $1     / $5
 #   anthropic:claude-sonnet-4-6      $3     / $15
 #   openai:gpt-5                     $3     / $15
 DEFAULT_ALIASES: dict[str, list[Spec]] = {
-    # Cost-first: own-server Ollama leads (zero marginal cost on
-    # GPU-capable hosts), then free cloud tiers, then DeepInfra as
-    # ultra-cheap paid buffer before Google paid / Anthropic / OpenAI.
-    # Ollama specs are no-op on hosts without OLLAMA_BASE_URL (CI etc.)
-    # since `_provider_available` skips them.
     "auto:smart": [
-        Spec("ollama", "qwen2.5:14b"),
         Spec("google", "gemini-2.5-flash"),
-        Spec("openrouter", "qwen/qwen3-next-80b-a3b-instruct:free"),
-        Spec("openrouter", "nvidia/nemotron-3-super-120b-a12b:free"),
+        Spec("deepseek", "deepseek-v4-flash"),
         Spec("deepinfra", "meta-llama/Meta-Llama-3.3-70B-Instruct"),
         Spec("google-paid", "gemini-2.5-flash"),
         Spec("together", "meta-llama/Llama-3.3-70B-Instruct-Lite"),
         Spec("google", "gemini-2.5-pro"),
+        Spec("deepseek", "deepseek-v4-pro"),
         Spec("google-paid", "gemini-2.5-pro"),
         Spec("anthropic", "claude-sonnet-4-6"),
         Spec("openai", "gpt-5"),
     ],
     "auto:fast": [
-        Spec("ollama", "gemma4:e2b"),
         Spec("groq", "llama-3.3-70b-versatile"),
         Spec("google", "gemini-2.5-flash"),
-        Spec("openrouter", "nvidia/nemotron-3-nano-30b-a3b:free"),
-        Spec("openrouter", "minimax/minimax-m2.5:free"),
         Spec("deepinfra", "meta-llama/Meta-Llama-3.1-8B-Instruct"),
         Spec("google-paid", "gemini-2.5-flash"),
         Spec("openai", "gpt-5-mini"),
         Spec("anthropic", "claude-haiku-4-5-20251001"),
     ],
     "auto:translate": [
-        Spec("ollama", "qwen2.5:14b"),
         Spec("google", "gemini-2.5-flash"),
         Spec("deepinfra", "meta-llama/Meta-Llama-3.3-70B-Instruct"),
         Spec("google-paid", "gemini-2.5-flash"),
         Spec("anthropic", "claude-sonnet-4-6"),
     ],
     "auto:code": [
-        Spec("ollama", "qwen2.5:14b"),
         Spec("google", "gemini-2.5-flash"),
-        Spec("openrouter", "qwen/qwen3-coder:free"),
         Spec("groq", "llama-3.3-70b-versatile"),
+        Spec("deepseek", "deepseek-v4-flash"),
         Spec("deepinfra", "meta-llama/Meta-Llama-3.3-70B-Instruct"),
         Spec("google-paid", "gemini-2.5-flash"),
         Spec("openai", "gpt-5-mini"),
     ],
-    # Reasoning is cloud-first because no installed local model is
-    # reasoning-grade. Ollama is appended as last resort.
     "auto:reasoning": [
         Spec("google", "gemini-2.5-pro"),
-        Spec("openrouter", "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"),
-        Spec("openrouter", "arcee-ai/trinity-large-thinking:free"),
+        Spec("deepseek", "deepseek-v4-flash"),
+        Spec("deepseek", "deepseek-v4-pro"),
         Spec("deepinfra", "deepseek-ai/DeepSeek-V3"),
         Spec("google-paid", "gemini-2.5-pro"),
         Spec("anthropic", "claude-sonnet-4-6"),
         Spec("openai", "gpt-5"),
-        Spec("ollama", "qwen2.5:14b"),
     ],
     "auto:paid": [
         Spec("openai", "gpt-5"),
@@ -102,10 +102,8 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
         Spec("google-paid", "gemini-2.5-pro"),
     ],
     "auto:big": [
-        Spec("ollama", "gemma4:26b"),
-        Spec("openrouter", "google/gemma-4-31b-it:free"),
-        Spec("openrouter", "google/gemma-4-26b-a4b-it:free"),
         Spec("google", "gemini-2.5-pro"),
+        Spec("deepseek", "deepseek-v4-flash"),
         Spec("deepinfra", "meta-llama/Meta-Llama-3.3-70B-Instruct"),
         Spec("google-paid", "gemini-2.5-pro"),
         Spec("openai", "gpt-5"),
@@ -115,8 +113,6 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
         Spec("ollama", "gemma4:e2b"),
     ],
     "auto:cheap": [
-        Spec("ollama", "gemma4:e2b"),
-        Spec("openrouter", "minimax/minimax-m2.5:free"),
         Spec("groq", "llama-3.3-70b-versatile"),
         Spec("google", "gemini-2.5-flash"),
         Spec("deepinfra", "meta-llama/Meta-Llama-3.1-8B-Instruct"),
@@ -140,6 +136,7 @@ _HAS_KEY: dict[str, Callable[[], bool]] = {
     "ollama": lambda: bool(os.environ.get("OLLAMA_BASE_URL")),
     "deepinfra": lambda: bool(os.environ.get("DEEPINFRA_API_KEY")),
     "together": lambda: bool(os.environ.get("TOGETHER_API_KEY")),
+    "deepseek": lambda: bool(os.environ.get("DEEPSEEK_API_KEY")),
 }
 
 

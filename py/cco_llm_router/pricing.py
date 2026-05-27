@@ -54,6 +54,10 @@ PRICING: dict[str, Price] = {
     "together:meta-llama/Llama-3.3-70B-Instruct-Lite": {"input_per_m": 0.54, "output_per_m": 0.88},
     "together:Qwen/Qwen2.5-72B-Instruct-Turbo": {"input_per_m": 1.2, "output_per_m": 1.2},
     "together:deepseek-ai/DeepSeek-V3": {"input_per_m": 1.25, "output_per_m": 1.25},
+
+    # --- deepseek (native api.deepseek.com, V4; priced at cache-miss input) ---
+    "deepseek:deepseek-v4-flash": {"input_per_m": 0.14, "output_per_m": 0.28},
+    "deepseek:deepseek-v4-pro": {"input_per_m": 0.435, "output_per_m": 0.87},
 }
 
 
