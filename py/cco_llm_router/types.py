@@ -18,6 +18,7 @@ Provider = Literal[
     "ollama",
     "deepinfra",
     "together",
+    "deepseek",
 ]
 
 

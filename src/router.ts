@@ -8,6 +8,7 @@ import { openrouterAvailable, openrouterModel } from './providers/openrouter';
 import { ollamaAvailable, ollamaModel } from './providers/ollama';
 import { deepinfraAvailable, deepinfraModel } from './providers/deepinfra';
 import { togetherAvailable, togetherModel } from './providers/together';
+import { deepseekAvailable, deepseekModel } from './providers/deepseek';
 import { createFallbackModel } from './fallback';
 import { withinBudget } from './budget';
 
@@ -25,6 +26,8 @@ import type { Provider, Spec } from './types';
  *   openrouter:*:free                free (small daily cap per account)
  *   google:gemini-2.5-flash          free tier — 1500 RPD per GCP project
  *   deepinfra:llama-3.1-8b           $0.04 / $0.04   (ultra-cheap tier)
+ *   deepseek:deepseek-v4-flash       $0.14 / $0.28   (reasoning model — thinks by default)
+ *   deepseek:deepseek-v4-pro         $0.435 / $0.87  (top reasoning/quality)
  *   google-paid:gemini-2.5-flash     $0.075 / $0.30
  *   deepinfra:llama-3.3-70b          $0.23  / $0.40
  *   together:llama-3.3-70b-lite      $0.54  / $0.88
@@ -50,14 +53,27 @@ import type { Provider, Spec } from './types';
 // They remain selectable via `auto:local` and explicit aliases below for
 // callers who can guarantee a GPU host / tolerate prose. They will be
 // re-enabled in defaults once they pass a smoke-test SLA.
+//
+// **DeepSeek V4 Flash/Pro think by default** (chain-of-thought, verified
+// 2026-05-27 against api.deepseek.com). They are placed only in chains
+// where reasoning earns its latency + output-token cost — auto:smart,
+// auto:code, auto:big, auto:reasoning — and deliberately kept OUT of
+// auto:fast / auto:translate / auto:cheap (classification, transforms,
+// strict cost), where CoT is pure overhead. Non-thinking mode requires
+// `thinking: { type: 'disabled' }` in the request body, which a plain
+// chain Spec can't express; for cheap non-thinking DeepSeek use the
+// explicit `deepseek:deepseek-chat` id (non-thinking, but deprecated
+// 2026-07-24) or call generateText directly with providerOptions.
 export const DEFAULT_ALIASES: Record<string, Spec[]> = {
   // Chat / generic. Reliable providers first.
   'auto:smart': [
     { provider: 'google', model: 'gemini-2.5-flash' },
+    { provider: 'deepseek', model: 'deepseek-v4-flash' },
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.3-70B-Instruct' },
     { provider: 'google-paid', model: 'gemini-2.5-flash' },
     { provider: 'together', model: 'meta-llama/Llama-3.3-70B-Instruct-Lite' },
     { provider: 'google', model: 'gemini-2.5-pro' },
+    { provider: 'deepseek', model: 'deepseek-v4-pro' },
     { provider: 'google-paid', model: 'gemini-2.5-pro' },
     { provider: 'anthropic', model: 'claude-sonnet-4-6' },
     { provider: 'openai', model: 'gpt-5' },
@@ -82,6 +98,7 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
   'auto:code': [
     { provider: 'google', model: 'gemini-2.5-flash' },
     { provider: 'groq', model: 'llama-3.3-70b-versatile' },
+    { provider: 'deepseek', model: 'deepseek-v4-flash' },
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.3-70B-Instruct' },
     { provider: 'google-paid', model: 'gemini-2.5-flash' },
     { provider: 'openai', model: 'gpt-5-mini' },
@@ -89,6 +106,8 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
   // Reasoning / planning / multi-step.
   'auto:reasoning': [
     { provider: 'google', model: 'gemini-2.5-pro' },
+    { provider: 'deepseek', model: 'deepseek-v4-flash' },
+    { provider: 'deepseek', model: 'deepseek-v4-pro' },
     { provider: 'deepinfra', model: 'deepseek-ai/DeepSeek-V3' },
     { provider: 'google-paid', model: 'gemini-2.5-pro' },
     { provider: 'anthropic', model: 'claude-sonnet-4-6' },
@@ -107,6 +126,7 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
   // Large-context tasks (long docs, big diffs).
   'auto:big': [
     { provider: 'google', model: 'gemini-2.5-pro' },
+    { provider: 'deepseek', model: 'deepseek-v4-flash' },
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.3-70B-Instruct' },
     { provider: 'google-paid', model: 'gemini-2.5-pro' },
     { provider: 'openai', model: 'gpt-5' },
@@ -149,6 +169,8 @@ function hasKey(p: Provider): boolean {
       return deepinfraAvailable;
     case 'together':
       return togetherAvailable;
+    case 'deepseek':
+      return deepseekAvailable;
   }
 }
 
@@ -181,6 +203,8 @@ function instantiate(spec: Spec, perCallKeys?: PerCallKeys): LanguageModel {
       return deepinfraModel(spec.model, opts);
     case 'together':
       return togetherModel(spec.model, opts);
+    case 'deepseek':
+      return deepseekModel(spec.model, opts);
   }
 }
 
@@ -233,7 +257,7 @@ export type Router = {
 };
 
 const DIRECT_RE =
-  /^(anthropic|google|google-paid|openai|groq|openrouter|ollama|deepinfra|together):(.+)$/;
+  /^(anthropic|google|google-paid|openai|groq|openrouter|ollama|deepinfra|together|deepseek):(.+)$/;
 
 export function createRouter(opts: RouterOptions = {}): Router {
   const aliases = { ...DEFAULT_ALIASES, ...(opts.aliases ?? {}) };

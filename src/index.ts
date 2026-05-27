@@ -48,3 +48,4 @@ export { openrouterAvailable, openrouterModel } from './providers/openrouter';
 export { ollamaAvailable, ollamaModel } from './providers/ollama';
 export { deepinfraAvailable, deepinfraModel } from './providers/deepinfra';
 export { togetherAvailable, togetherModel } from './providers/together';
+export { deepseekAvailable, deepseekModel } from './providers/deepseek';
