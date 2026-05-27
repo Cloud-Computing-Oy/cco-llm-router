@@ -1,9 +1,9 @@
 # @cloud-computing-oy/llm-router
 
 Shared LLM router for Cloud-Computing-Oy services. Provider-fallback
-chains over Anthropic / Google / OpenAI / Groq / OpenRouter / Ollama /
-DeepInfra / Together, plus a Cohere rerank helper and per-provider
-monthly budget enforcement.
+chains over Anthropic / Google / DeepSeek / OpenAI / Groq / OpenRouter /
+Ollama / DeepInfra / Together, plus a Cohere rerank helper and
+per-provider monthly budget enforcement.
 
 Reads API keys from `process.env` at runtime. On the CCO prod / dev
 hosts, these come from `/etc/cco/keys.env` (pulled in by every service's
@@ -159,6 +159,7 @@ A provider is considered available iff its env var is set:
 | ollama | `OLLAMA_BASE_URL` (yes, the URL — there is no API key) |
 | deepinfra | `DEEPINFRA_API_KEY` |
 | together | `TOGETHER_API_KEY` |
+| deepseek | `DEEPSEEK_API_KEY` (native V4 — `api.deepseek.com`) |
 | cohere | `COHERE_API_KEY` |
 
 When more than one Google free key is present, the router expands each
@@ -183,16 +184,18 @@ in the chain. Setting a cap to 0 or omitting the env var leaves the
 provider unrestricted (recommended only for `ollama`, `groq` free tier,
 and `openrouter` free tier).
 
-Recommended split for a $100/mo total cap. The shape — DeepInfra gets
-the biggest slice — comes from where the chain actually lands paid
-volume: ~80% of paid tokens hit the first paid candidate (DeepInfra),
-the remainder splits between Google-paid (Flash backup to Google-free),
-Together/Anthropic/OpenAI (quality / redundancy reserves).
+Recommended split for a $100/mo total cap. The shape — DeepSeek gets the
+biggest slice — comes from where the chain actually lands paid volume:
+DeepSeek V4 Flash now leads the paid tier in every chain, so most paid
+tokens hit it first; DeepInfra drops to an ultra-cheap buffer behind it,
+and the remainder splits between Google-paid (Flash backup to
+Google-free) and Together/Anthropic/OpenAI (quality / redundancy reserves).
 
 | Env var | Cap (USD) | Role |
 |---------|----:|------|
-| `CCO_LLM_BUDGET_DEEPINFRA_USD` | 40 | workhorse — first paid in every chain |
+| `CCO_LLM_BUDGET_DEEPSEEK_USD` | 30 | workhorse — V4 Flash leads the paid tier in every chain |
 | `CCO_LLM_BUDGET_GOOGLE_PAID_USD` | 25 | Flash backup to Google free tier |
+| `CCO_LLM_BUDGET_DEEPINFRA_USD` | 10 | ultra-cheap 8B/70B buffer behind DeepSeek |
 | `CCO_LLM_BUDGET_ANTHROPIC_USD` | 10 | `auto:paid` top-quality reserve |
 | `CCO_LLM_BUDGET_OPENAI_USD` | 10 | `auto:paid` redundancy to Anthropic |
 | `CCO_LLM_BUDGET_TOGETHER_USD` | 10 | DeepInfra redundancy (different DC) |

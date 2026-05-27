@@ -15,7 +15,8 @@ export type Provider =
   | 'openrouter'
   | 'ollama'
   | 'deepinfra'
-  | 'together';
+  | 'together'
+  | 'deepseek';
 
 /**
  * `keyIndex` is meaningful only for the Google free provider: when the

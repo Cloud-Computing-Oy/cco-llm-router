@@ -56,6 +56,13 @@ export const PRICING: Record<string, Price> = {
   'together:meta-llama/Llama-3.3-70B-Instruct-Lite': { inputPerM: 0.54, outputPerM: 0.88 },
   'together:Qwen/Qwen2.5-72B-Instruct-Turbo': { inputPerM: 1.2, outputPerM: 1.2 },
   'together:deepseek-ai/DeepSeek-V3': { inputPerM: 1.25, outputPerM: 1.25 },
+
+  // --- deepseek (native api.deepseek.com, V4) ---
+  // Priced at cache-MISS input: the usage tracker has no cache-hit
+  // accounting, so this over-estimates spend (safe for the budget net).
+  // v4-pro reflects the 75%-off promo through 2026-05-31 — revisit after.
+  'deepseek:deepseek-v4-flash': { inputPerM: 0.14, outputPerM: 0.28 },
+  'deepseek:deepseek-v4-pro': { inputPerM: 0.435, outputPerM: 0.87 },
 };
 
 export function priceOf(provider: Provider, model: string): Price {
