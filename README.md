@@ -186,16 +186,19 @@ and `openrouter` free tier).
 
 Recommended split for a $100/mo total cap. The shape — DeepSeek gets the
 biggest slice — comes from where the chain actually lands paid volume:
-DeepSeek V4 Flash now leads the paid tier in every chain, so most paid
-tokens hit it first; DeepInfra drops to an ultra-cheap buffer behind it,
-and the remainder splits between Google-paid (Flash backup to
-Google-free) and Together/Anthropic/OpenAI (quality / redundancy reserves).
+DeepSeek V4 leads the paid tier in the reasoning-oriented chains
+(`auto:smart` / `code` / `big` / `reasoning`), so most paid tokens there
+hit it first. DeepInfra remains the ultra-cheap buffer for the
+latency/transform chains (`auto:fast` / `translate` / `cheap`), where
+DeepSeek's default chain-of-thought would be wasted cost. The remainder
+splits between Google-paid (Flash backup to Google-free) and
+Together/Anthropic/OpenAI (quality / redundancy reserves).
 
 | Env var | Cap (USD) | Role |
 |---------|----:|------|
-| `CCO_LLM_BUDGET_DEEPSEEK_USD` | 30 | workhorse — V4 Flash leads the paid tier in every chain |
+| `CCO_LLM_BUDGET_DEEPSEEK_USD` | 30 | workhorse — leads paid tier in reasoning chains (thinks by default) |
 | `CCO_LLM_BUDGET_GOOGLE_PAID_USD` | 25 | Flash backup to Google free tier |
-| `CCO_LLM_BUDGET_DEEPINFRA_USD` | 10 | ultra-cheap 8B/70B buffer behind DeepSeek |
+| `CCO_LLM_BUDGET_DEEPINFRA_USD` | 10 | ultra-cheap buffer; leads paid tier in fast/translate/cheap |
 | `CCO_LLM_BUDGET_ANTHROPIC_USD` | 10 | `auto:paid` top-quality reserve |
 | `CCO_LLM_BUDGET_OPENAI_USD` | 10 | `auto:paid` redundancy to Anthropic |
 | `CCO_LLM_BUDGET_TOGETHER_USD` | 10 | DeepInfra redundancy (different DC) |

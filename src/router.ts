@@ -26,8 +26,8 @@ import type { Provider, Spec } from './types';
  *   openrouter:*:free                free (small daily cap per account)
  *   google:gemini-2.5-flash          free tier — 1500 RPD per GCP project
  *   deepinfra:llama-3.1-8b           $0.04 / $0.04   (ultra-cheap tier)
- *   deepseek:deepseek-v4-flash       $0.14 / $0.28   (frontier-class workhorse)
- *   deepseek:deepseek-v4-pro         $0.435 / $0.87  (cheap reasoning/quality)
+ *   deepseek:deepseek-v4-flash       $0.14 / $0.28   (reasoning model — thinks by default)
+ *   deepseek:deepseek-v4-pro         $0.435 / $0.87  (top reasoning/quality)
  *   google-paid:gemini-2.5-flash     $0.075 / $0.30
  *   deepinfra:llama-3.3-70b          $0.23  / $0.40
  *   together:llama-3.3-70b-lite      $0.54  / $0.88
@@ -53,6 +53,17 @@ import type { Provider, Spec } from './types';
 // They remain selectable via `auto:local` and explicit aliases below for
 // callers who can guarantee a GPU host / tolerate prose. They will be
 // re-enabled in defaults once they pass a smoke-test SLA.
+//
+// **DeepSeek V4 Flash/Pro think by default** (chain-of-thought, verified
+// 2026-05-27 against api.deepseek.com). They are placed only in chains
+// where reasoning earns its latency + output-token cost — auto:smart,
+// auto:code, auto:big, auto:reasoning — and deliberately kept OUT of
+// auto:fast / auto:translate / auto:cheap (classification, transforms,
+// strict cost), where CoT is pure overhead. Non-thinking mode requires
+// `thinking: { type: 'disabled' }` in the request body, which a plain
+// chain Spec can't express; for cheap non-thinking DeepSeek use the
+// explicit `deepseek:deepseek-chat` id (non-thinking, but deprecated
+// 2026-07-24) or call generateText directly with providerOptions.
 export const DEFAULT_ALIASES: Record<string, Spec[]> = {
   // Chat / generic. Reliable providers first.
   'auto:smart': [
@@ -71,7 +82,6 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
   'auto:fast': [
     { provider: 'groq', model: 'llama-3.3-70b-versatile' },
     { provider: 'google', model: 'gemini-2.5-flash' },
-    { provider: 'deepseek', model: 'deepseek-v4-flash' },
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.1-8B-Instruct' },
     { provider: 'google-paid', model: 'gemini-2.5-flash' },
     { provider: 'openai', model: 'gpt-5-mini' },
@@ -80,7 +90,6 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
   // Batch translation: latency-tolerant, free Google quota first.
   'auto:translate': [
     { provider: 'google', model: 'gemini-2.5-flash' },
-    { provider: 'deepseek', model: 'deepseek-v4-flash' },
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.3-70B-Instruct' },
     { provider: 'google-paid', model: 'gemini-2.5-flash' },
     { provider: 'anthropic', model: 'claude-sonnet-4-6' },
@@ -97,6 +106,7 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
   // Reasoning / planning / multi-step.
   'auto:reasoning': [
     { provider: 'google', model: 'gemini-2.5-pro' },
+    { provider: 'deepseek', model: 'deepseek-v4-flash' },
     { provider: 'deepseek', model: 'deepseek-v4-pro' },
     { provider: 'deepinfra', model: 'deepseek-ai/DeepSeek-V3' },
     { provider: 'google-paid', model: 'gemini-2.5-pro' },
@@ -133,7 +143,6 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
   'auto:cheap': [
     { provider: 'groq', model: 'llama-3.3-70b-versatile' },
     { provider: 'google', model: 'gemini-2.5-flash' },
-    { provider: 'deepseek', model: 'deepseek-v4-flash' },
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.1-8B-Instruct' },
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.3-70B-Instruct' },
     { provider: 'google-paid', model: 'gemini-2.5-flash' },

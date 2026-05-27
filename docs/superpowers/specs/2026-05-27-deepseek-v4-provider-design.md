@@ -25,8 +25,8 @@ the value proposition: use it often, it's cheap.
    those legacy aliases retire 2026-07-24. Use `deepseek-v4-flash` and
    `deepseek-v4-pro`.
 3. **Free-first ordering kept.** $0 Google/Groq tiers stay ahead of DeepSeek (price
-   wins, quality comparable). DeepSeek **Flash leads the paid tier**; **Pro** sits in
-   the quality tier of `auto:smart` / `auto:reasoning`.
+   wins, quality comparable). DeepSeek leads the paid tier **only in the
+   reasoning-oriented chains** (see "Live finding" below).
 4. **Rollout** (publish + consumer bumps) is a follow-up phase gated on explicit
    go-ahead. The Python router (`cco-llm-router-py`, used by AgentX) is out of scope
    for this spec — separate repo, separate follow-up.
@@ -91,24 +91,21 @@ so BYOK per-call overrides work with no extra change.
 
 ## Chain placement (`DEFAULT_ALIASES` in `src/router.ts`)
 
-`+` marks an inserted DeepSeek entry. Free $0 tiers stay first; Flash leads the paid
-tier; Pro is the cheap quality step.
+`+` marks an inserted DeepSeek entry. Free $0 tiers stay first. DeepSeek is placed
+only in reasoning-benefiting chains (it thinks by default — see Live finding):
 
 - **`auto:smart`**: google flash → **+ deepseek-v4-flash** → deepinfra-70b →
   google-paid flash → together-lite → google pro → **+ deepseek-v4-pro** →
   google-paid pro → anthropic sonnet → openai gpt-5
-- **`auto:fast`**: groq → google flash → **+ deepseek-v4-flash** → deepinfra-8b →
-  google-paid flash → openai mini → anthropic haiku
-- **`auto:translate`**: google flash → **+ deepseek-v4-flash** → deepinfra-70b →
-  google-paid flash → anthropic sonnet
 - **`auto:code`**: google flash → groq → **+ deepseek-v4-flash** → deepinfra-70b →
   google-paid flash → openai mini
-- **`auto:reasoning`**: google pro → **+ deepseek-v4-pro** → deepinfra DeepSeek-V3 →
-  google-paid pro → anthropic sonnet → openai gpt-5
+- **`auto:reasoning`**: google pro → **+ deepseek-v4-flash** → **+ deepseek-v4-pro** →
+  deepinfra DeepSeek-V3 → google-paid pro → anthropic sonnet → openai gpt-5
 - **`auto:big`**: google pro → **+ deepseek-v4-flash** (1M ctx) → deepinfra-70b →
   google-paid pro → openai gpt-5
-- **`auto:cheap`**: groq → google flash → **+ deepseek-v4-flash** → deepinfra-8b →
-  deepinfra-70b → google-paid flash
+- **`auto:fast`**, **`auto:translate`**, **`auto:cheap`**: **no DeepSeek** — these are
+  classification / transform / strict-cost chains where default chain-of-thought is
+  wasted latency + output cost. They keep their existing $0 free-tier + DeepInfra order.
 - **`auto:paid`**, **`auto:local`**: unchanged. (`auto:paid` is for "spare-no-expense"
   top quality; DeepSeek is cheap, not premium-top, so it stays out.)
 
