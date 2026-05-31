@@ -32,7 +32,7 @@ concurrency:
 jobs:
   audit:
     if: github.event.pull_request.draft == false || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, hetzner-dev]
     permissions:
       contents: read
       checks: write
