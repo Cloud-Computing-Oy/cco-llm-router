@@ -119,6 +119,10 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
         Spec("deepinfra", "meta-llama/Meta-Llama-3.3-70B-Instruct"),
         Spec("google-paid", "gemini-2.5-flash"),
     ],
+    # Explicit Kimi K3 pilot; never selected by an existing default alias.
+    "auto:kimi-pilot": [
+        Spec("moonshot", "kimi-k3"),
+    ],
 }
 
 
@@ -137,6 +141,7 @@ _HAS_KEY: dict[str, Callable[[], bool]] = {
     "deepinfra": lambda: bool(os.environ.get("DEEPINFRA_API_KEY")),
     "together": lambda: bool(os.environ.get("TOGETHER_API_KEY")),
     "deepseek": lambda: bool(os.environ.get("DEEPSEEK_API_KEY")),
+    "moonshot": lambda: bool(os.environ.get("MOONSHOT_API_KEY")),
 }
 
 

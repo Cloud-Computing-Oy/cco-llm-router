@@ -1,7 +1,7 @@
 # cco-llm-router (Python)
 
 Python sibling of [`@cloud-computing-oy/llm-router`](https://github.com/Cloud-Computing-Oy/cco-llm-router).
-Same provider-fallback chains over Anthropic / Google / OpenAI / Groq /
+Same provider-fallback chains over Anthropic / Google / Moonshot / OpenAI / Groq /
 OpenRouter / Ollama / DeepInfra / Together, same default aliases, same
 env-var precedence, same per-provider monthly budget enforcement.
 Cohere rerank lives in `cco_llm_router.cohere`.
@@ -61,6 +61,7 @@ print([s.label for s in callspec.specs])
 | `auto:big`       | openrouter free 31B     | Long-context inputs            |
 | `auto:local`     | ollama qwen2.5-coder    | Offline / privacy-first        |
 | `auto:cheap`     | ollama gemma4:e4b       | Strictly free + ultra-cheap    |
+| `auto:kimi-pilot` | moonshot:kimi-k3        | Explicit long-context pilot    |
 
 `resolve_model('provider:model')` works too — e.g. `google-paid:gemini-2.5-pro`
 to bypass the chain entirely.
@@ -78,6 +79,7 @@ to bypass the chain entirely.
 | ollama       | `OLLAMA_BASE_URL`                                                                           |
 | deepinfra    | `DEEPINFRA_API_KEY`                                                                         |
 | together    | `TOGETHER_API_KEY`                                                                          |
+| moonshot    | `MOONSHOT_API_KEY` (`MOONSHOT_BASE_URL` optional)                                            |
 | cohere       | `COHERE_API_KEY`                                                                            |
 
 On CCO infrastructure these are sourced from `/etc/cco/keys.env`,

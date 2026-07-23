@@ -31,6 +31,8 @@ const PROVIDERS: Provider[] = [
   'ollama',
   'deepinfra',
   'together',
+  'deepseek',
+  'moonshot',
 ];
 
 function fmtUSD(n: number): string {

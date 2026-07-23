@@ -58,6 +58,9 @@ PRICING: dict[str, Price] = {
     # --- deepseek (native api.deepseek.com, V4; priced at cache-miss input) ---
     "deepseek:deepseek-v4-flash": {"input_per_m": 0.14, "output_per_m": 0.28},
     "deepseek:deepseek-v4-pro": {"input_per_m": 0.435, "output_per_m": 0.87},
+
+    # --- moonshot (Kimi Platform; conservative cache-miss input price) ---
+    "moonshot:kimi-k3": {"input_per_m": 3.0, "output_per_m": 15.0},
 }
 
 

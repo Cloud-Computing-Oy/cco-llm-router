@@ -1,7 +1,7 @@
 # @cloud-computing-oy/llm-router
 
 Shared LLM router for Cloud-Computing-Oy services. Provider-fallback
-chains over Anthropic / Google / DeepSeek / OpenAI / Groq / OpenRouter /
+chains over Anthropic / Google / DeepSeek / Moonshot / OpenAI / Groq / OpenRouter /
 Ollama / DeepInfra / Together, plus a Cohere rerank helper and
 per-provider monthly budget enforcement.
 
@@ -68,6 +68,7 @@ Google paid / Anthropic / OpenAI as fallbacks:
 | `auto:cheap` | Cost-first, strict | ollama → openrouter-free → groq-free → google-free → **deepinfra-8b** → **deepinfra-70b** → google-paid-flash |
 | `auto:paid` | Top quality, opt-in | openai → anthropic → google-paid-pro |
 | `auto:local` | Air-gapped | ollama only |
+| `auto:kimi-pilot` | Explicit Kimi K3 pilot | moonshot:kimi-k3 only |
 
 Ollama specs are no-op on hosts without `OLLAMA_BASE_URL` set — the router
 skips unavailable providers. On hosts where the URL is set but the
@@ -82,6 +83,37 @@ quiet degradation):
 ```ts
 const { model } = resolveModel('anthropic:claude-sonnet-4-6');
 ```
+
+### Kimi K3 pilot
+
+Kimi K3 is intentionally opt-in and is not present in any existing default
+fallback chain. Configure a Kimi Platform key and select the pilot alias:
+
+```bash
+MOONSHOT_API_KEY=sk-...
+MOONSHOT_BASE_URL=https://api.moonshot.ai/v1 # optional override
+CCO_LLM_BUDGET_MOONSHOT_USD=20
+```
+
+```ts
+const { model } = resolveModel('auto:kimi-pilot');
+// Equivalent direct selection: moonshot:kimi-k3
+```
+
+Kimi K3 currently accepts only `temperature: 1`; omit the parameter or set it
+to `1`. The global Kimi Platform key uses `https://api.moonshot.ai/v1`.
+Regional Kimi Platform keys are not interchangeable with the separate
+`https://api.moonshot.cn/v1` service, so override `MOONSHOT_BASE_URL` only when
+the key was issued for that endpoint.
+
+Use Kimi Platform credentials for product and team integrations. Kimi Code
+membership credentials are intended for personal coding workflows. Do not
+enable the pilot for customer, legal, invoice, or other confidential data
+until the data-processing terms and transfer basis have been approved.
+
+The router records K3 at the conservative cache-miss price ($3 input / $15
+output per million tokens). Cache-hit discounts are not subtracted by the
+local usage tracker, so the budget guard errs on the safe side.
 
 ### Custom aliases
 
@@ -160,6 +192,7 @@ A provider is considered available iff its env var is set:
 | deepinfra | `DEEPINFRA_API_KEY` |
 | together | `TOGETHER_API_KEY` |
 | deepseek | `DEEPSEEK_API_KEY` (native V4 — `api.deepseek.com`) |
+| moonshot | `MOONSHOT_API_KEY` (`MOONSHOT_BASE_URL` optionally overrides Kimi Platform) |
 | cohere | `COHERE_API_KEY` |
 
 When more than one Google free key is present, the router expands each
@@ -204,6 +237,7 @@ Together/Anthropic/OpenAI (quality / redundancy reserves).
 | `CCO_LLM_BUDGET_TOGETHER_USD` | 10 | DeepInfra redundancy (different DC) |
 | `CCO_LLM_BUDGET_OPENROUTER_USD` | 5 | small buffer for non-`:free` OR models |
 | `CCO_LLM_BUDGET_GROQ_USD` | 0 | free tier only (omit env var) |
+| `CCO_LLM_BUDGET_MOONSHOT_USD` | 20 | opt-in Kimi K3 pilot ceiling |
 | **Total** | **$100** | with 10% router safety margin → effective ceiling ~$90 |
 
 **The router's cap is a safety net, not a hard control.** Set the actual
