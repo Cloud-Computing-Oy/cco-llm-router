@@ -106,6 +106,10 @@ Regional Kimi Platform keys are not interchangeable with the separate
 `https://api.moonshot.cn/v1` service, so override `MOONSHOT_BASE_URL` only when
 the key was issued for that endpoint.
 
+The provider is pinned to the OpenAI-compatible Chat Completions protocol;
+Moonshot does not expose the OpenAI Responses endpoint used by the AI SDK's
+default OpenAI model constructor.
+
 Use Kimi Platform credentials for product and team integrations. Kimi Code
 membership credentials are intended for personal coding workflows. Do not
 enable the pilot for customer, legal, invoice, or other confidential data

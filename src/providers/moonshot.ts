@@ -9,8 +9,8 @@ const envProvider = envKey ? createOpenAI({ apiKey: envKey, baseURL: BASE }) : n
 
 export function moonshotModel(name: string, opts?: { apiKey?: string }) {
   if (opts?.apiKey) {
-    return createOpenAI({ apiKey: opts.apiKey, baseURL: BASE })(name);
+    return createOpenAI({ apiKey: opts.apiKey, baseURL: BASE }).chat(name);
   }
   if (!envProvider) throw new Error('MOONSHOT_API_KEY not set');
-  return envProvider(name);
+  return envProvider.chat(name);
 }

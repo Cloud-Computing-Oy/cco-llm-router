@@ -22,6 +22,9 @@ test('Moonshot supports BYOK without a process-level key', () => {
   });
 
   assert.deepEqual(resolved.specs, [{ provider: 'moonshot', model: 'kimi-k3' }]);
+  const model = resolved.model as { provider?: string; modelId?: string };
+  assert.equal(model.provider, 'openai.chat');
+  assert.equal(model.modelId, 'kimi-k3');
 });
 
 test('Kimi K3 uses conservative cache-miss pricing', () => {
