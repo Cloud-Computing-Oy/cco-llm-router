@@ -13,6 +13,7 @@ _BASE_URL = {
     "deepinfra": "https://api.deepinfra.com/v1/openai",
     "together": "https://api.together.xyz/v1",
     "deepseek": "https://api.deepseek.com",
+    "moonshot": os.environ.get("MOONSHOT_BASE_URL", "https://api.moonshot.ai/v1"),
 }
 
 _KEY_ENV = {
@@ -22,6 +23,7 @@ _KEY_ENV = {
     "deepinfra": "DEEPINFRA_API_KEY",
     "together": "TOGETHER_API_KEY",
     "deepseek": "DEEPSEEK_API_KEY",
+    "moonshot": "MOONSHOT_API_KEY",
 }
 
 

@@ -29,6 +29,7 @@ _ENV_KEY: dict[str, str] = {
     "deepinfra": "CCO_LLM_BUDGET_DEEPINFRA_USD",
     "together": "CCO_LLM_BUDGET_TOGETHER_USD",
     "deepseek": "CCO_LLM_BUDGET_DEEPSEEK_USD",
+    "moonshot": "CCO_LLM_BUDGET_MOONSHOT_USD",
 }
 
 

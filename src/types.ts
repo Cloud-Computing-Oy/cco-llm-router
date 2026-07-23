@@ -16,7 +16,8 @@ export type Provider =
   | 'ollama'
   | 'deepinfra'
   | 'together'
-  | 'deepseek';
+  | 'deepseek'
+  | 'moonshot';
 
 /**
  * `keyIndex` is meaningful only for the Google free provider: when the

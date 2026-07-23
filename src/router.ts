@@ -9,6 +9,7 @@ import { ollamaAvailable, ollamaModel } from './providers/ollama';
 import { deepinfraAvailable, deepinfraModel } from './providers/deepinfra';
 import { togetherAvailable, togetherModel } from './providers/together';
 import { deepseekAvailable, deepseekModel } from './providers/deepseek';
+import { moonshotAvailable, moonshotModel } from './providers/moonshot';
 import { createFallbackModel } from './fallback';
 import { withinBudget } from './budget';
 
@@ -147,6 +148,11 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.3-70B-Instruct' },
     { provider: 'google-paid', model: 'gemini-2.5-flash' },
   ],
+  // Explicit Kimi K3 pilot. Deliberately excluded from every existing
+  // default chain so no service can send data to Moonshot accidentally.
+  'auto:kimi-pilot': [
+    { provider: 'moonshot', model: 'kimi-k3' },
+  ],
 };
 
 function hasKey(p: Provider): boolean {
@@ -171,6 +177,8 @@ function hasKey(p: Provider): boolean {
       return togetherAvailable;
     case 'deepseek':
       return deepseekAvailable;
+    case 'moonshot':
+      return moonshotAvailable;
   }
 }
 
@@ -205,6 +213,8 @@ function instantiate(spec: Spec, perCallKeys?: PerCallKeys): LanguageModel {
       return togetherModel(spec.model, opts);
     case 'deepseek':
       return deepseekModel(spec.model, opts);
+    case 'moonshot':
+      return moonshotModel(spec.model, opts);
   }
 }
 
@@ -257,7 +267,7 @@ export type Router = {
 };
 
 const DIRECT_RE =
-  /^(anthropic|google|google-paid|openai|groq|openrouter|ollama|deepinfra|together|deepseek):(.+)$/;
+  /^(anthropic|google|google-paid|openai|groq|openrouter|ollama|deepinfra|together|deepseek|moonshot):(.+)$/;
 
 export function createRouter(opts: RouterOptions = {}): Router {
   const aliases = { ...DEFAULT_ALIASES, ...(opts.aliases ?? {}) };

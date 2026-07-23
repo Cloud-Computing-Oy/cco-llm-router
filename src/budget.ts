@@ -21,6 +21,7 @@
  *   CCO_LLM_BUDGET_DEEPSEEK_USD
  *   CCO_LLM_BUDGET_OPENROUTER_USD
  *   CCO_LLM_BUDGET_GROQ_USD
+ *   CCO_LLM_BUDGET_MOONSHOT_USD
  *
  * Threshold warnings: when local spend crosses 50% / 75% / 90% / 100% of
  * a provider's cap, a single warning is logged (via console.warn or
@@ -44,6 +45,7 @@ const ENV_KEY: Record<Provider, string> = {
   deepinfra: 'CCO_LLM_BUDGET_DEEPINFRA_USD',
   together: 'CCO_LLM_BUDGET_TOGETHER_USD',
   deepseek: 'CCO_LLM_BUDGET_DEEPSEEK_USD',
+  moonshot: 'CCO_LLM_BUDGET_MOONSHOT_USD',
 };
 
 export type BudgetWarning = {

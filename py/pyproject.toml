@@ -1,7 +1,7 @@
 [project]
 name = "cco-llm-router"
-version = "0.3.0"
-description = "Python sibling of @cloud-computing-oy/llm-router — provider-fallback chains over Anthropic / Google / DeepSeek / OpenAI / Groq / OpenRouter / Ollama / DeepInfra / Together with per-provider monthly budget enforcement and a Cohere rerank helper. Reads API keys from /etc/cco/keys.env at runtime."
+version = "0.4.0"
+description = "Python sibling of @cloud-computing-oy/llm-router — provider-fallback chains over Anthropic / Google / DeepSeek / Moonshot / OpenAI / Groq / OpenRouter / Ollama / DeepInfra / Together with per-provider monthly budget enforcement and a Cohere rerank helper. Reads API keys from /etc/cco/keys.env at runtime."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "Proprietary" }

@@ -63,6 +63,9 @@ export const PRICING: Record<string, Price> = {
   // v4-pro reflects the 75%-off promo through 2026-05-31 — revisit after.
   'deepseek:deepseek-v4-flash': { inputPerM: 0.14, outputPerM: 0.28 },
   'deepseek:deepseek-v4-pro': { inputPerM: 0.435, outputPerM: 0.87 },
+
+  // --- moonshot (Kimi Platform; cache-miss input for conservative budgets) ---
+  'moonshot:kimi-k3': { inputPerM: 3, outputPerM: 15 },
 };
 
 export function priceOf(provider: Provider, model: string): Price {
