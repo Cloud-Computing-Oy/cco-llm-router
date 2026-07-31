@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import os
 
-
 _BASE_URL = {
     "openai": None,  # default
     "groq": "https://api.groq.com/openai/v1",

@@ -12,7 +12,6 @@ import sys
 from .budget import get_budget_usd
 from .usage import get_current_month_spend
 
-
 _PROVIDERS = [
     "anthropic",
     "openai",

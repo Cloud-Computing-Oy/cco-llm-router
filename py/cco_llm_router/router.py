@@ -13,14 +13,14 @@ falling through on classified-as-transient errors (quota / 429 / 401 /
 from __future__ import annotations
 
 import os
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from . import providers
 from .budget import within_budget
 from .providers.google import google_key_count
 from .types import Provider, Spec
 from .usage import record_usage
-
 
 # Default fallback chains — mirror src/router.ts (the TS sibling is the
 # source of truth; keep these in sync).
@@ -195,7 +195,7 @@ class CallSpec:
                             usage.get("input_tokens", 0),
                             usage.get("output_tokens", 0),
                         )
-                    except Exception:
+                    except Exception:  # noqa: BLE001, S110 - usage must not break inference
                         # Usage tracking must never break inference.
                         pass
                 return text

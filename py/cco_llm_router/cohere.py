@@ -6,7 +6,6 @@ from dataclasses import dataclass
 
 import httpx
 
-
 _COHERE_API = "https://api.cohere.com/v2"
 
 

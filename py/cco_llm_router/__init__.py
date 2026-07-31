@@ -39,9 +39,9 @@ from .usage import (
 )
 
 __all__ = [
-    "CallSpec",
     "DEFAULT_ALIASES",
     "PRICING",
+    "CallSpec",
     "Price",
     "Provider",
     "Spec",
