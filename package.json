@@ -1,0 +1,67 @@
+{
+  "name": "@cloud-computing-oy/llm-router",
+  "version": "0.12.0",
+  "license": "Apache-2.0",
+  "description": "Provider-neutral LLM fallback chains with local budget estimates and explicit public-data pilot controls.",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Cloud-Computing-Oy/cco-llm-router.git"
+  },
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./cohere": "./src/cohere.ts"
+  },
+  "bin": {
+    "cco-llm-usage": "./src/bin/usage.ts"
+  },
+  "peerDependencies": {
+    "@ai-sdk/anthropic": ">=3",
+    "@ai-sdk/google": ">=3",
+    "@ai-sdk/openai": ">=3",
+    "@ai-sdk/provider": ">=3",
+    "ai": ">=6",
+    "ai-sdk-ollama": ">=3"
+  },
+  "peerDependenciesMeta": {
+    "@ai-sdk/anthropic": {
+      "optional": true
+    },
+    "@ai-sdk/google": {
+      "optional": true
+    },
+    "@ai-sdk/openai": {
+      "optional": true
+    },
+    "ai-sdk-ollama": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@ai-sdk/anthropic": "^3.0.78",
+    "@ai-sdk/google": "^3.0.72",
+    "@ai-sdk/openai": "^3.0.63",
+    "@ai-sdk/provider": "^3.0.10",
+    "@types/node": "^22.19.19",
+    "ai": "^6.0.177",
+    "ai-sdk-ollama": "^3.8.4",
+    "tsx": "^4.23.1",
+    "typescript": "^5"
+  },
+  "scripts": {
+    "test": "node --import tsx --test src/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "files": [
+    "src"
+  ]
+}
