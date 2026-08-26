@@ -1,5 +1,4 @@
 import pytest
-
 from cco_llm_router.automatic_routing import select_automatic_alias
 from cco_llm_router.router import resolve_model
 
