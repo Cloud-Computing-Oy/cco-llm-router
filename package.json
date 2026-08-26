@@ -1,6 +1,6 @@
 {
   "name": "@cloud-computing-oy/llm-router",
-  "version": "0.13.0",
+  "version": "0.13.1",
   "license": "Apache-2.0",
   "description": "Provider-neutral LLM fallback chains with local budget estimates and explicit public-data pilot controls.",
   "publishConfig": {
