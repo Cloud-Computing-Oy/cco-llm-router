@@ -27,9 +27,12 @@ def test_healthy_worker_allows_one_lease(monkeypatch):
         "get",
         lambda url, timeout: httpx.Response(200, request=httpx.Request("GET", url)),
     )
-    with ollama_lease(), pytest.raises(RuntimeError, match="worker busy"):
-        with ollama_lease():
-            pass
+    with (
+        ollama_lease(),
+        pytest.raises(RuntimeError, match="worker busy"),
+        ollama_lease(),
+    ):
+        pass
 
 
 def test_failed_health_check_opens_circuit(monkeypatch):
