@@ -3,6 +3,7 @@ import type { LanguageModel } from 'ai';
 import type { Provider } from './types';
 import { recordUsage } from './usage';
 import { checkThresholds } from './budget';
+import { acquireOllamaLease } from './ollama-gate';
 
 type Inner = {
   label: string;
@@ -37,6 +38,10 @@ const SHOULD_FALLBACK_PATTERNS = [
   /insufficient.*quota/i,
   /payment.*required/i,
   /402/,
+  /ollama circuit open/i,
+  /ollama worker busy/i,
+  /ollama health check failed/i,
+  /ollama request exceeded/i,
 ];
 
 function shouldFallback(err: unknown): boolean {
@@ -76,8 +81,11 @@ async function attemptGenerate(
   let lastErr: unknown;
   for (let i = 0; i < candidates.length; i++) {
     const c = candidates[i];
+    let ollamaLease: Awaited<ReturnType<typeof acquireOllamaLease>> | undefined;
     try {
-      const result = await (c.model as LanguageModelV3).doGenerate(options);
+      if (c.provider === 'ollama') ollamaLease = await acquireOllamaLease();
+      const operation = () => (c.model as LanguageModelV3).doGenerate(options);
+      const result = ollamaLease ? await ollamaLease.run(operation) : await operation();
       tryRecord(c, result.usage);
       return { value: result };
     } catch (err) {
@@ -88,6 +96,8 @@ async function attemptGenerate(
         return { lastErr: err };
       }
       console.warn(`[fallback] ${c.label} failed: ${reason} — trying next`);
+    } finally {
+      ollamaLease?.release();
     }
   }
   return { lastErr };
@@ -100,12 +110,17 @@ async function attemptStream(
   let lastErr: unknown;
   for (let i = 0; i < candidates.length; i++) {
     const c = candidates[i];
+    let ollamaLease: Awaited<ReturnType<typeof acquireOllamaLease>> | undefined;
+    let releaseWithStream = false;
     try {
-      const result = await (c.model as LanguageModelV3).doStream(options);
+      if (c.provider === 'ollama') ollamaLease = await acquireOllamaLease();
+      const operation = () => (c.model as LanguageModelV3).doStream(options);
+      const result = ollamaLease ? await ollamaLease.run(operation) : await operation();
       // Tap the stream: forward all parts to the consumer while capturing
       // the final usage block, then record on completion. This requires
       // teeing the stream through a TransformStream.
-      const tapped = tapStreamForUsage(result.stream, c);
+      const tapped = tapStreamForUsage(result.stream, c, ollamaLease?.release);
+      releaseWithStream = Boolean(ollamaLease);
       return { value: { ...result, stream: tapped } };
     } catch (err) {
       lastErr = err;
@@ -115,6 +130,8 @@ async function attemptStream(
         return { lastErr: err };
       }
       console.warn(`[fallback] ${c.label} failed: ${reason} — trying next`);
+    } finally {
+      if (!releaseWithStream) ollamaLease?.release();
     }
   }
   return { lastErr };
@@ -123,18 +140,37 @@ async function attemptStream(
 function tapStreamForUsage(
   stream: StreamResult['stream'],
   c: Inner,
+  onDone?: () => void,
 ): StreamResult['stream'] {
-  return stream.pipeThrough(
-    new TransformStream({
-      transform(chunk, controller) {
-        const part = chunk as { type?: string; usage?: LanguageModelV3Usage };
-        if (part?.type === 'finish' && part.usage) {
-          tryRecord(c, part.usage);
+  let done = false;
+  const finish = () => {
+    if (done) return;
+    done = true;
+    onDone?.();
+  };
+  const reader = stream.getReader();
+  return new ReadableStream({
+    async pull(controller) {
+      try {
+        const result = await reader.read();
+        if (result.done) {
+          finish();
+          controller.close();
+          return;
         }
-        controller.enqueue(chunk);
-      },
-    }),
-  );
+        const part = result.value as { type?: string; usage?: LanguageModelV3Usage };
+        if (part?.type === 'finish' && part.usage) tryRecord(c, part.usage);
+        controller.enqueue(result.value);
+      } catch (error) {
+        finish();
+        controller.error(error);
+      }
+    },
+    async cancel(reason) {
+      finish();
+      await reader.cancel(reason);
+    },
+  });
 }
 
 export function createFallbackModel(candidates: Inner[]): LanguageModelV3 {

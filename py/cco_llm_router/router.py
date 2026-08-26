@@ -112,6 +112,12 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
         Spec("ollama", "qwen2.5:14b"),
         Spec("ollama", "gemma4:e2b"),
     ],
+    "auto:laptop-assisted": [
+        Spec("ollama", "qwen2.5:14b"),
+        Spec("google", "gemini-2.5-flash"),
+        Spec("deepinfra", "meta-llama/Meta-Llama-3.1-8B-Instruct"),
+        Spec("google-paid", "gemini-2.5-flash"),
+    ],
     "auto:cheap": [
         Spec("groq", "llama-3.3-70b-versatile"),
         Spec("google", "gemini-2.5-flash"),

@@ -71,6 +71,12 @@ Provider credentials are read from environment variables such as
 Keep credentials in a deployment secret manager. Never commit them or include
 them in prompts, generated plans, logs, or issue reports.
 
+For an intermittent laptop GPU, set `OLLAMA_BASE_URL` to its private Tailscale
+Serve URL and select `auto:laptop-assisted`. The router health-checks the
+worker, limits it to one concurrent request by default, and temporarily opens
+a circuit after a failure. See the repository's
+[`docs/laptop-gpu-worker.md`](../docs/laptop-gpu-worker.md) for setup.
+
 ## Budget and usage boundary
 
 `CCO_LLM_BUDGET_<PROVIDER>_USD` variables provide an optional local monthly

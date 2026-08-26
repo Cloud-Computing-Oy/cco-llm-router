@@ -62,6 +62,7 @@ Google paid / Anthropic / OpenAI as fallbacks:
 | `auto:cheap` | Cost-first, strict | ollama → openrouter-free → groq-free → google-free → **deepinfra-8b** → **deepinfra-70b** → google-paid-flash |
 | `auto:paid` | Top quality, opt-in | openai → anthropic → google-paid-pro |
 | `auto:local` | Air-gapped | ollama only |
+| `auto:laptop-assisted` | Opt-in intermittent laptop GPU | ollama → google-free → deepinfra-8b → google-paid |
 | `auto:kimi-pilot` | Explicit Kimi K3 pilot | moonshot:kimi-k3 only |
 
 Ollama specs are no-op on hosts without `OLLAMA_BASE_URL` set — the router
@@ -69,6 +70,11 @@ skips unavailable providers. On hosts where the URL is set but the
 server is down, the fallback walks past it after the immediate
 connection refusal. There is no active health check; the fallback layer
 handles outages by transparently moving to the next slot.
+
+For an intermittent laptop GPU, use `auto:laptop-assisted`. It adds a bounded
+health check, single-request concurrency by default, and a circuit breaker so
+an offline or busy laptop is skipped quickly. See
+[`docs/laptop-gpu-worker.md`](docs/laptop-gpu-worker.md) for setup and tuning.
 
 You can also call a provider directly without going through the fallback
 chain (useful when you genuinely need a specific model and don't want
