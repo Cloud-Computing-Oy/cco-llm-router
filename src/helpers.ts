@@ -33,7 +33,7 @@ export type ChatRequest = {
   /** Per-call API key overrides for BYOK consumers. See resolveModel docs. */
   perCallKeys?: PerCallKeys;
   /** Caller-supplied data classification. Defaults to internal. */
-  dataClass?: 'public' | 'internal' | 'confidential' | 'restricted';
+  dataClass?: 'public' | 'synthetic' | 'internal' | 'confidential' | 'restricted';
   /** Optional agent-supplied risk signal; high-risk work never uses the laptop. */
   taskRisk?: TaskRisk;
   /** Optional agent-supplied task kind; otherwise conservative prompt heuristics apply. */

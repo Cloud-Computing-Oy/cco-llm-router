@@ -15,6 +15,7 @@ let active = 0;
 let circuitOpenUntil = 0;
 let lastHealthAt = 0;
 let lastHealthOk = false;
+let lastHealthModel = '';
 
 export type OllamaLease = {
   run<T>(operation: () => PromiseLike<T>): Promise<T>;
@@ -27,9 +28,11 @@ function timeoutError(ms: number): Error {
   return error;
 }
 
-async function isHealthy(): Promise<boolean> {
+async function isHealthy(requiredModel?: string): Promise<boolean> {
   const now = Date.now();
-  if (now - lastHealthAt <= HEALTH_CACHE_MS()) return lastHealthOk;
+  if (now - lastHealthAt <= HEALTH_CACHE_MS() && lastHealthModel === (requiredModel ?? '')) {
+    return lastHealthOk;
+  }
 
   const base = (process.env.OLLAMA_BASE_URL ?? '').replace(/\/$/, '');
   if (!base) return false;
@@ -39,21 +42,31 @@ async function isHealthy(): Promise<boolean> {
       method: 'GET',
       signal: AbortSignal.timeout(HEALTH_TIMEOUT_MS()),
     });
-    lastHealthOk = response.ok;
+    if (!response.ok) {
+      lastHealthOk = false;
+    } else if (!requiredModel) {
+      lastHealthOk = true;
+    } else {
+      const body = (await response.json()) as { models?: Array<{ name?: string; model?: string }> };
+      lastHealthOk = (body.models ?? []).some(
+        (model) => model.name === requiredModel || model.model === requiredModel,
+      );
+    }
   } catch {
     lastHealthOk = false;
   }
   lastHealthAt = Date.now();
+  lastHealthModel = requiredModel ?? '';
   return lastHealthOk;
 }
 
-export async function acquireOllamaLease(): Promise<OllamaLease> {
+export async function acquireOllamaLease(requiredModel?: string): Promise<OllamaLease> {
   const now = Date.now();
   if (now < circuitOpenUntil) {
     throw new Error(`Ollama circuit open for ${circuitOpenUntil - now}ms`);
   }
   if (active >= MAX_CONCURRENT()) throw new Error('Ollama worker busy');
-  if (!(await isHealthy())) {
+  if (!(await isHealthy(requiredModel))) {
     circuitOpenUntil = Date.now() + CIRCUIT_OPEN_MS();
     throw new Error('Ollama health check failed');
   }
@@ -97,4 +110,5 @@ export function resetOllamaGateForTests(): void {
   circuitOpenUntil = 0;
   lastHealthAt = 0;
   lastHealthOk = false;
+  lastHealthModel = '';
 }

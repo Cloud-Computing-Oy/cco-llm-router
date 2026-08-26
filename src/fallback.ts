@@ -83,7 +83,7 @@ async function attemptGenerate(
     const c = candidates[i];
     let ollamaLease: Awaited<ReturnType<typeof acquireOllamaLease>> | undefined;
     try {
-      if (c.provider === 'ollama') ollamaLease = await acquireOllamaLease();
+      if (c.provider === 'ollama') ollamaLease = await acquireOllamaLease(c.modelId);
       const operation = () => (c.model as LanguageModelV3).doGenerate(options);
       const result = ollamaLease ? await ollamaLease.run(operation) : await operation();
       tryRecord(c, result.usage);
@@ -113,7 +113,7 @@ async function attemptStream(
     let ollamaLease: Awaited<ReturnType<typeof acquireOllamaLease>> | undefined;
     let releaseWithStream = false;
     try {
-      if (c.provider === 'ollama') ollamaLease = await acquireOllamaLease();
+      if (c.provider === 'ollama') ollamaLease = await acquireOllamaLease(c.modelId);
       const operation = () => (c.model as LanguageModelV3).doStream(options);
       const result = ollamaLease ? await ollamaLease.run(operation) : await operation();
       // Tap the stream: forward all parts to the consumer while capturing

@@ -35,10 +35,10 @@ def select_automatic_alias(
         return "auto:big"
     if task_kind == "code" or CODE.search(text):
         return "auto:code"
-    if data_class in {"confidential", "restricted"}:
+    if data_class not in {"public", "synthetic"}:
         return "auto:smart"
     if task_risk == "standard" and REASONING.search(text):
         return "auto:reasoning"
     if REASONING.search(text):
         return "auto:smart"
-    return "auto:laptop-assisted"
+    return "auto:facf-laptop"

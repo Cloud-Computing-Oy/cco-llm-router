@@ -147,6 +147,14 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.1-8B-Instruct' },
     { provider: 'google-paid', model: 'gemini-2.5-flash' },
   ],
+  // FACF Phase 0 bridge: a private, opportunistic laptop worker with cloud
+  // fallback. The resolver permits this route only for public/synthetic data.
+  'auto:facf-laptop': [
+    { provider: 'ollama', model: 'qwen2.5:7b' },
+    { provider: 'google', model: 'gemini-2.5-flash' },
+    { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.1-8B-Instruct' },
+    { provider: 'google-paid', model: 'gemini-2.5-flash' },
+  ],
   // Cost-first: free + ultra-cheap providers; expensive tiers excluded.
   // Excludes ollama (unreliable on CPU hosts) and openrouter:free (prose).
   'auto:cheap': [
@@ -268,7 +276,7 @@ export type ResolveOptions = {
    */
   perCallKeys?: PerCallKeys;
   /** Classification of prompt data; pilot providers accept only public data. */
-  dataClass?: 'public' | 'internal' | 'confidential' | 'restricted';
+  dataClass?: 'public' | 'synthetic' | 'internal' | 'confidential' | 'restricted';
   /** Explicit opt-in required for experimental providers such as Moonshot. */
   allowPilot?: boolean;
   /** Explicitly allow a direct selection to bypass the local budget safety net. */
@@ -303,6 +311,11 @@ export function createRouter(opts: RouterOptions = {}): Router {
         'Moonshot/Kimi is an explicit public-data pilot; set allowPilot=true and dataClass="public"',
       );
     }
+    const facfLaptopRequested =
+      alias === 'auto:facf-laptop' || alias === 'auto:laptop-assisted';
+    if (facfLaptopRequested && dataClass !== 'public' && dataClass !== 'synthetic') {
+      throw new Error('FACF laptop routes accept only dataClass="public" or "synthetic"');
+    }
     const direct = alias.match(DIRECT_RE);
     if (direct) {
       const spec: Spec = { provider: direct[1] as Provider, model: direct[2] };
@@ -325,7 +338,7 @@ export function createRouter(opts: RouterOptions = {}): Router {
     if (available.length === 0) {
       throw new Error(`No available provider for alias ${alias} — set at least one API key`);
     }
-    if (available.length === 1) {
+    if (available.length === 1 && available[0].provider !== 'ollama') {
       return { model: instantiate(available[0], perCallKeys), specs: available };
     }
     const inner = available.map((s) => ({

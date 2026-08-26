@@ -13,6 +13,7 @@ test('uses the verified 8 GiB laptop model', () => {
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.1-8B-Instruct' },
     { provider: 'google-paid', model: 'gemini-2.5-flash' },
   ]);
+  assert.deepEqual(DEFAULT_ALIASES['auto:facf-laptop'], DEFAULT_ALIASES['auto:laptop-assisted']);
 });
 
 test.afterEach(() => {
@@ -29,10 +30,10 @@ test('accepts one healthy intermittent worker', async () => {
   process.env.OLLAMA_BASE_URL = 'http://laptop.test:11434/';
   globalThis.fetch = async (input) => {
     assert.equal(String(input), 'http://laptop.test:11434/api/tags');
-    return new Response('{}', { status: 200 });
+    return new Response('{"models":[{"name":"qwen2.5:7b"}]}', { status: 200 });
   };
 
-  const lease = await acquireOllamaLease();
+  const lease = await acquireOllamaLease('qwen2.5:7b');
   assert.equal(await lease.run(async () => 'gpu-result'), 'gpu-result');
   lease.release();
 });
@@ -61,4 +62,12 @@ test('rejects excess concurrent work without queueing it', async () => {
   lease.release();
   const next = await acquireOllamaLease();
   next.release();
+});
+
+test('fails closed when the requested model is not installed', async () => {
+  process.env.OLLAMA_BASE_URL = 'http://laptop.test:11434';
+  globalThis.fetch = async () =>
+    new Response('{"models":[{"name":"another-model:latest"}]}', { status: 200 });
+
+  await assert.rejects(acquireOllamaLease('qwen2.5:7b'), /health check failed/);
 });
