@@ -1,9 +1,19 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { acquireOllamaLease, resetOllamaGateForTests } from './ollama-gate';
+import { DEFAULT_ALIASES } from './router';
 
 const originalFetch = globalThis.fetch;
 const originalBaseUrl = process.env.OLLAMA_BASE_URL;
+
+test('uses the verified 8 GiB laptop model', () => {
+  assert.deepEqual(DEFAULT_ALIASES['auto:laptop-assisted'], [
+    { provider: 'ollama', model: 'qwen2.5:7b' },
+    { provider: 'google', model: 'gemini-2.5-flash' },
+    { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.1-8B-Instruct' },
+    { provider: 'google-paid', model: 'gemini-2.5-flash' },
+  ]);
+});
 
 test.afterEach(() => {
   globalThis.fetch = originalFetch;

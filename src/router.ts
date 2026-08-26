@@ -142,7 +142,7 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
   // Opportunistic laptop GPU. Explicit opt-in so an intermittent worker never
   // adds health-check latency to existing production aliases.
   'auto:laptop-assisted': [
-    { provider: 'ollama', model: 'qwen2.5:14b' },
+    { provider: 'ollama', model: 'qwen2.5:7b' },
     { provider: 'google', model: 'gemini-2.5-flash' },
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.1-8B-Instruct' },
     { provider: 'google-paid', model: 'gemini-2.5-flash' },

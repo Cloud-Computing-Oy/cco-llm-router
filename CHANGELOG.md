@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [0.13.0] - 2026-08-26
 
 ### Added
 
@@ -9,6 +9,11 @@
 - Added bounded health probes, request timeouts, concurrency limits, and a
   circuit breaker so an offline or busy laptop falls through quickly.
 - Documented private Tailscale Serve setup and demand-loaded Ollama models.
+- Added conservative automatic task routing for alias-free TypeScript and
+  Python helper calls: short low-risk work prefers the laptop, while code,
+  long-context, reasoning, high-risk, confidential, and restricted work stays
+  on stronger routes.
+- Selected the verified `qwen2.5:7b` model for the 8 GiB laptop worker.
 
 ## [0.12.0] - 2026-07-31
 
@@ -33,3 +38,4 @@
 - Updated the Python package to 0.5.0.
 
 [0.12.0]: https://github.com/Cloud-Computing-Oy/cco-llm-router/compare/v0.11.1...v0.12.0
+[0.13.0]: https://github.com/Cloud-Computing-Oy/cco-llm-router/compare/v0.12.0...v0.13.0
