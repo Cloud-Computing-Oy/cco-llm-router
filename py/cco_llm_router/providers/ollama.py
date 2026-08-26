@@ -18,7 +18,7 @@ def call(spec, *, system, prompt, temperature, max_tokens):
         options["temperature"] = temperature
     if max_tokens:
         options["num_predict"] = max_tokens
-    with ollama_lease(), httpx.Client(timeout=request_timeout_seconds()) as client:
+    with ollama_lease(spec.model), httpx.Client(timeout=request_timeout_seconds()) as client:
         resp = client.post(
             f"{base.rstrip('/')}/api/chat",
             json={

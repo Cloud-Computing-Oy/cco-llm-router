@@ -4,7 +4,7 @@ export type TaskKind = 'general' | 'light' | 'code' | 'reasoning' | 'large-conte
 export type AutomaticRoutingInput = {
   system?: string;
   prompt: string;
-  dataClass?: 'public' | 'internal' | 'confidential' | 'restricted';
+  dataClass?: 'public' | 'synthetic' | 'internal' | 'confidential' | 'restricted';
   taskRisk?: TaskRisk;
   taskKind?: TaskKind;
 };
@@ -27,8 +27,8 @@ export function selectAutomaticAlias(input: AutomaticRoutingInput): string {
   if (input.taskKind === 'reasoning') return 'auto:reasoning';
   if (input.taskKind === 'large-context' || input.prompt.length > 12_000) return 'auto:big';
   if (input.taskKind === 'code' || CODE.test(text)) return 'auto:code';
-  if (dataClass === 'confidential' || dataClass === 'restricted') return 'auto:smart';
+  if (dataClass !== 'public' && dataClass !== 'synthetic') return 'auto:smart';
   if (input.taskRisk === 'standard' && REASONING.test(text)) return 'auto:reasoning';
   if (REASONING.test(text)) return 'auto:smart';
-  return 'auto:laptop-assisted';
+  return 'auto:facf-laptop';
 }

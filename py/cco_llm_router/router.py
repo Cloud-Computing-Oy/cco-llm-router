@@ -118,6 +118,12 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
         Spec("deepinfra", "meta-llama/Meta-Llama-3.1-8B-Instruct"),
         Spec("google-paid", "gemini-2.5-flash"),
     ],
+    "auto:facf-laptop": [
+        Spec("ollama", "qwen2.5:7b"),
+        Spec("google", "gemini-2.5-flash"),
+        Spec("deepinfra", "meta-llama/Meta-Llama-3.1-8B-Instruct"),
+        Spec("google-paid", "gemini-2.5-flash"),
+    ],
     "auto:cheap": [
         Spec("groq", "llama-3.3-70b-versatile"),
         Spec("google", "gemini-2.5-flash"),
@@ -234,13 +240,20 @@ def resolve_model(
     Pilot providers require explicit public-data approval. Direct calls obey
     the local budget safety net unless ``bypass_budget=True`` is approved.
     """
-    if data_class not in {"public", "internal", "confidential", "restricted"}:
+    if data_class not in {"public", "synthetic", "internal", "confidential", "restricted"}:
         raise ValueError(f"Unknown data class: {data_class}")
     pilot_requested = alias == "auto:kimi-pilot" or alias.startswith("moonshot:")
     if pilot_requested and (not allow_pilot or data_class != "public"):
         raise RuntimeError(
             'Moonshot/Kimi is an explicit public-data pilot; '
             'set allow_pilot=True and data_class="public"'
+        )
+    if alias in {"auto:facf-laptop", "auto:laptop-assisted"} and data_class not in {
+        "public",
+        "synthetic",
+    }:
+        raise RuntimeError(
+            'FACF laptop routes accept only data_class="public" or "synthetic"'
         )
     if ":" in alias and not alias.startswith("auto:"):
         provider, _, model = alias.partition(":")
