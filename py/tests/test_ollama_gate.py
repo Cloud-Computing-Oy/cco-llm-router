@@ -13,7 +13,7 @@ def reset_gate():
 
 def test_laptop_alias_matches_typescript_chain():
     assert [spec.label for spec in DEFAULT_ALIASES["auto:laptop-assisted"]] == [
-        "ollama:qwen2.5:14b",
+        "ollama:qwen2.5:7b",
         "google:gemini-2.5-flash",
         "deepinfra:meta-llama/Meta-Llama-3.1-8B-Instruct",
         "google-paid:gemini-2.5-flash",

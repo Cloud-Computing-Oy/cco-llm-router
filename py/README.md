@@ -39,6 +39,12 @@ callspec = resolve_model("auto:reasoning", data_class="internal")
 print([spec.label for spec in callspec.specs])
 ```
 
+When `alias` is omitted, `chat()` and `chat_json()` automatically route short,
+low-risk work through the opportunistic laptop chain. Code, large-context,
+reasoning, high-risk, confidential, and restricted work stays on stronger
+routes. Agents may pass `task_kind` and `task_risk` metadata, and an explicit
+`alias` always overrides automatic selection.
+
 Direct selectors obey the local budget guard by default. The
 `bypass_budget=True` override should require application authorization.
 
@@ -72,7 +78,8 @@ Keep credentials in a deployment secret manager. Never commit them or include
 them in prompts, generated plans, logs, or issue reports.
 
 For an intermittent laptop GPU, set `OLLAMA_BASE_URL` to its private Tailscale
-Serve URL and select `auto:laptop-assisted`. The router health-checks the
+Serve URL. The helpers select `auto:laptop-assisted` automatically for eligible
+low-risk work; callers can still select it explicitly. The router health-checks the
 worker, limits it to one concurrent request by default, and temporarily opens
 a circuit after a failure. See the repository's
 [`docs/laptop-gpu-worker.md`](../docs/laptop-gpu-worker.md) for setup.

@@ -5,6 +5,7 @@ import json
 import re
 from typing import Any
 
+from .automatic_routing import select_automatic_alias
 from .router import resolve_model
 
 
@@ -12,16 +13,25 @@ def chat(
     *,
     system: str,
     prompt: str,
-    alias: str = "auto:smart",
+    alias: str | None = None,
     temperature: float | None = None,
     max_tokens: int | None = None,
     data_class: str = "internal",
+    task_risk: str | None = None,
+    task_kind: str | None = None,
     allow_pilot: bool = False,
     bypass_budget: bool = False,
 ) -> str:
     """Resolve `alias`, walk the available chain, return the text."""
+    selected_alias = alias or select_automatic_alias(
+        system=system,
+        prompt=prompt,
+        data_class=data_class,
+        task_risk=task_risk,
+        task_kind=task_kind,
+    )
     callspec = resolve_model(
-        alias,
+        selected_alias,
         data_class=data_class,
         allow_pilot=allow_pilot,
         bypass_budget=bypass_budget,
@@ -41,10 +51,12 @@ def chat_json(
     *,
     system: str,
     prompt: str,
-    alias: str = "auto:smart",
+    alias: str | None = None,
     temperature: float | None = None,
     max_tokens: int | None = None,
     data_class: str = "internal",
+    task_risk: str | None = None,
+    task_kind: str | None = None,
     allow_pilot: bool = False,
     bypass_budget: bool = False,
 ) -> Any | None:
@@ -57,6 +69,8 @@ def chat_json(
         temperature=temperature,
         max_tokens=max_tokens,
         data_class=data_class,
+        task_risk=task_risk,
+        task_kind=task_kind,
         allow_pilot=allow_pilot,
         bypass_budget=bypass_budget,
     )

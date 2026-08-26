@@ -2,8 +2,9 @@
 
 The router can use a laptop-hosted Ollama instance when the laptop is online,
 then immediately fall back to cloud providers when it is unavailable or busy.
-The laptop is opt-in through `auto:laptop-assisted`; existing aliases are not
-changed.
+The laptop is used by the helper-level automatic task classifier for short,
+low-risk work and can also be selected explicitly through
+`auto:laptop-assisted`. Existing named aliases are not changed.
 
 ## Laptop
 
@@ -11,7 +12,7 @@ Install Ollama and Tailscale, keep Ollama bound to localhost, and expose it only
 inside the tailnet:
 
 ```sh
-ollama pull qwen2.5:14b
+ollama pull qwen2.5:7b
 tailscale serve --bg http://127.0.0.1:11434
 tailscale serve status
 ```
@@ -51,6 +52,10 @@ CCO_LLM_OLLAMA_MAX_CONCURRENT=1
 ```
 
 Select `auto:laptop-assisted` only for workloads suitable for the local model.
+When `chat()` or `chatJson()` is called without an alias, the router makes this
+selection automatically. Agents can provide `taskKind`/`taskRisk` metadata;
+an explicit alias always wins. High-risk, long-context, reasoning,
+confidential, and restricted work is kept off this laptop fallback chain.
 The router checks `/api/tags` before inference, skips a busy worker, and opens a
 60-second circuit after health or inference failures. The chain then continues
 with Google free, DeepInfra 8B, and Google paid, subject to configured keys and

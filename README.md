@@ -47,6 +47,13 @@ const { model } = resolveModel('auto:smart', { dataClass: 'internal' });
 const { text } = await generateText({ model, prompt: 'hello' });
 ```
 
+The `chat()` and `chatJson()` helpers automatically select a route when
+`alias` is omitted. Short, low-risk work uses `auto:laptop-assisted`; code,
+large-context, reasoning, high-risk, confidential, and restricted work stays
+on the corresponding stronger route. Callers may supply `taskKind` and
+`taskRisk` metadata or explicitly set `alias` to override the classifier.
+`chatJsonStrict()` remains on `auto:smart` by default for schema reliability.
+
 Available default aliases — strict cost-first: own-server Ollama leads,
 then free cloud tiers, then ultra-cheap DeepInfra/Together buffer, then
 Google paid / Anthropic / OpenAI as fallbacks:

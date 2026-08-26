@@ -113,7 +113,7 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
         Spec("ollama", "gemma4:e2b"),
     ],
     "auto:laptop-assisted": [
-        Spec("ollama", "qwen2.5:14b"),
+        Spec("ollama", "qwen2.5:7b"),
         Spec("google", "gemini-2.5-flash"),
         Spec("deepinfra", "meta-llama/Meta-Llama-3.1-8B-Instruct"),
         Spec("google-paid", "gemini-2.5-flash"),

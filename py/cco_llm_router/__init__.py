@@ -3,8 +3,8 @@
 Mirrors the Node package's API:
   resolve_model(alias) -> CallSpec
     .call(system, prompt, *, temperature, max_tokens) -> str
-  chat(system, prompt, *, alias='auto:smart', ...) -> str
-  chat_json(system, prompt, *, alias='auto:smart', ...) -> Any | None
+  chat(system, prompt, *, alias=None, ...) -> str
+  chat_json(system, prompt, *, alias=None, ...) -> Any | None
   rerank(query, documents, *, top_n=None, model='rerank-v4.0-pro')
 
 Same default aliases (auto:smart / fast / translate / code / reasoning /
@@ -20,6 +20,7 @@ Provider SDKs are declared as optional extras; install with e.g.
 `pip install 'cco-llm-router[all]'` for everything, or pin a subset.
 """
 
+from .automatic_routing import select_automatic_alias
 from .budget import get_budget_usd, within_budget
 from .helpers import chat, chat_json
 from .pricing import PRICING, Price, estimate_cost_usd, price_of
@@ -57,7 +58,8 @@ __all__ = [
     "record_usage",
     "reset_usage",
     "resolve_model",
+    "select_automatic_alias",
     "within_budget",
 ]
 
-__version__ = "0.5.0"
+__version__ = "0.6.0"

@@ -11,6 +11,12 @@ export {
   type PerCallKeys,
 } from './router';
 export {
+  selectAutomaticAlias,
+  type AutomaticRoutingInput,
+  type TaskKind,
+  type TaskRisk,
+} from './automatic-routing';
+export {
   chat,
   chatJson,
   chatJsonStrict,

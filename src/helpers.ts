@@ -11,6 +11,11 @@
 import { generateText as aiGenerateText, generateObject as aiGenerateObject } from 'ai';
 import type { z } from 'zod';
 import { resolveModel, type PerCallKeys } from './router';
+import {
+  selectAutomaticAlias,
+  type TaskKind,
+  type TaskRisk,
+} from './automatic-routing';
 import { DEFAULT_MAX_PROMPT_CHARS, truncateForLlmWithWarning } from './truncate';
 
 /** Default per-call abort timeout. Without this an unresponsive
@@ -19,8 +24,7 @@ import { DEFAULT_MAX_PROMPT_CHARS, truncateForLlmWithWarning } from './truncate'
 export const DEFAULT_CALL_TIMEOUT_MS = 60_000;
 
 export type ChatRequest = {
-  /** Alias from the router (auto:smart, auto:fast, auto:translate, …).
-   *  Defaults to 'auto:smart'. */
+  /** Explicit alias override. When omitted, the task is routed automatically. */
   alias?: string;
   system: string;
   prompt: string;
@@ -30,6 +34,10 @@ export type ChatRequest = {
   perCallKeys?: PerCallKeys;
   /** Caller-supplied data classification. Defaults to internal. */
   dataClass?: 'public' | 'internal' | 'confidential' | 'restricted';
+  /** Optional agent-supplied risk signal; high-risk work never uses the laptop. */
+  taskRisk?: TaskRisk;
+  /** Optional agent-supplied task kind; otherwise conservative prompt heuristics apply. */
+  taskKind?: TaskKind;
   /** Explicit opt-in for experimental public-data-only providers. */
   allowPilot?: boolean;
   /** Explicitly bypass the local direct-selector budget safety net. */
@@ -46,16 +54,27 @@ export type ChatRequest = {
   maxPromptChars?: number;
 };
 
-function applyPromptCap(req: ChatRequest): string {
+function applyPromptCap(req: ChatRequest, selectedAlias: string): string {
   return truncateForLlmWithWarning(
     req.prompt,
     req.maxPromptChars ?? DEFAULT_MAX_PROMPT_CHARS,
-    req.alias ?? 'auto:smart',
+    selectedAlias,
   );
 }
 
+function automaticAlias(req: ChatRequest): string {
+  return selectAutomaticAlias({
+    system: req.system,
+    prompt: req.prompt,
+    dataClass: req.dataClass,
+    taskRisk: req.taskRisk,
+    taskKind: req.taskKind,
+  });
+}
+
 export async function chat(req: ChatRequest): Promise<string> {
-  const { model } = resolveModel(req.alias ?? 'auto:smart', {
+  const selectedAlias = req.alias ?? automaticAlias(req);
+  const { model } = resolveModel(selectedAlias, {
     perCallKeys: req.perCallKeys,
     dataClass: req.dataClass,
     allowPilot: req.allowPilot,
@@ -64,7 +83,7 @@ export async function chat(req: ChatRequest): Promise<string> {
   const { text } = await aiGenerateText({
     model,
     system: req.system,
-    prompt: applyPromptCap(req),
+    prompt: applyPromptCap(req, selectedAlias),
     temperature: req.temperature,
     maxOutputTokens: req.maxTokens,
     abortSignal: req.abortSignal ?? AbortSignal.timeout(DEFAULT_CALL_TIMEOUT_MS),
@@ -103,7 +122,8 @@ export async function chatJson<T = unknown>(req: ChatRequest): Promise<T | null>
  * fallback chain rejects the request.
  */
 export async function chatJsonStrict<T>(req: ChatRequest & { schema: z.ZodSchema<T> }): Promise<T> {
-  const { model } = resolveModel(req.alias ?? 'auto:smart', {
+  const selectedAlias = req.alias ?? 'auto:smart';
+  const { model } = resolveModel(selectedAlias, {
     perCallKeys: req.perCallKeys,
     dataClass: req.dataClass,
     allowPilot: req.allowPilot,
@@ -113,7 +133,7 @@ export async function chatJsonStrict<T>(req: ChatRequest & { schema: z.ZodSchema
     model,
     schema: req.schema,
     system: req.system,
-    prompt: applyPromptCap(req),
+    prompt: applyPromptCap(req, selectedAlias),
     temperature: req.temperature,
     maxOutputTokens: req.maxTokens,
     abortSignal: req.abortSignal ?? AbortSignal.timeout(DEFAULT_CALL_TIMEOUT_MS),
