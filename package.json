@@ -62,6 +62,7 @@
     "node": ">=22"
   },
   "files": [
-    "src"
+    "src",
+    "docs"
   ]
 }

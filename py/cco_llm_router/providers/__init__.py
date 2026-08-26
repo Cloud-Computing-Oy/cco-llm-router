@@ -43,6 +43,9 @@ _FALLBACK_PATTERNS = [
         r"insufficient.*quota",
         r"payment.*required",
         r"\b402\b",
+        r"ollama circuit open",
+        r"ollama worker busy",
+        r"ollama health check failed",
     ]
 ]
 

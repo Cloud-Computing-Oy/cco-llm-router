@@ -139,6 +139,14 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
     { provider: 'ollama', model: 'qwen2.5:14b' },
     { provider: 'ollama', model: 'gemma4:e2b' },
   ],
+  // Opportunistic laptop GPU. Explicit opt-in so an intermittent worker never
+  // adds health-check latency to existing production aliases.
+  'auto:laptop-assisted': [
+    { provider: 'ollama', model: 'qwen2.5:14b' },
+    { provider: 'google', model: 'gemini-2.5-flash' },
+    { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.1-8B-Instruct' },
+    { provider: 'google-paid', model: 'gemini-2.5-flash' },
+  ],
   // Cost-first: free + ultra-cheap providers; expensive tiers excluded.
   // Excludes ollama (unreliable on CPU hosts) and openrouter:free (prose).
   'auto:cheap': [

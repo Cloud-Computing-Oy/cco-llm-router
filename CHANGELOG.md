@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Added the opt-in `auto:laptop-assisted` chain for opportunistic Ollama GPU
+  workers, with matching TypeScript and Python behavior.
+- Added bounded health probes, request timeouts, concurrency limits, and a
+  circuit breaker so an offline or busy laptop falls through quickly.
+- Documented private Tailscale Serve setup and demand-loaded Ollama models.
+
 ## [0.12.0] - 2026-07-31
 
 ### Security

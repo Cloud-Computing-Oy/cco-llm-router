@@ -4,6 +4,8 @@ import os
 
 import httpx
 
+from ..ollama_gate import ollama_lease, request_timeout_seconds
+
 
 def call(spec, *, system, prompt, temperature, max_tokens):
     """Returns (text, usage_dict). Local compute → cost is zero, but we
@@ -16,9 +18,9 @@ def call(spec, *, system, prompt, temperature, max_tokens):
         options["temperature"] = temperature
     if max_tokens:
         options["num_predict"] = max_tokens
-    with httpx.Client(timeout=120) as client:
+    with ollama_lease(), httpx.Client(timeout=request_timeout_seconds()) as client:
         resp = client.post(
-            f"{base}/api/chat",
+            f"{base.rstrip('/')}/api/chat",
             json={
                 "model": spec.model,
                 "messages": [
