@@ -7,12 +7,13 @@ ollama via httpx).
 
 Each alias resolves to a Spec list filtered by `available` (key set +
 within monthly budget) and a `call_chain` callable that walks the list,
-falling through on classified-as-transient errors (quota / 429 / 401 /
-5xx / network). Token usage is recorded after every successful call.
+trying every available provider after any provider failure. Token usage is
+recorded after every successful call.
 """
 from __future__ import annotations
 
 import os
+import time
 from collections.abc import Callable
 from typing import Any
 
@@ -39,7 +40,7 @@ from .usage import record_usage
 # can't carry.
 #
 # Cost reference (input / output per M tokens, May 2026):
-#   groq:llama-3.3-70b               free (rate-limited)
+#   groq:qwen3.6-27b                 free (rate-limited)
 #   google:gemini-2.5-flash          free tier — 1500 RPD per GCP project
 #   deepinfra:llama-3.1-8b           $0.04  / $0.04
 #   deepseek:deepseek-v4-flash       $0.14  / $0.28   (reasoning, thinks by default)
@@ -53,8 +54,8 @@ from .usage import record_usage
 #   openai:gpt-5                     $3     / $15
 DEFAULT_ALIASES: dict[str, list[Spec]] = {
     "auto:smart": [
-        Spec("google", "gemini-2.5-flash"),
         Spec("deepseek", "deepseek-v4-flash"),
+        Spec("google", "gemini-2.5-flash"),
         Spec("deepinfra", "meta-llama/Meta-Llama-3.3-70B-Instruct"),
         Spec("google-paid", "gemini-2.5-flash"),
         Spec("together", "meta-llama/Llama-3.3-70B-Instruct-Lite"),
@@ -65,7 +66,7 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
         Spec("openai", "gpt-5"),
     ],
     "auto:fast": [
-        Spec("groq", "llama-3.3-70b-versatile"),
+        Spec("groq", "qwen/qwen3.6-27b"),
         Spec("google", "gemini-2.5-flash"),
         Spec("deepinfra", "meta-llama/Meta-Llama-3.1-8B-Instruct"),
         Spec("google-paid", "gemini-2.5-flash"),
@@ -79,17 +80,17 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
         Spec("anthropic", "claude-sonnet-4-6"),
     ],
     "auto:code": [
-        Spec("google", "gemini-2.5-flash"),
-        Spec("groq", "llama-3.3-70b-versatile"),
         Spec("deepseek", "deepseek-v4-flash"),
+        Spec("google", "gemini-2.5-flash"),
+        Spec("groq", "qwen/qwen3.6-27b"),
         Spec("deepinfra", "meta-llama/Meta-Llama-3.3-70B-Instruct"),
         Spec("google-paid", "gemini-2.5-flash"),
         Spec("openai", "gpt-5-mini"),
     ],
     "auto:reasoning": [
-        Spec("google", "gemini-2.5-pro"),
         Spec("deepseek", "deepseek-v4-flash"),
         Spec("deepseek", "deepseek-v4-pro"),
+        Spec("google", "gemini-2.5-pro"),
         Spec("deepinfra", "deepseek-ai/DeepSeek-V3"),
         Spec("google-paid", "gemini-2.5-pro"),
         Spec("anthropic", "claude-sonnet-4-6"),
@@ -102,8 +103,8 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
         Spec("google-paid", "gemini-2.5-pro"),
     ],
     "auto:big": [
-        Spec("google", "gemini-2.5-pro"),
         Spec("deepseek", "deepseek-v4-flash"),
+        Spec("google", "gemini-2.5-pro"),
         Spec("deepinfra", "meta-llama/Meta-Llama-3.3-70B-Instruct"),
         Spec("google-paid", "gemini-2.5-pro"),
         Spec("openai", "gpt-5"),
@@ -125,7 +126,7 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
         Spec("google-paid", "gemini-2.5-flash"),
     ],
     "auto:cheap": [
-        Spec("groq", "llama-3.3-70b-versatile"),
+        Spec("groq", "qwen/qwen3.6-27b"),
         Spec("google", "gemini-2.5-flash"),
         Spec("deepinfra", "meta-llama/Meta-Llama-3.1-8B-Instruct"),
         Spec("deepinfra", "meta-llama/Meta-Llama-3.3-70B-Instruct"),
@@ -173,7 +174,7 @@ class CallSpec:
     """A resolved (alias-or-direct) spec list with a ready-to-call callable.
 
     `call(system, prompt, **kwargs)` walks the available chain, falling
-    through to the next provider on transient errors. Raises after the
+    through to the next provider on every provider error. Raises after the
     entire chain fails. Token usage is recorded after each successful
     call into the local monthly tracker.
     """
@@ -190,34 +191,43 @@ class CallSpec:
         max_tokens: int | None = None,
     ) -> str:
         last_err: Exception | None = None
-        for spec in self.specs:
-            try:
-                text, usage = providers.call(
-                    spec,
-                    system=system,
-                    prompt=prompt,
-                    temperature=temperature,
-                    max_tokens=max_tokens,
+        for attempt in range(2):
+            all_transient = True
+            for spec in self.specs:
+                try:
+                    text, usage = providers.call(
+                        spec,
+                        system=system,
+                        prompt=prompt,
+                        temperature=temperature,
+                        max_tokens=max_tokens,
+                    )
+                    if usage:
+                        try:
+                            record_usage(
+                                spec.provider,
+                                spec.model,
+                                usage.get("input_tokens", 0),
+                                usage.get("output_tokens", 0),
+                            )
+                        except Exception:  # noqa: BLE001, S110 - usage must not break inference
+                            # Usage tracking must never break inference.
+                            pass
+                    return text
+                except Exception as e:  # noqa: BLE001 - provider isolation is the fallback contract
+                    print(f"[fallback] {spec.label} failed: {e} — trying next")
+                    last_err = e
+                    all_transient = all_transient and isinstance(
+                        e, providers.TransientError
+                    )
+            if attempt == 0 and all_transient:
+                print(
+                    "[fallback] entire chain failed transiently, "
+                    "waiting 8000ms then retrying once"
                 )
-                if usage:
-                    try:
-                        record_usage(
-                            spec.provider,
-                            spec.model,
-                            usage.get("input_tokens", 0),
-                            usage.get("output_tokens", 0),
-                        )
-                    except Exception:  # noqa: BLE001, S110 - usage must not break inference
-                        # Usage tracking must never break inference.
-                        pass
-                return text
-            except providers.TransientError as e:
-                print(f"[fallback] {spec.label} failed: {e} — trying next")
-                last_err = e
+                time.sleep(8)
                 continue
-            except Exception:
-                # Non-transient — fail loudly so callers can surface it.
-                raise
+            break
         raise RuntimeError(
             f"All providers failed for chain [{', '.join(s.label for s in self.specs)}]: {last_err}"
         )

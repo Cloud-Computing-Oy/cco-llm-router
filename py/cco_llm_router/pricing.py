@@ -39,8 +39,7 @@ PRICING: dict[str, Price] = {
     "openai:gpt-5-nano": {"input_per_m": 0.05, "output_per_m": 0.4},
 
     # --- groq (free tier until rate-limited) ---
-    "groq:llama-3.3-70b-versatile": _Z,
-    "groq:llama-3.1-8b-instant": _Z,
+    "groq:qwen/qwen3.6-27b": _Z,
 
     # --- deepinfra ---
     "deepinfra:meta-llama/Meta-Llama-3.1-8B-Instruct": {"input_per_m": 0.04, "output_per_m": 0.04},

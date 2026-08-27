@@ -21,6 +21,21 @@ def test_laptop_alias_matches_typescript_chain():
     assert DEFAULT_ALIASES["auto:facf-laptop"] == DEFAULT_ALIASES["auto:laptop-assisted"]
 
 
+def test_deepseek_leads_strong_cloud_routes():
+    for alias in ("auto:smart", "auto:code", "auto:reasoning", "auto:big"):
+        assert DEFAULT_ALIASES[alias][0].label == "deepseek:deepseek-v4-flash"
+
+
+def test_retired_groq_models_are_not_in_default_routes():
+    groq_models = {
+        spec.model
+        for chain in DEFAULT_ALIASES.values()
+        for spec in chain
+        if spec.provider == "groq"
+    }
+    assert groq_models == {"qwen/qwen3.6-27b"}
+
+
 def test_healthy_worker_allows_one_lease(monkeypatch):
     monkeypatch.setenv("OLLAMA_BASE_URL", "http://laptop.test:11434/")
     monkeypatch.setattr(

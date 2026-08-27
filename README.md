@@ -89,20 +89,23 @@ on the corresponding stronger route. Callers may supply `taskKind` and
 `taskRisk` metadata or explicitly set `alias` to override the classifier.
 `chatJsonStrict()` remains on `auto:smart` by default for schema reliability.
 
-Available default aliases — strict cost-first: own-server Ollama leads,
-then free cloud tiers, then ultra-cheap DeepInfra/Together buffer, then
-Google paid / Anthropic / OpenAI as fallbacks:
+Available default aliases prioritize currently supported, reliable models.
+DeepSeek V4 Flash leads general, coding, reasoning, and large-context cloud
+routes; cheaper specialist routes retain their own latency/cost ordering.
+Every available provider in a chain is attempted before the request fails.
+Only caller cancellation stops traversal immediately. The whole chain is
+retried once only when every failure in the first pass is transient.
 
-| Alias | Use case | Chain (cost-first) |
+| Alias | Use case | Attempt order |
 |-------|----------|--------------------|
-| `auto:smart` | Chat, generic | ollama → google-free → openrouter-free → **deepinfra-70b** → google-paid → together → anthropic → openai |
-| `auto:fast` | Classification, short tasks | ollama-e2b → groq-free → google-free → openrouter-free → **deepinfra-8b** → google-paid → openai-mini |
-| `auto:translate` | Batch translation | ollama → google-free → **deepinfra-70b** → google-paid → anthropic |
-| `auto:code` | Code generation | ollama → google-free → openrouter-free → groq-free → **deepinfra-70b** → google-paid → openai-mini |
-| `auto:reasoning` | Planning, multi-step (cloud-first — no thinking-grade local) | google-free-pro → openrouter-free → **deepinfra-deepseek-v3** → google-paid-pro → anthropic → openai → ollama |
-| `auto:big` | Long context | ollama-26b → openrouter-free → google-free-pro → **deepinfra-70b** → google-paid-pro → openai |
-| `auto:cheap` | Cost-first, strict | ollama → openrouter-free → groq-free → google-free → **deepinfra-8b** → **deepinfra-70b** → google-paid-flash |
-| `auto:paid` | Top quality, opt-in | openai → anthropic → google-paid-pro |
+| `auto:smart` | Chat, generic | **deepseek-v4-flash** → google-free → deepinfra-70b → google-paid → together → google-pro → deepseek-v4-pro → paid quality tiers |
+| `auto:fast` | Classification, short tasks | groq-qwen-27b → google-free → deepinfra-8b → google-paid → openai-mini → anthropic-haiku |
+| `auto:translate` | Batch translation | google-free → deepinfra-70b → google-paid → anthropic |
+| `auto:code` | Code generation | **deepseek-v4-flash** → google-free → groq-qwen-27b → deepinfra-70b → google-paid → openai-mini |
+| `auto:reasoning` | Planning, multi-step | **deepseek-v4-flash** → deepseek-v4-pro → google-free-pro → deepinfra-deepseek-v3 → paid quality tiers |
+| `auto:big` | Long context | **deepseek-v4-flash** → google-free-pro → deepinfra-70b → google-paid-pro → openai |
+| `auto:cheap` | Cost-first, strict | groq-qwen-27b → google-free → deepinfra-8b → deepinfra-70b → google-paid-flash |
+| `auto:paid` | Top quality, opt-in | openai → openai-mini → anthropic → google-paid-pro |
 | `auto:local` | Air-gapped | ollama only |
 | `auto:laptop-assisted` | Opt-in intermittent laptop GPU | ollama → google-free → deepinfra-8b → google-paid |
 | `auto:kimi-pilot` | Explicit Kimi K3 pilot | moonshot:kimi-k3 only |

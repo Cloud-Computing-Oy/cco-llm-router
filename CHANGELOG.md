@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.16.0] - 2026-08-27
+
+### Changed
+
+- Prioritize the currently available DeepSeek V4 Flash model for general,
+  coding, reasoning, and large-context cloud routes.
+- Replace Groq's retired `llama-3.3-70b-versatile` default with the available
+  `qwen/qwen3.6-27b` model.
+- Try every available provider before failing a request, regardless of an
+  upstream provider's error wording. Caller cancellation still stops
+  immediately, and a full-chain retry happens only when every failure was
+  transient.
+
 ## [0.15.2] - 2026-08-27
 
 ### Fixed
@@ -82,3 +95,4 @@
 [0.15.0]: https://github.com/Cloud-Computing-Oy/cco-llm-router/compare/v0.14.0...v0.15.0
 [0.15.1]: https://github.com/Cloud-Computing-Oy/cco-llm-router/compare/v0.15.0...v0.15.1
 [0.15.2]: https://github.com/Cloud-Computing-Oy/cco-llm-router/compare/v0.15.1...v0.15.2
+[0.16.0]: https://github.com/Cloud-Computing-Oy/cco-llm-router/compare/v0.15.2...v0.16.0

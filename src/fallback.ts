@@ -12,24 +12,13 @@ type Inner = {
   model: LanguageModel;
 };
 
-const SHOULD_FALLBACK_PATTERNS = [
-  /invalid.*api.?key/i,
-  /unauthor/i,
-  /403/,
-  /401/,
+const TRANSIENT_PATTERNS = [
   /rate.?limit/i,
   /quota/i,
   /429/,
-  /model.*not.*found/i,
-  /404/,
-  /no endpoints found/i,
   /service unavailable/i,
   /503/,
-  /decommissioned/i,
-  /no longer supported/i,
-  /deprecated/i,
   /tokens per minute/i,
-  /context.*length/i,
   /econnrefused/i,
   /econnreset/i,
   /etimedout/i,
@@ -38,23 +27,19 @@ const SHOULD_FALLBACK_PATTERNS = [
   /insufficient.*quota/i,
   /payment.*required/i,
   /402/,
-  /ollama circuit open/i,
-  /ollama worker busy/i,
-  /ollama health check failed/i,
   /ollama request exceeded/i,
 ];
 
-function shouldFallback(err: unknown): boolean {
+function isTransient(err: unknown): boolean {
   const msg = err instanceof Error ? `${err.name} ${err.message}` : String(err);
-  return SHOULD_FALLBACK_PATTERNS.some((p) => p.test(msg));
+  return TRANSIENT_PATTERNS.some((p) => p.test(msg));
+}
+
+function isAbort(err: unknown): boolean {
+  return err instanceof Error && err.name === 'AbortError';
 }
 
 const RETRY_DELAY_MS = 8_000;
-
-function isTransientRateLimit(err: unknown): boolean {
-  const msg = err instanceof Error ? `${err.name} ${err.message}` : String(err);
-  return /rate.?limit|429|quota|tokens per minute|service unavailable|503/i.test(msg);
-}
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
@@ -77,8 +62,9 @@ type StreamResult = Awaited<ReturnType<LanguageModelV3['doStream']>>;
 async function attemptGenerate(
   candidates: Inner[],
   options: Parameters<LanguageModelV3['doGenerate']>[0],
-): Promise<{ value?: GenerateResult; lastErr?: unknown }> {
+): Promise<{ value?: GenerateResult; lastErr?: unknown; allTransient: boolean }> {
   let lastErr: unknown;
+  let allTransient = true;
   for (let i = 0; i < candidates.length; i++) {
     const c = candidates[i];
     let ollamaLease: Awaited<ReturnType<typeof acquireOllamaLease>> | undefined;
@@ -87,27 +73,30 @@ async function attemptGenerate(
       const operation = () => (c.model as LanguageModelV3).doGenerate(options);
       const result = ollamaLease ? await ollamaLease.run(operation) : await operation();
       tryRecord(c, result.usage);
-      return { value: result };
+      return { value: result, allTransient: false };
     } catch (err) {
+      if (options.abortSignal?.aborted || isAbort(err)) throw err;
       lastErr = err;
+      allTransient &&= isTransient(err);
       const reason = err instanceof Error ? err.message.slice(0, 120) : String(err).slice(0, 120);
-      if (!shouldFallback(err) || i === candidates.length - 1) {
+      if (i === candidates.length - 1) {
         console.warn(`[fallback] ${c.label} failed (terminal): ${reason}`);
-        return { lastErr: err };
+        return { lastErr: err, allTransient };
       }
       console.warn(`[fallback] ${c.label} failed: ${reason} — trying next`);
     } finally {
       ollamaLease?.release();
     }
   }
-  return { lastErr };
+  return { lastErr, allTransient };
 }
 
 async function attemptStream(
   candidates: Inner[],
   options: Parameters<LanguageModelV3['doStream']>[0],
-): Promise<{ value?: StreamResult; lastErr?: unknown }> {
+): Promise<{ value?: StreamResult; lastErr?: unknown; allTransient: boolean }> {
   let lastErr: unknown;
+  let allTransient = true;
   for (let i = 0; i < candidates.length; i++) {
     const c = candidates[i];
     let ollamaLease: Awaited<ReturnType<typeof acquireOllamaLease>> | undefined;
@@ -121,20 +110,22 @@ async function attemptStream(
       // teeing the stream through a TransformStream.
       const tapped = tapStreamForUsage(result.stream, c, ollamaLease?.release);
       releaseWithStream = Boolean(ollamaLease);
-      return { value: { ...result, stream: tapped } };
+      return { value: { ...result, stream: tapped }, allTransient: false };
     } catch (err) {
+      if (options.abortSignal?.aborted || isAbort(err)) throw err;
       lastErr = err;
+      allTransient &&= isTransient(err);
       const reason = err instanceof Error ? err.message.slice(0, 120) : String(err).slice(0, 120);
-      if (!shouldFallback(err) || i === candidates.length - 1) {
+      if (i === candidates.length - 1) {
         console.warn(`[fallback] ${c.label} failed (terminal): ${reason}`);
-        return { lastErr: err };
+        return { lastErr: err, allTransient };
       }
       console.warn(`[fallback] ${c.label} failed: ${reason} — trying next`);
     } finally {
       if (!releaseWithStream) ollamaLease?.release();
     }
   }
-  return { lastErr };
+  return { lastErr, allTransient };
 }
 
 function tapStreamForUsage(
@@ -192,8 +183,8 @@ export function createFallbackModel(candidates: Inner[]): LanguageModelV3 {
     async doGenerate(options) {
       const r1 = await attemptGenerate(candidates, options);
       if (r1.value !== undefined) return r1.value;
-      if (!isTransientRateLimit(r1.lastErr)) throw r1.lastErr;
-      console.warn(`[fallback] entire chain rate-limited, waiting ${RETRY_DELAY_MS}ms then retrying once`);
+      if (!r1.allTransient) throw r1.lastErr;
+      console.warn(`[fallback] entire chain failed transiently, waiting ${RETRY_DELAY_MS}ms then retrying once`);
       await sleep(RETRY_DELAY_MS);
       const r2 = await attemptGenerate(candidates, options);
       if (r2.value !== undefined) return r2.value;
@@ -202,8 +193,8 @@ export function createFallbackModel(candidates: Inner[]): LanguageModelV3 {
     async doStream(options) {
       const r1 = await attemptStream(candidates, options);
       if (r1.value !== undefined) return r1.value;
-      if (!isTransientRateLimit(r1.lastErr)) throw r1.lastErr;
-      console.warn(`[fallback] entire chain rate-limited, waiting ${RETRY_DELAY_MS}ms then retrying once`);
+      if (!r1.allTransient) throw r1.lastErr;
+      console.warn(`[fallback] entire chain failed transiently, waiting ${RETRY_DELAY_MS}ms then retrying once`);
       await sleep(RETRY_DELAY_MS);
       const r2 = await attemptStream(candidates, options);
       if (r2.value !== undefined) return r2.value;

@@ -23,7 +23,7 @@ import type { Provider, Spec } from './types';
  *
  * Cost reference (input / output per M tokens, May 2026):
  *   ollama:*                         free (compute on dev / local box)
- *   groq:llama-3.3-70b               free (rate-limited)
+ *   groq:qwen3.6-27b                 free (rate-limited)
  *   openrouter:*:free                free (small daily cap per account)
  *   google:gemini-2.5-flash          free tier — 1500 RPD per GCP project
  *   deepinfra:llama-3.1-8b           $0.04 / $0.04   (ultra-cheap tier)
@@ -68,8 +68,8 @@ import type { Provider, Spec } from './types';
 export const DEFAULT_ALIASES: Record<string, Spec[]> = {
   // Chat / generic. Reliable providers first.
   'auto:smart': [
-    { provider: 'google', model: 'gemini-2.5-flash' },
     { provider: 'deepseek', model: 'deepseek-v4-flash' },
+    { provider: 'google', model: 'gemini-2.5-flash' },
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.3-70B-Instruct' },
     { provider: 'google-paid', model: 'gemini-2.5-flash' },
     { provider: 'together', model: 'meta-llama/Llama-3.3-70B-Instruct-Lite' },
@@ -81,7 +81,7 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
   ],
   // Classification, language detection, short tasks.
   'auto:fast': [
-    { provider: 'groq', model: 'llama-3.3-70b-versatile' },
+    { provider: 'groq', model: 'qwen/qwen3.6-27b' },
     { provider: 'google', model: 'gemini-2.5-flash' },
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.1-8B-Instruct' },
     { provider: 'google-paid', model: 'gemini-2.5-flash' },
@@ -97,18 +97,18 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
   ],
   // Code generation / completion.
   'auto:code': [
-    { provider: 'google', model: 'gemini-2.5-flash' },
-    { provider: 'groq', model: 'llama-3.3-70b-versatile' },
     { provider: 'deepseek', model: 'deepseek-v4-flash' },
+    { provider: 'google', model: 'gemini-2.5-flash' },
+    { provider: 'groq', model: 'qwen/qwen3.6-27b' },
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.3-70B-Instruct' },
     { provider: 'google-paid', model: 'gemini-2.5-flash' },
     { provider: 'openai', model: 'gpt-5-mini' },
   ],
   // Reasoning / planning / multi-step.
   'auto:reasoning': [
-    { provider: 'google', model: 'gemini-2.5-pro' },
     { provider: 'deepseek', model: 'deepseek-v4-flash' },
     { provider: 'deepseek', model: 'deepseek-v4-pro' },
+    { provider: 'google', model: 'gemini-2.5-pro' },
     { provider: 'deepinfra', model: 'deepseek-ai/DeepSeek-V3' },
     { provider: 'google-paid', model: 'gemini-2.5-pro' },
     { provider: 'anthropic', model: 'claude-sonnet-4-6' },
@@ -126,8 +126,8 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
   // 1500-RPD quota quickly.
   // Large-context tasks (long docs, big diffs).
   'auto:big': [
-    { provider: 'google', model: 'gemini-2.5-pro' },
     { provider: 'deepseek', model: 'deepseek-v4-flash' },
+    { provider: 'google', model: 'gemini-2.5-pro' },
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.3-70B-Instruct' },
     { provider: 'google-paid', model: 'gemini-2.5-pro' },
     { provider: 'openai', model: 'gpt-5' },
@@ -158,7 +158,7 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
   // Cost-first: free + ultra-cheap providers; expensive tiers excluded.
   // Excludes ollama (unreliable on CPU hosts) and openrouter:free (prose).
   'auto:cheap': [
-    { provider: 'groq', model: 'llama-3.3-70b-versatile' },
+    { provider: 'groq', model: 'qwen/qwen3.6-27b' },
     { provider: 'google', model: 'gemini-2.5-flash' },
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.1-8B-Instruct' },
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.3-70B-Instruct' },
