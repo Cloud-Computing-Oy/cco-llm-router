@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.1] - 2026-08-27
+
+### Fixed
+
+- Ship the npm CLI entry points as executable JavaScript bundles so Node can
+  run `claude-router` and `cco-llm-usage` from `node_modules`.
+
 ## [0.15.0] - 2026-08-27
 
 ### Added
@@ -65,3 +72,4 @@
 [0.13.1]: https://github.com/Cloud-Computing-Oy/cco-llm-router/compare/v0.13.0...v0.13.1
 [0.14.0]: https://github.com/Cloud-Computing-Oy/cco-llm-router/compare/v0.13.1...v0.14.0
 [0.15.0]: https://github.com/Cloud-Computing-Oy/cco-llm-router/compare/v0.14.0...v0.15.0
+[0.15.1]: https://github.com/Cloud-Computing-Oy/cco-llm-router/compare/v0.15.0...v0.15.1
