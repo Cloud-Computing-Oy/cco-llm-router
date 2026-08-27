@@ -1,5 +1,4 @@
 import pytest
-
 from cco_llm_router.catalog import MODEL_CATALOG
 from cco_llm_router.router import resolve_model
 
