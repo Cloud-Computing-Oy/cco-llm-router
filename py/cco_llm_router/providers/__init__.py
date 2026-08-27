@@ -64,7 +64,7 @@ def call(spec, *, system: str, prompt: str, temperature, max_tokens):
                 from . import anthropic as p
             case "google" | "google-paid":
                 from . import google as p
-            case "openai" | "groq" | "openrouter" | "deepinfra" | "together" | "deepseek" | "moonshot":
+            case "openai" | "groq" | "openrouter" | "deepinfra" | "together" | "deepseek" | "moonshot" | "dashscope" | "zai" | "minimax" | "mistral" | "nvidia":
                 from . import openai_compat as p
             case "ollama":
                 from . import ollama as p

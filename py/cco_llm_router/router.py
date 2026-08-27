@@ -19,6 +19,7 @@ from typing import Any
 
 from . import providers
 from .budget import within_budget
+from .catalog import has_reviewed_automatic_pricing, requires_unknown_pricing_approval
 from .providers.google import google_key_count
 from .types import Provider, Spec
 from .usage import record_usage
@@ -136,6 +137,23 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
     "auto:kimi-pilot": [
         Spec("moonshot", "kimi-k3"),
     ],
+    "family:qwen": [
+        Spec("groq", "qwen/qwen3.6-27b"),
+        Spec("dashscope", "qwen3.8-max"),
+    ],
+    "family:kimi": [Spec("moonshot", "kimi-k3")],
+    "family:glm": [Spec("zai", "glm-5")],
+    "family:llama": [Spec("ollama", "llama4:scout")],
+    "family:minimax": [
+        Spec("minimax", "MiniMax-M2.7"),
+        Spec("nvidia", "minimaxai/minimax-m2.7"),
+    ],
+    "family:mistral": [
+        Spec("mistral", "mistral-large-latest"),
+        Spec("nvidia", "mistralai/mistral-nemotron"),
+    ],
+    "family:gemma": [Spec("ollama", "gemma3:27b")],
+    "family:nemotron": [Spec("nvidia", "nvidia/nemotron-3-super-120b-a12b")],
 }
 
 
@@ -155,6 +173,11 @@ _HAS_KEY: dict[str, Callable[[], bool]] = {
     "together": lambda: bool(os.environ.get("TOGETHER_API_KEY")),
     "deepseek": lambda: bool(os.environ.get("DEEPSEEK_API_KEY")),
     "moonshot": lambda: bool(os.environ.get("MOONSHOT_API_KEY")),
+    "dashscope": lambda: bool(os.environ.get("DASHSCOPE_API_KEY")),
+    "zai": lambda: bool(os.environ.get("ZAI_API_KEY")),
+    "minimax": lambda: bool(os.environ.get("MINIMAX_API_KEY")),
+    "mistral": lambda: bool(os.environ.get("MISTRAL_API_KEY")),
+    "nvidia": lambda: bool(os.environ.get("NVIDIA_API_KEY")),
 }
 
 
@@ -240,6 +263,7 @@ def resolve_model(
     data_class: str = "internal",
     allow_pilot: bool = False,
     bypass_budget: bool = False,
+    allow_unknown_pricing: bool = False,
 ) -> CallSpec:
     """Resolve an alias to a CallSpec with the available subset of the chain.
 
@@ -252,7 +276,9 @@ def resolve_model(
     """
     if data_class not in {"public", "synthetic", "internal", "confidential", "restricted"}:
         raise ValueError(f"Unknown data class: {data_class}")
-    pilot_requested = alias == "auto:kimi-pilot" or alias.startswith("moonshot:")
+    pilot_requested = alias in {"auto:kimi-pilot", "family:kimi"} or alias.startswith(
+        "moonshot:"
+    )
     if pilot_requested and (not allow_pilot or data_class != "public"):
         raise RuntimeError(
             'Moonshot/Kimi is an explicit public-data pilot; '
@@ -265,7 +291,7 @@ def resolve_model(
         raise RuntimeError(
             'FACF laptop routes accept only data_class="public" or "synthetic"'
         )
-    if ":" in alias and not alias.startswith("auto:"):
+    if ":" in alias and not alias.startswith(("auto:", "family:")):
         provider, _, model = alias.partition(":")
         if not _has_key(provider):
             raise RuntimeError(f"Provider not available: {provider} (missing key?)")
@@ -274,15 +300,32 @@ def resolve_model(
                 f"Provider budget unavailable: {provider}; "
                 "bypass_budget requires explicit approval"
             )
-        return CallSpec([Spec(provider, model)])
+        spec = Spec(provider, model)
+        if not allow_unknown_pricing and requires_unknown_pricing_approval(spec):
+            raise RuntimeError(
+                f"Pricing is not reviewed for {spec.label}; "
+                "set allow_unknown_pricing=True"
+            )
+        return CallSpec([spec])
 
     table = aliases if aliases is not None else DEFAULT_ALIASES
     chain = table.get(alias)
     if chain is None:
         raise RuntimeError(f"Unknown model alias: {alias}")
 
-    available = _expand_google_keys([s for s in chain if _provider_available(s.provider)])
+    available_by_key = [s for s in chain if _provider_available(s.provider)]
+    filtered = (
+        available_by_key
+        if allow_unknown_pricing
+        else [s for s in available_by_key if has_reviewed_automatic_pricing(s)]
+    )
+    available = _expand_google_keys(filtered)
     if not available:
+        if available_by_key and not allow_unknown_pricing:
+            raise RuntimeError(
+                f"No reviewed-price provider for alias {alias}; "
+                "set allow_unknown_pricing=True"
+            )
         raise RuntimeError(
             f"No available provider for alias {alias} — set at least one API key"
         )

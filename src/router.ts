@@ -10,8 +10,14 @@ import { deepinfraAvailable, deepinfraModel } from './providers/deepinfra';
 import { togetherAvailable, togetherModel } from './providers/together';
 import { deepseekAvailable, deepseekModel } from './providers/deepseek';
 import { moonshotAvailable, moonshotModel } from './providers/moonshot';
+import { dashscopeAvailable, dashscopeModel } from './providers/dashscope';
+import { zaiAvailable, zaiModel } from './providers/zai';
+import { minimaxAvailable, minimaxModel } from './providers/minimax';
+import { mistralAvailable, mistralModel } from './providers/mistral';
+import { nvidiaAvailable, nvidiaModel } from './providers/nvidia';
 import { createFallbackModel } from './fallback';
 import { withinBudget } from './budget';
+import { hasReviewedAutomaticPricing, requiresUnknownPricingApproval } from './catalog';
 
 export type { Provider, Spec } from './types';
 import type { Provider, Spec } from './types';
@@ -169,6 +175,25 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
   'auto:kimi-pilot': [
     { provider: 'moonshot', model: 'kimi-k3' },
   ],
+  'family:qwen': [
+    { provider: 'groq', model: 'qwen/qwen3.6-27b' },
+    { provider: 'dashscope', model: 'qwen3.8-max' },
+  ],
+  'family:kimi': [{ provider: 'moonshot', model: 'kimi-k3' }],
+  'family:glm': [{ provider: 'zai', model: 'glm-5' }],
+  'family:llama': [{ provider: 'ollama', model: 'llama4:scout' }],
+  'family:minimax': [
+    { provider: 'minimax', model: 'MiniMax-M2.7' },
+    { provider: 'nvidia', model: 'minimaxai/minimax-m2.7' },
+  ],
+  'family:mistral': [
+    { provider: 'mistral', model: 'mistral-large-latest' },
+    { provider: 'nvidia', model: 'mistralai/mistral-nemotron' },
+  ],
+  'family:gemma': [{ provider: 'ollama', model: 'gemma3:27b' }],
+  'family:nemotron': [
+    { provider: 'nvidia', model: 'nvidia/nemotron-3-super-120b-a12b' },
+  ],
 };
 
 function hasKey(p: Provider): boolean {
@@ -195,6 +220,16 @@ function hasKey(p: Provider): boolean {
       return deepseekAvailable;
     case 'moonshot':
       return moonshotAvailable;
+    case 'dashscope':
+      return dashscopeAvailable;
+    case 'zai':
+      return zaiAvailable;
+    case 'minimax':
+      return minimaxAvailable;
+    case 'mistral':
+      return mistralAvailable;
+    case 'nvidia':
+      return nvidiaAvailable;
   }
 }
 
@@ -231,6 +266,16 @@ function instantiate(spec: Spec, perCallKeys?: PerCallKeys): LanguageModel {
       return deepseekModel(spec.model, opts);
     case 'moonshot':
       return moonshotModel(spec.model, opts);
+    case 'dashscope':
+      return dashscopeModel(spec.model, opts);
+    case 'zai':
+      return zaiModel(spec.model, opts);
+    case 'minimax':
+      return minimaxModel(spec.model, opts);
+    case 'mistral':
+      return mistralModel(spec.model, opts);
+    case 'nvidia':
+      return nvidiaModel(spec.model, opts);
   }
 }
 
@@ -281,6 +326,8 @@ export type ResolveOptions = {
   allowPilot?: boolean;
   /** Explicitly allow a direct selection to bypass the local budget safety net. */
   bypassBudget?: boolean;
+  /** Allow models whose current token price has not been reviewed. */
+  allowUnknownPricing?: boolean;
 };
 
 export type Router = {
@@ -289,7 +336,7 @@ export type Router = {
 };
 
 const DIRECT_RE =
-  /^(anthropic|google|google-paid|openai|groq|openrouter|ollama|deepinfra|together|deepseek|moonshot):(.+)$/;
+  /^(anthropic|google|google-paid|openai|groq|openrouter|ollama|deepinfra|together|deepseek|moonshot|dashscope|zai|minimax|mistral|nvidia):(.+)$/;
 
 export function createRouter(opts: RouterOptions = {}): Router {
   const aliases = { ...DEFAULT_ALIASES, ...(opts.aliases ?? {}) };
@@ -305,7 +352,8 @@ export function createRouter(opts: RouterOptions = {}): Router {
   ): { model: LanguageModel; specs: Spec[] } {
     const perCallKeys = callOpts.perCallKeys;
     const dataClass = callOpts.dataClass ?? 'internal';
-    const pilotRequested = alias === 'auto:kimi-pilot' || alias.startsWith('moonshot:');
+    const pilotRequested =
+      alias === 'auto:kimi-pilot' || alias === 'family:kimi' || alias.startsWith('moonshot:');
     if (pilotRequested && (!callOpts.allowPilot || dataClass !== 'public')) {
       throw new Error(
         'Moonshot/Kimi is an explicit public-data pilot; set allowPilot=true and dataClass="public"',
@@ -327,15 +375,28 @@ export function createRouter(opts: RouterOptions = {}): Router {
           `Provider budget unavailable: ${spec.provider}; bypassBudget requires explicit approval`,
         );
       }
+      if (!callOpts.allowUnknownPricing && requiresUnknownPricingApproval(spec)) {
+        throw new Error(
+          `Pricing is not reviewed for ${specLabel(spec)}; set allowUnknownPricing=true`,
+        );
+      }
       return { model: instantiate(spec, perCallKeys), specs: [spec] };
     }
     const chain = aliases[alias];
     if (!chain) throw new Error(`Unknown model alias: ${alias}`);
     // When per-call keys are supplied, skip the env-pool expansion for
     // `google` — a BYOK key is a single concrete credential, not a pool.
-    const filtered = chain.filter((s) => isAvailable(s.provider, perCallKeys));
+    const availableByKey = chain.filter((s) => isAvailable(s.provider, perCallKeys));
+    const filtered = callOpts.allowUnknownPricing
+      ? availableByKey
+      : availableByKey.filter(hasReviewedAutomaticPricing);
     const available = perCallKeys?.google ? filtered : expandGoogleKeys(filtered);
     if (available.length === 0) {
+      if (availableByKey.length > 0 && !callOpts.allowUnknownPricing) {
+        throw new Error(
+          `No reviewed-price provider for alias ${alias}; set allowUnknownPricing=true`,
+        );
+      }
       throw new Error(`No available provider for alias ${alias} — set at least one API key`);
     }
     if (available.length === 1 && available[0].provider !== 'ollama') {

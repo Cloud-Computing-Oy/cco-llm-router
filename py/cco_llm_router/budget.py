@@ -30,6 +30,11 @@ _ENV_KEY: dict[str, str] = {
     "together": "CCO_LLM_BUDGET_TOGETHER_USD",
     "deepseek": "CCO_LLM_BUDGET_DEEPSEEK_USD",
     "moonshot": "CCO_LLM_BUDGET_MOONSHOT_USD",
+    "dashscope": "CCO_LLM_BUDGET_DASHSCOPE_USD",
+    "zai": "CCO_LLM_BUDGET_ZAI_USD",
+    "minimax": "CCO_LLM_BUDGET_MINIMAX_USD",
+    "mistral": "CCO_LLM_BUDGET_MISTRAL_USD",
+    "nvidia": "CCO_LLM_BUDGET_NVIDIA_USD",
 }
 
 
