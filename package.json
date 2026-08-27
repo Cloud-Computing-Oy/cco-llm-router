@@ -1,6 +1,6 @@
 {
   "name": "@cloud-computing-oy/llm-router",
-  "version": "0.15.0",
+  "version": "0.15.1",
   "license": "Apache-2.0",
   "description": "Provider-neutral LLM fallback chains with local budget estimates and explicit public-data pilot controls.",
   "publishConfig": {
@@ -19,8 +19,8 @@
     "./cohere": "./src/cohere.ts"
   },
   "bin": {
-    "cco-llm-usage": "./src/bin/usage.ts",
-    "claude-router": "./src/bin/claude-router.ts"
+    "cco-llm-usage": "dist/usage.cjs",
+    "claude-router": "dist/claude-router.cjs"
   },
   "peerDependencies": {
     "@ai-sdk/anthropic": ">=3",
@@ -52,10 +52,13 @@
     "@types/node": "^22.19.19",
     "ai": "^6.0.177",
     "ai-sdk-ollama": "^3.8.4",
+    "esbuild": "^0.28.1",
     "tsx": "^4.23.1",
     "typescript": "^5"
   },
   "scripts": {
+    "build:cli": "esbuild src/bin/usage.ts src/bin/claude-router.ts --bundle --platform=node --format=cjs --outdir=dist --out-extension:.js=.cjs",
+    "prepack": "npm run build:cli",
     "test": "node --import tsx --test src/*.test.ts",
     "typecheck": "tsc --noEmit"
   },
