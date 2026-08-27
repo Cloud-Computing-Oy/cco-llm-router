@@ -3,6 +3,7 @@ import test from 'node:test';
 import {
   createClaudeChildEnvironment,
   listenAnthropicGateway,
+  normalizeAnthropicPrompt,
   toModelMessages,
   type GatewayConfig,
   type GatewayGenerate,
@@ -106,6 +107,20 @@ test('maps Anthropic text, tool calls, and tool results to AI SDK messages', () 
       },
     ],
   );
+});
+
+test('removes late system messages from provider conversation history', () => {
+  const prompt = normalizeAnthropicPrompt({
+    model: 'claude-sonnet-5',
+    max_tokens: 128,
+    system: [{ type: 'text', text: 'primary instructions' }],
+    messages: [
+      { role: 'user', content: 'hello' },
+      { role: 'system', content: 'late metadata from Claude Code' },
+    ],
+  });
+  assert.deepEqual(prompt.messages, [{ role: 'user', content: 'hello' }]);
+  assert.equal(prompt.system, 'primary instructions\n\nlate metadata from Claude Code');
 });
 
 test('keeps health public but requires the ephemeral token for API requests', async () => {
