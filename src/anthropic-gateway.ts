@@ -8,7 +8,7 @@ type AnthropicBlock =
   | { type: 'text'; text: string }
   | { type: 'tool_use'; id: string; name: string; input: unknown }
   | { type: 'tool_result'; tool_use_id: string; content?: unknown; is_error?: boolean };
-type AnthropicMessage = { role: 'user' | 'assistant'; content: string | AnthropicBlock[] };
+type AnthropicMessage = { role: 'user' | 'assistant' | 'system'; content: string | AnthropicBlock[] };
 type AnthropicTool = { name: string; description?: string; input_schema: Record<string, unknown> };
 
 export type AnthropicMessagesRequest = {
@@ -101,9 +101,27 @@ async function readBody(req: IncomingMessage, limit: number): Promise<unknown> {
   }
 }
 
-function systemText(system: AnthropicMessagesRequest['system']): string | undefined {
-  if (typeof system === 'string') return system;
-  return system?.filter((part) => part.type === 'text').map((part) => part.text).join('\n');
+function systemText(request: AnthropicMessagesRequest): string | undefined {
+  const parts: string[] = [];
+  if (typeof request.system === 'string') parts.push(request.system);
+  else if (request.system) {
+    parts.push(
+      ...request.system.filter((part) => part.type === 'text').map((part) => part.text),
+    );
+  }
+  for (const message of request.messages) {
+    if (message.role !== 'system') continue;
+    if (typeof message.content === 'string') parts.push(message.content);
+    else {
+      parts.push(
+        ...message.content
+          .filter((part): part is Extract<AnthropicBlock, { type: 'text' }> => part.type === 'text')
+          .map((part) => part.text),
+      );
+    }
+  }
+  const combined = parts.filter(Boolean).join('\n\n');
+  return combined || undefined;
 }
 
 function displayContent(value: unknown): string {
@@ -123,6 +141,7 @@ function displayContent(value: unknown): string {
 export function toModelMessages(messages: AnthropicMessage[]): ModelMessage[] {
   const output: ModelMessage[] = [];
   for (const message of messages) {
+    if (message.role === 'system') continue;
     if (typeof message.content === 'string') {
       output.push({ role: message.role, content: message.content });
       continue;
@@ -168,6 +187,13 @@ export function toModelMessages(messages: AnthropicMessage[]): ModelMessage[] {
   return output;
 }
 
+export function normalizeAnthropicPrompt(request: AnthropicMessagesRequest): {
+  system?: string;
+  messages: ModelMessage[];
+} {
+  return { system: systemText(request), messages: toModelMessages(request.messages) };
+}
+
 function gatewayTools(input: AnthropicTool[] | undefined): ToolSet | undefined {
   if (!input?.length) return undefined;
   return Object.fromEntries(
@@ -187,10 +213,16 @@ function gatewayToolChoice(choice: AnthropicMessagesRequest['tool_choice']) {
 
 export const defaultGatewayGenerate: GatewayGenerate = async (request, config, signal) => {
   const { model } = resolveModel(config.alias, { dataClass: config.dataClass });
+  const prompt = normalizeAnthropicPrompt(request);
+  if (process.env.CCO_CLAUDE_ROUTER_DEBUG === '1') {
+    console.error(
+      `[claude-router] prompt-shape system=${prompt.system ? 1 : 0} roles=${prompt.messages.map((message) => message.role).join(',')}`,
+    );
+  }
   const result = await generateText({
     model,
-    system: systemText(request.system),
-    messages: toModelMessages(request.messages),
+    system: prompt.system,
+    messages: prompt.messages,
     allowSystemInMessages: true,
     tools: gatewayTools(request.tools),
     toolChoice: gatewayToolChoice(request.tool_choice),
