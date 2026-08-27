@@ -16,6 +16,24 @@ test('uses the verified 8 GiB laptop model', () => {
   assert.deepEqual(DEFAULT_ALIASES['auto:facf-laptop'], DEFAULT_ALIASES['auto:laptop-assisted']);
 });
 
+test('prioritizes DeepSeek for strong cloud routes', () => {
+  for (const alias of ['auto:smart', 'auto:code', 'auto:reasoning', 'auto:big']) {
+    assert.deepEqual(DEFAULT_ALIASES[alias][0], {
+      provider: 'deepseek',
+      model: 'deepseek-v4-flash',
+    });
+  }
+});
+
+test('does not route to Groq models retired from free and developer tiers', () => {
+  const groqModels = Object.values(DEFAULT_ALIASES)
+    .flat()
+    .filter((spec) => spec.provider === 'groq')
+    .map((spec) => spec.model);
+  assert.ok(groqModels.length > 0);
+  assert.deepEqual(new Set(groqModels), new Set(['qwen/qwen3.6-27b']));
+});
+
 test.afterEach(() => {
   globalThis.fetch = originalFetch;
   if (originalBaseUrl === undefined) delete process.env.OLLAMA_BASE_URL;
