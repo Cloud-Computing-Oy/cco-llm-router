@@ -4,15 +4,29 @@ import test from 'node:test';
 import { DEFAULT_ALIASES, createRouter } from './router';
 import { estimateCostUSD, priceOf } from './pricing';
 
-test('Kimi K3 is available only through the explicit pilot alias', () => {
+test('Kimi K3 is available only through explicit pilot routes', () => {
   assert.deepEqual(DEFAULT_ALIASES['auto:kimi-pilot'], [
     { provider: 'moonshot', model: 'kimi-k3' },
   ]);
 
   for (const [alias, chain] of Object.entries(DEFAULT_ALIASES)) {
-    if (alias === 'auto:kimi-pilot') continue;
+    if (alias === 'auto:kimi-pilot' || alias === 'family:kimi') continue;
     assert.equal(chain.some((spec) => spec.provider === 'moonshot'), false, alias);
   }
+});
+
+test('Kimi family route keeps the public-data pilot guard', () => {
+  const router = createRouter();
+  const key = { perCallKeys: { moonshot: 'test-key' } };
+  assert.throws(() => router.resolveModel('family:kimi', key), /explicit public-data pilot/);
+  assert.deepEqual(
+    router.resolveModel('family:kimi', {
+      ...key,
+      allowPilot: true,
+      dataClass: 'public',
+    }).specs,
+    [{ provider: 'moonshot', model: 'kimi-k3' }],
+  );
 });
 
 test('Moonshot supports BYOK without a process-level key', () => {

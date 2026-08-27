@@ -9,7 +9,7 @@ def test_kimi_is_explicit_opt_in_only():
     assert all(
         spec.provider != "moonshot"
         for alias, chain in DEFAULT_ALIASES.items()
-        if alias != "auto:kimi-pilot"
+        if alias not in {"auto:kimi-pilot", "family:kimi"}
         for spec in chain
     )
 

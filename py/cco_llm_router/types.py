@@ -20,6 +20,11 @@ Provider = Literal[
     "together",
     "deepseek",
     "moonshot",
+    "dashscope",
+    "zai",
+    "minimax",
+    "mistral",
+    "nvidia",
 ]
 
 

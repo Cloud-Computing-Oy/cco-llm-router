@@ -65,3 +65,18 @@ export { deepinfraAvailable, deepinfraModel } from './providers/deepinfra';
 export { togetherAvailable, togetherModel } from './providers/together';
 export { deepseekAvailable, deepseekModel } from './providers/deepseek';
 export { moonshotAvailable, moonshotModel } from './providers/moonshot';
+export { dashscopeAvailable, dashscopeModel } from './providers/dashscope';
+export { zaiAvailable, zaiModel } from './providers/zai';
+export { minimaxAvailable, minimaxModel } from './providers/minimax';
+export { mistralAvailable, mistralModel } from './providers/mistral';
+export { nvidiaAvailable, nvidiaModel } from './providers/nvidia';
+export {
+  MODEL_CATALOG,
+  listCatalog,
+  hasReviewedAutomaticPricing,
+  requiresUnknownPricingApproval,
+  type CatalogEntry,
+  type LicenseClass,
+  type ModelCapabilities,
+  type ModelFamily,
+} from './catalog';

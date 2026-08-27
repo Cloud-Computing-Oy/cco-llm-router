@@ -17,7 +17,12 @@ export type Provider =
   | 'deepinfra'
   | 'together'
   | 'deepseek'
-  | 'moonshot';
+  | 'moonshot'
+  | 'dashscope'
+  | 'zai'
+  | 'minimax'
+  | 'mistral'
+  | 'nvidia';
 
 /**
  * `keyIndex` is meaningful only for the Google free provider: when the

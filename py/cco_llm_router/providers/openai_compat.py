@@ -13,6 +13,13 @@ _BASE_URL = {
     "together": "https://api.together.xyz/v1",
     "deepseek": "https://api.deepseek.com",
     "moonshot": os.environ.get("MOONSHOT_BASE_URL", "https://api.moonshot.ai/v1"),
+    "dashscope": os.environ.get(
+        "DASHSCOPE_BASE_URL", "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
+    ),
+    "zai": os.environ.get("ZAI_BASE_URL", "https://api.z.ai/api/paas/v4"),
+    "minimax": os.environ.get("MINIMAX_BASE_URL", "https://api.minimax.io/v1"),
+    "mistral": os.environ.get("MISTRAL_BASE_URL", "https://api.mistral.ai/v1"),
+    "nvidia": os.environ.get("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1"),
 }
 
 _KEY_ENV = {
@@ -23,6 +30,11 @@ _KEY_ENV = {
     "together": "TOGETHER_API_KEY",
     "deepseek": "DEEPSEEK_API_KEY",
     "moonshot": "MOONSHOT_API_KEY",
+    "dashscope": "DASHSCOPE_API_KEY",
+    "zai": "ZAI_API_KEY",
+    "minimax": "MINIMAX_API_KEY",
+    "mistral": "MISTRAL_API_KEY",
+    "nvidia": "NVIDIA_API_KEY",
 }
 
 

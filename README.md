@@ -253,7 +253,19 @@ A provider is considered available iff its env var is set:
 | together | `TOGETHER_API_KEY` |
 | deepseek | `DEEPSEEK_API_KEY` (native V4 — `api.deepseek.com`) |
 | moonshot | `MOONSHOT_API_KEY` (`MOONSHOT_BASE_URL` optionally overrides Kimi Platform) |
+| dashscope | `DASHSCOPE_API_KEY` (Qwen; optional `DASHSCOPE_BASE_URL`) |
+| zai | `ZAI_API_KEY` (GLM; optional `ZAI_BASE_URL`) |
+| minimax | `MINIMAX_API_KEY` (optional `MINIMAX_BASE_URL`) |
+| mistral | `MISTRAL_API_KEY` (optional `MISTRAL_BASE_URL`) |
+| nvidia | `NVIDIA_API_KEY` (NIM; optional `NVIDIA_BASE_URL`) |
 | cohere | `COHERE_API_KEY` |
+
+The reviewed catalog exposes `family:qwen`, `family:kimi`, `family:glm`,
+`family:llama`, `family:minimax`, `family:mistral`, `family:gemma`, and
+`family:nemotron`. A paid catalog model whose current token price has not been
+reviewed is excluded by default. Pass `allowUnknownPricing: true` (Python:
+`allow_unknown_pricing=True`) only after approving that provider's current
+price. The Kimi family retains the public-data pilot guard.
 
 When more than one Google free key is present, the router expands each
 `google:` spec in the chain into one fallback slot per key — so a chain
