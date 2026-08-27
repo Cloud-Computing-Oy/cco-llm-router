@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.14.0] - 2026-08-27
+
+### Added
+
+- Added the guarded `auto:facf-laptop` route while preserving the legacy
+  `auto:laptop-assisted` alias.
+- Added the opt-in `claude-router` launcher and loopback-only Anthropic
+  Messages API gateway for using the existing router chains from Claude Code.
+- Added authenticated JSON, SSE, token-counting, multi-turn, and tool-call
+  compatibility with provider credentials isolated from the Claude process.
+
 ## [0.13.1] - 2026-08-26
 
 ### Fixed
@@ -47,3 +58,4 @@
 [0.12.0]: https://github.com/Cloud-Computing-Oy/cco-llm-router/compare/v0.11.1...v0.12.0
 [0.13.0]: https://github.com/Cloud-Computing-Oy/cco-llm-router/compare/v0.12.0...v0.13.0
 [0.13.1]: https://github.com/Cloud-Computing-Oy/cco-llm-router/compare/v0.13.0...v0.13.1
+[0.14.0]: https://github.com/Cloud-Computing-Oy/cco-llm-router/compare/v0.13.1...v0.14.0

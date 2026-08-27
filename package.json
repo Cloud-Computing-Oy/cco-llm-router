@@ -19,7 +19,8 @@
     "./cohere": "./src/cohere.ts"
   },
   "bin": {
-    "cco-llm-usage": "./src/bin/usage.ts"
+    "cco-llm-usage": "./src/bin/usage.ts",
+    "claude-router": "./src/bin/claude-router.ts"
   },
   "peerDependencies": {
     "@ai-sdk/anthropic": ">=3",

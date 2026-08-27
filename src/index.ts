@@ -30,6 +30,15 @@ export {
   DEFAULT_MAX_PROMPT_CHARS,
 } from './truncate';
 export { createFallbackModel } from './fallback';
+export {
+  createAnthropicGateway,
+  createClaudeChildEnvironment,
+  listenAnthropicGateway,
+  toModelMessages,
+  type AnthropicMessagesRequest,
+  type GatewayConfig,
+  type GatewayGenerate,
+} from './anthropic-gateway';
 
 // Cost & budget surface — exposed so callers can build dashboards,
 // pre-flight checks, or alerting on top of the same data the router uses.

@@ -47,6 +47,41 @@ const { model } = resolveModel('auto:smart', { dataClass: 'internal' });
 const { text } = await generateText({ model, prompt: 'hello' });
 ```
 
+### Claude Code through the router (opt-in)
+
+The `claude-router` command starts a loopback-only Anthropic Messages API
+gateway for one Claude Code process. It does not change `claude`, existing
+aliases, library exports, or any long-running service:
+
+```bash
+claude-router
+```
+
+The default route is the existing cloud-first `auto:code` chain with
+`dataClass=internal`. Choose another existing alias or classification
+explicitly when needed. For example, this selects only a local 7B model:
+
+```bash
+CCO_CLAUDE_ROUTER_ALIAS=ollama:qwen2.5:7b \
+CCO_CLAUDE_ROUTER_DATA_CLASS=confidential \
+OLLAMA_BASE_URL=http://localhost:11434 \
+claude-router
+```
+
+The existing `auto:laptop-assisted` local-first fallback remains restricted
+to `public` or `synthetic` data, exactly as it is for library callers.
+
+The launcher binds an ephemeral port on `127.0.0.1`, creates an ephemeral
+authentication token, points only its child Claude process at the gateway,
+and shuts the gateway down when Claude exits. Provider credentials stay in
+the launcher environment and are never returned to Claude Code. Arguments are
+passed through, for example `claude-router -p "explain this repository"`.
+
+The compatibility layer implements `/v1/messages` (JSON and Anthropic SSE)
+and `/v1/messages/count_tokens`, including multi-turn text and tool-call/tool-result
+conversion. Token counting is a conservative local estimate; provider usage
+continues to be recorded by the existing fallback model.
+
 The `chat()` and `chatJson()` helpers automatically select a route when
 `alias` is omitted. Short, low-risk work uses `auto:laptop-assisted`; code,
 large-context, reasoning, high-risk, confidential, and restricted work stays
