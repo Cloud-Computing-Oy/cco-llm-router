@@ -59,6 +59,7 @@ export function createClaudeChildEnvironment(
   );
   return {
     ...child,
+    NODE_ENV: source.NODE_ENV,
     ANTHROPIC_BASE_URL: baseUrl,
     ANTHROPIC_AUTH_TOKEN: token,
     ANTHROPIC_API_KEY: '',
