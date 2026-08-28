@@ -175,12 +175,16 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
   'auto:kimi-pilot': [
     { provider: 'moonshot', model: 'kimi-k3' },
   ],
+  // Explicit GLM Flash pilot; never selected by an existing default alias.
+  'auto:glm-flash-pilot': [
+    { provider: 'zai', model: 'glm-5.3-flash' },
+  ],
   'family:qwen': [
     { provider: 'groq', model: 'qwen/qwen3.6-27b' },
     { provider: 'dashscope', model: 'qwen3.8-max' },
   ],
   'family:kimi': [{ provider: 'moonshot', model: 'kimi-k3' }],
-  'family:glm': [{ provider: 'zai', model: 'glm-5' }],
+  'family:glm': [{ provider: 'zai', model: 'glm-5.3-flash' }],
   'family:llama': [{ provider: 'ollama', model: 'llama4:scout' }],
   'family:minimax': [
     { provider: 'minimax', model: 'MiniMax-M2.7' },

@@ -137,12 +137,16 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
     "auto:kimi-pilot": [
         Spec("moonshot", "kimi-k3"),
     ],
+    # Explicit GLM Flash pilot; never selected by an existing default alias.
+    "auto:glm-flash-pilot": [
+        Spec("zai", "glm-5.3-flash"),
+    ],
     "family:qwen": [
         Spec("groq", "qwen/qwen3.6-27b"),
         Spec("dashscope", "qwen3.8-max"),
     ],
     "family:kimi": [Spec("moonshot", "kimi-k3")],
-    "family:glm": [Spec("zai", "glm-5")],
+    "family:glm": [Spec("zai", "glm-5.3-flash")],
     "family:llama": [Spec("ollama", "llama4:scout")],
     "family:minimax": [
         Spec("minimax", "MiniMax-M2.7"),

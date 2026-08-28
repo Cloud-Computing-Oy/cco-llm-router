@@ -109,6 +109,7 @@ retried once only when every failure in the first pass is transient.
 | `auto:local` | Air-gapped | ollama only |
 | `auto:laptop-assisted` | Opt-in intermittent laptop GPU | ollama → google-free → deepinfra-8b → google-paid |
 | `auto:kimi-pilot` | Explicit Kimi K3 pilot | moonshot:kimi-k3 only |
+| `auto:glm-flash-pilot` | Explicit GLM-5.3-Flash pilot | zai:glm-5.3-flash only |
 
 Ollama specs are no-op on hosts without `OLLAMA_BASE_URL` set — the router
 skips unavailable providers. On hosts where the URL is set but the
@@ -266,6 +267,10 @@ The reviewed catalog exposes `family:qwen`, `family:kimi`, `family:glm`,
 reviewed is excluded by default. Pass `allowUnknownPricing: true` (Python:
 `allow_unknown_pricing=True`) only after approving that provider's current
 price. The Kimi family retains the public-data pilot guard.
+`family:glm` and the explicit `auto:glm-flash-pilot` alias select
+`zai:glm-5.3-flash`. Its API model ID has been verified, but its token price has
+not yet been reviewed, so both routes fail closed unless the caller passes
+`allowUnknownPricing: true` after verifying its Z.ai account and current terms.
 
 When more than one Google free key is present, the router expands each
 `google:` spec in the chain into one fallback slot per key — so a chain
