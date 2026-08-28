@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { listCatalog } from './catalog';
+import { estimateCostUSD, priceOf } from './pricing';
 import { createRouter, DEFAULT_ALIASES } from './router';
 
 test('catalog covers every supported open-model family', () => {
@@ -12,22 +13,26 @@ test('catalog covers every supported open-model family', () => {
   );
 });
 
-test('family routing fails closed when only unknown-price models remain', () => {
+test('GLM family routing uses reviewed pricing without an override', () => {
   const router = createRouter();
   const perCallKeys = { zai: 'test-key' };
-  assert.throws(
-    () => router.resolveModel('family:glm', { perCallKeys }),
-    /No reviewed-price provider.*allowUnknownPricing=true/,
-  );
   assert.deepEqual(
-    router.resolveModel('family:glm', { perCallKeys, allowUnknownPricing: true }).specs,
+    router.resolveModel('family:glm', { perCallKeys }).specs,
     [{ provider: 'zai', model: 'glm-5.3-flash' }],
   );
+  assert.equal(
+    router
+      .resolveModel('auto:smart', { perCallKeys })
+      .specs.some((spec) => spec.provider === 'zai' && spec.model === 'glm-5.3-flash'),
+    true,
+  );
+  assert.deepEqual(priceOf('zai', 'glm-5.3-flash'), { inputPerM: 0.15, outputPerM: 0.5 });
+  assert.equal(estimateCostUSD('zai', 'glm-5.3-flash', 1_000_000, 1_000_000), 0.65);
 });
 
 test('GLM Flash has task-specific priority without entering specialist chains', () => {
   const router = createRouter();
-  const options = { perCallKeys: { zai: 'test-key' }, allowUnknownPricing: true };
+  const options = { perCallKeys: { zai: 'test-key' } };
   assert.deepEqual(router.resolveModel('auto:glm-flash-pilot', options).specs, [
     { provider: 'zai', model: 'glm-5.3-flash' },
   ]);

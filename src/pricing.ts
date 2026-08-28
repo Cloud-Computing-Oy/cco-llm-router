@@ -1,6 +1,6 @@
 /**
  * Per-model pricing table in USD per 1M tokens (input / output).
- * Reference: provider pricing pages, May 2026.
+ * Reference: provider pricing pages, updated August 2026.
  *
  * The table is intentionally incomplete — only models we actually route
  * to are listed. An unlisted model is priced as ZERO (it is either
@@ -65,6 +65,9 @@ export const PRICING: Record<string, Price> = {
 
   // --- moonshot (Kimi Platform; cache-miss input for conservative budgets) ---
   'moonshot:kimi-k3': { inputPerM: 3, outputPerM: 15 },
+
+  // --- Z.ai (permanent list price; do not encode temporary discounts) ---
+  'zai:glm-5.3-flash': { inputPerM: 0.15, outputPerM: 0.5 },
 };
 
 export function priceOf(provider: Provider, model: string): Price {

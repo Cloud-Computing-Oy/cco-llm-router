@@ -270,9 +270,10 @@ reviewed is excluded by default. Pass `allowUnknownPricing: true` (Python:
 `allow_unknown_pricing=True`) only after approving that provider's current
 price. The Kimi family retains the public-data pilot guard.
 `family:glm` and the explicit `auto:glm-flash-pilot` alias select
-`zai:glm-5.3-flash`. Its API model ID has been verified, but its token price has
-not yet been reviewed, so both routes fail closed unless the caller passes
-`allowUnknownPricing: true` after verifying its Z.ai account and current terms.
+`zai:glm-5.3-flash`. Its API model ID and permanent list price are reviewed, so
+normal automatic aliases can select it without `allowUnknownPricing`. Cost
+tracking uses the conservative list price of $0.15/M input and $0.50/M output,
+not Z.ai's temporary promotional discount.
 
 When more than one Google free key is present, the router expands each
 `google:` spec in the chain into one fallback slot per key — so a chain
@@ -310,7 +311,8 @@ The following values are examples only:
 | `CCO_LLM_BUDGET_OPENROUTER_USD` | 5 | non-free model example |
 | `CCO_LLM_BUDGET_GROQ_USD` | 0 | free tier only (omit env var) |
 | `CCO_LLM_BUDGET_MOONSHOT_USD` | 20 | opt-in Kimi K3 pilot ceiling |
-| **Configured example** | **$105** | each provider is evaluated independently |
+| `CCO_LLM_BUDGET_ZAI_USD` | 10 | GLM-5.3-Flash initial ceiling |
+| **Configured example** | **$115** | each provider is evaluated independently |
 
 **The router's cap is a safety net, not a hard control.** Set the actual
 hard spending limit in each provider's dashboard — the provider will
