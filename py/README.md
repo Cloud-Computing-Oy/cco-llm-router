@@ -69,10 +69,11 @@ approval.
 ## GLM-5.3-Flash pilot
 
 `auto:glm-flash-pilot` and `family:glm` select `zai:glm-5.3-flash`. The model's
-API model ID has been verified, but its token price has not yet been reviewed,
-so callers must verify their Z.ai account and current terms before explicitly
-passing `allow_unknown_pricing=True`. No existing automatic fallback chain
-selects the pilot.
+API model ID and permanent list price are reviewed, so normal automatic aliases
+can select it without `allow_unknown_pricing=True`. Cost tracking uses the
+conservative list price of $0.15/M input and $0.50/M output, not a temporary
+promotional discount. Start with `CCO_LLM_BUDGET_ZAI_USD=10` as a local monthly
+safety net and configure a hard limit in the Z.ai dashboard.
 
 ## Environment variables
 

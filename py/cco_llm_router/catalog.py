@@ -7,7 +7,7 @@ MODEL_CATALOG = (
     (Spec("dashscope", "qwen3.8-max"), "qwen", "unknown"),
     (Spec("groq", "qwen/qwen3.6-27b"), "qwen", "free"),
     (Spec("moonshot", "kimi-k3"), "kimi", "known"),
-    (Spec("zai", "glm-5.3-flash"), "glm", "unknown"),
+    (Spec("zai", "glm-5.3-flash"), "glm", "known"),
     (Spec("ollama", "llama4:scout"), "llama", "free"),
     (Spec("minimax", "MiniMax-M2.7"), "minimax", "unknown"),
     (Spec("nvidia", "minimaxai/minimax-m2.7"), "minimax", "unknown"),

@@ -1,6 +1,6 @@
 """Per-model pricing table in USD per 1M tokens (input / output).
 Mirrors src/pricing.ts in the TypeScript sibling. Reference: provider
-pricing pages, May 2026.
+pricing pages, updated August 2026.
 
 The table is intentionally incomplete — only models we actually route
 to are listed. An unlisted model is priced as ZERO (free-tier / local /
@@ -60,6 +60,9 @@ PRICING: dict[str, Price] = {
 
     # --- moonshot (Kimi Platform; conservative cache-miss input price) ---
     "moonshot:kimi-k3": {"input_per_m": 3.0, "output_per_m": 15.0},
+
+    # --- Z.ai (permanent list price; do not encode temporary discounts) ---
+    "zai:glm-5.3-flash": {"input_per_m": 0.15, "output_per_m": 0.5},
 }
 
 
