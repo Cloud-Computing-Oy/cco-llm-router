@@ -75,6 +75,7 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
   // Chat / generic. Reliable providers first.
   'auto:smart': [
     { provider: 'deepseek', model: 'deepseek-v4-flash' },
+    { provider: 'zai', model: 'glm-5.3-flash' },
     { provider: 'google', model: 'gemini-2.5-flash' },
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.3-70B-Instruct' },
     { provider: 'google-paid', model: 'gemini-2.5-flash' },
@@ -104,6 +105,7 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
   // Code generation / completion.
   'auto:code': [
     { provider: 'deepseek', model: 'deepseek-v4-flash' },
+    { provider: 'zai', model: 'glm-5.3-flash' },
     { provider: 'google', model: 'gemini-2.5-flash' },
     { provider: 'groq', model: 'qwen/qwen3.6-27b' },
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.3-70B-Instruct' },
@@ -114,6 +116,7 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
   'auto:reasoning': [
     { provider: 'deepseek', model: 'deepseek-v4-flash' },
     { provider: 'deepseek', model: 'deepseek-v4-pro' },
+    { provider: 'zai', model: 'glm-5.3-flash' },
     { provider: 'google', model: 'gemini-2.5-pro' },
     { provider: 'deepinfra', model: 'deepseek-ai/DeepSeek-V3' },
     { provider: 'google-paid', model: 'gemini-2.5-pro' },
@@ -133,6 +136,7 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
   // Large-context tasks (long docs, big diffs).
   'auto:big': [
     { provider: 'deepseek', model: 'deepseek-v4-flash' },
+    { provider: 'zai', model: 'glm-5.3-flash' },
     { provider: 'google', model: 'gemini-2.5-pro' },
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.3-70B-Instruct' },
     { provider: 'google-paid', model: 'gemini-2.5-pro' },
@@ -175,12 +179,16 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
   'auto:kimi-pilot': [
     { provider: 'moonshot', model: 'kimi-k3' },
   ],
+  // Explicit GLM Flash pilot; never selected by an existing default alias.
+  'auto:glm-flash-pilot': [
+    { provider: 'zai', model: 'glm-5.3-flash' },
+  ],
   'family:qwen': [
     { provider: 'groq', model: 'qwen/qwen3.6-27b' },
     { provider: 'dashscope', model: 'qwen3.8-max' },
   ],
   'family:kimi': [{ provider: 'moonshot', model: 'kimi-k3' }],
-  'family:glm': [{ provider: 'zai', model: 'glm-5' }],
+  'family:glm': [{ provider: 'zai', model: 'glm-5.3-flash' }],
   'family:llama': [{ provider: 'ollama', model: 'llama4:scout' }],
   'family:minimax': [
     { provider: 'minimax', model: 'MiniMax-M2.7' },

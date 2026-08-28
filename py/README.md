@@ -66,6 +66,14 @@ this pilot. It does not inspect prompt contents, so callers remain responsible
 for correct classification, minimization, consent, residency, and provider
 approval.
 
+## GLM-5.3-Flash pilot
+
+`auto:glm-flash-pilot` and `family:glm` select `zai:glm-5.3-flash`. The model's
+API model ID has been verified, but its token price has not yet been reviewed,
+so callers must verify their Z.ai account and current terms before explicitly
+passing `allow_unknown_pricing=True`. No existing automatic fallback chain
+selects the pilot.
+
 ## Environment variables
 
 Provider credentials are read from environment variables such as

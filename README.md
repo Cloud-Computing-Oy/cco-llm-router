@@ -91,24 +91,27 @@ on the corresponding stronger route. Callers may supply `taskKind` and
 
 Available default aliases prioritize currently supported, reliable models.
 DeepSeek V4 Flash leads general, coding, reasoning, and large-context cloud
-routes; cheaper specialist routes retain their own latency/cost ordering.
+routes. GLM-5.3-Flash is the next attempt for general, coding, and large-context
+work, and follows DeepSeek V4 Pro for reasoning. Cheaper specialist routes
+retain their own latency/cost ordering.
 Every available provider in a chain is attempted before the request fails.
 Only caller cancellation stops traversal immediately. The whole chain is
 retried once only when every failure in the first pass is transient.
 
 | Alias | Use case | Attempt order |
 |-------|----------|--------------------|
-| `auto:smart` | Chat, generic | **deepseek-v4-flash** → google-free → deepinfra-70b → google-paid → together → google-pro → deepseek-v4-pro → paid quality tiers |
+| `auto:smart` | Chat, generic | **deepseek-v4-flash** → glm-5.3-flash → google-free → deepinfra-70b → google-paid → together → google-pro → deepseek-v4-pro → paid quality tiers |
 | `auto:fast` | Classification, short tasks | groq-qwen-27b → google-free → deepinfra-8b → google-paid → openai-mini → anthropic-haiku |
 | `auto:translate` | Batch translation | google-free → deepinfra-70b → google-paid → anthropic |
-| `auto:code` | Code generation | **deepseek-v4-flash** → google-free → groq-qwen-27b → deepinfra-70b → google-paid → openai-mini |
-| `auto:reasoning` | Planning, multi-step | **deepseek-v4-flash** → deepseek-v4-pro → google-free-pro → deepinfra-deepseek-v3 → paid quality tiers |
-| `auto:big` | Long context | **deepseek-v4-flash** → google-free-pro → deepinfra-70b → google-paid-pro → openai |
+| `auto:code` | Code generation | **deepseek-v4-flash** → glm-5.3-flash → google-free → groq-qwen-27b → deepinfra-70b → google-paid → openai-mini |
+| `auto:reasoning` | Planning, multi-step | **deepseek-v4-flash** → deepseek-v4-pro → glm-5.3-flash → google-free-pro → deepinfra-deepseek-v3 → paid quality tiers |
+| `auto:big` | Long context | **deepseek-v4-flash** → glm-5.3-flash → google-free-pro → deepinfra-70b → google-paid-pro → openai |
 | `auto:cheap` | Cost-first, strict | groq-qwen-27b → google-free → deepinfra-8b → deepinfra-70b → google-paid-flash |
 | `auto:paid` | Top quality, opt-in | openai → openai-mini → anthropic → google-paid-pro |
 | `auto:local` | Air-gapped | ollama only |
 | `auto:laptop-assisted` | Opt-in intermittent laptop GPU | ollama → google-free → deepinfra-8b → google-paid |
 | `auto:kimi-pilot` | Explicit Kimi K3 pilot | moonshot:kimi-k3 only |
+| `auto:glm-flash-pilot` | Explicit GLM-5.3-Flash pilot | zai:glm-5.3-flash only |
 
 Ollama specs are no-op on hosts without `OLLAMA_BASE_URL` set — the router
 skips unavailable providers. On hosts where the URL is set but the
@@ -266,6 +269,10 @@ The reviewed catalog exposes `family:qwen`, `family:kimi`, `family:glm`,
 reviewed is excluded by default. Pass `allowUnknownPricing: true` (Python:
 `allow_unknown_pricing=True`) only after approving that provider's current
 price. The Kimi family retains the public-data pilot guard.
+`family:glm` and the explicit `auto:glm-flash-pilot` alias select
+`zai:glm-5.3-flash`. Its API model ID has been verified, but its token price has
+not yet been reviewed, so both routes fail closed unless the caller passes
+`allowUnknownPricing: true` after verifying its Z.ai account and current terms.
 
 When more than one Google free key is present, the router expands each
 `google:` spec in the chain into one fallback slot per key — so a chain
