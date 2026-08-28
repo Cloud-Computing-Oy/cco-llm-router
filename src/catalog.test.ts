@@ -25,7 +25,7 @@ test('family routing fails closed when only unknown-price models remain', () => 
   );
 });
 
-test('GLM Flash remains opt-in and does not change established automatic chains', () => {
+test('GLM Flash has task-specific priority without entering specialist chains', () => {
   const router = createRouter();
   const options = { perCallKeys: { zai: 'test-key' }, allowUnknownPricing: true };
   assert.deepEqual(router.resolveModel('auto:glm-flash-pilot', options).specs, [
@@ -35,7 +35,18 @@ test('GLM Flash remains opt-in and does not change established automatic chains'
     { provider: 'zai', model: 'glm-5.3-flash' },
   ]);
 
-  for (const alias of ['auto:smart', 'auto:code', 'auto:reasoning', 'auto:big']) {
+  for (const alias of ['auto:smart', 'auto:code', 'auto:big']) {
+    assert.deepEqual(DEFAULT_ALIASES[alias][1], {
+      provider: 'zai',
+      model: 'glm-5.3-flash',
+    });
+  }
+  assert.deepEqual(DEFAULT_ALIASES['auto:reasoning'][2], {
+    provider: 'zai',
+    model: 'glm-5.3-flash',
+  });
+
+  for (const alias of ['auto:fast', 'auto:translate', 'auto:cheap', 'auto:paid']) {
     assert.equal(
       DEFAULT_ALIASES[alias].some((spec) => spec.provider === 'zai'),
       false,

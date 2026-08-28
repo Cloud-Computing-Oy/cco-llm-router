@@ -56,6 +56,7 @@ from .usage import record_usage
 DEFAULT_ALIASES: dict[str, list[Spec]] = {
     "auto:smart": [
         Spec("deepseek", "deepseek-v4-flash"),
+        Spec("zai", "glm-5.3-flash"),
         Spec("google", "gemini-2.5-flash"),
         Spec("deepinfra", "meta-llama/Meta-Llama-3.3-70B-Instruct"),
         Spec("google-paid", "gemini-2.5-flash"),
@@ -82,6 +83,7 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
     ],
     "auto:code": [
         Spec("deepseek", "deepseek-v4-flash"),
+        Spec("zai", "glm-5.3-flash"),
         Spec("google", "gemini-2.5-flash"),
         Spec("groq", "qwen/qwen3.6-27b"),
         Spec("deepinfra", "meta-llama/Meta-Llama-3.3-70B-Instruct"),
@@ -91,6 +93,7 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
     "auto:reasoning": [
         Spec("deepseek", "deepseek-v4-flash"),
         Spec("deepseek", "deepseek-v4-pro"),
+        Spec("zai", "glm-5.3-flash"),
         Spec("google", "gemini-2.5-pro"),
         Spec("deepinfra", "deepseek-ai/DeepSeek-V3"),
         Spec("google-paid", "gemini-2.5-pro"),
@@ -105,6 +108,7 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
     ],
     "auto:big": [
         Spec("deepseek", "deepseek-v4-flash"),
+        Spec("zai", "glm-5.3-flash"),
         Spec("google", "gemini-2.5-pro"),
         Spec("deepinfra", "meta-llama/Meta-Llama-3.3-70B-Instruct"),
         Spec("google-paid", "gemini-2.5-pro"),
