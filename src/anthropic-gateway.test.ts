@@ -29,6 +29,7 @@ test('keeps provider credentials in the gateway process, not the Claude child', 
   const child = createClaudeChildEnvironment(
     {
       PATH: '/usr/bin',
+      NODE_ENV: 'test',
       OPENAI_API_KEY: 'do-not-forward',
       GOOGLE_GENERATIVE_AI_API_KEY_2: 'do-not-forward',
       ANTHROPIC_API_KEY: 'do-not-forward',
@@ -37,6 +38,7 @@ test('keeps provider credentials in the gateway process, not the Claude child', 
     'ephemeral',
   );
   assert.equal(child.PATH, '/usr/bin');
+  assert.equal(child.NODE_ENV, 'test');
   assert.equal(child.OPENAI_API_KEY, undefined);
   assert.equal(child.GOOGLE_GENERATIVE_AI_API_KEY_2, undefined);
   assert.equal(child.ANTHROPIC_API_KEY, '');

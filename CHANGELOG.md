@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.17.1] - 2026-08-28
+
+### Fixed
+
+- Preserve `NODE_ENV` explicitly when building the secret-scrubbed Claude child
+  environment, keeping the package compatible with Next.js projects whose
+  global `ProcessEnv` type requires that field.
+
 ## [0.17.0] - 2026-08-27
 
 ### Added
