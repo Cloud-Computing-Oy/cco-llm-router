@@ -7,8 +7,12 @@
 - Add reviewed Qwen, Kimi, GLM, Llama, MiniMax, Mistral, Gemma, and Nemotron
   family routes, with OpenAI-compatible DashScope, Z.ai, MiniMax, Mistral, and
   NVIDIA NIM adapters in TypeScript and Python.
-- Exclude unknown-price catalog models from automatic routing until the caller
-  explicitly approves them.
+- Add the verified `glm-5.3-flash` route with task-specific priority for smart,
+  coding, reasoning, and large-context work in TypeScript and Python.
+- Track GLM-5.3-Flash at its permanent $0.15/M input and $0.50/M output list
+  price, allowing normal automatic routing while retaining provider budgets.
+- Exclude other unknown-price catalog models from automatic routing until the
+  caller explicitly approves them.
 
 ## [0.16.0] - 2026-08-27
 
