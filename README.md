@@ -284,12 +284,13 @@ $0.15/M input and $0.50/M output for Flash, $1.40/M input and $4.40/M
 output for glm-5.3 — not Z.ai's temporary promotional discounts.
 
 When more than one Google free key is present, the router expands each
-`google:` spec in the chain into one fallback slot per key — so a chain
-like `auto:smart` with 4 keys gets 4 Google attempts before falling
-through to OpenRouter / DeepInfra / Google-paid. Slots in the log are
-tagged `google:gemini-2.5-flash#2` etc. Pool keys live in the separate
-`google-paid` provider so paid usage never starts until the entire free
-pool is exhausted.
+`google:` spec in the chain into one fallback slot per key — with N keys,
+a chain with a single `google:` spec gets N Google attempts before falling
+through to DeepInfra / Google-paid, and a chain with two `google:` specs
+(e.g. `auto:smart` has both `gemini-2.5-flash` and `gemini-2.5-pro`) gets
+2N. Slots in the log are tagged `google:gemini-2.5-flash#2` etc. Pool keys
+live in the separate `google-paid` provider so paid usage never starts
+until the entire free pool is exhausted.
 
 The router skips unavailable providers when building the fallback chain.
 If no provider in an alias is available, `resolveModel` throws — which
