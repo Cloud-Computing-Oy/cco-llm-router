@@ -72,17 +72,21 @@ import type { Provider, Spec } from './types';
 // explicit `deepseek:deepseek-chat` id (non-thinking, but deprecated
 // 2026-07-24) or call generateText directly with providerOptions.
 export const DEFAULT_ALIASES: Record<string, Spec[]> = {
-  // Chat / generic. Reliable providers first.
+  // Chat / generic. DeepSeek V4 Flash leads for reliability (see comment
+  // above); everything after it is price-ordered ascending ($/M input+output),
+  // treating prices within $0.25/M of each other as a tie and keeping the
+  // prior curated order there so a marginally cheaper generalist model can't
+  // bump a task-suited specialist (e.g. GLM stays ahead of plain Llama-3.3-70B).
   'auto:smart': [
     { provider: 'deepseek', model: 'deepseek-v4-flash' },
-    { provider: 'zai', model: 'glm-5.3-flash' },
-    { provider: 'zai', model: 'glm-5.3' },
     { provider: 'google', model: 'gemini-2.5-flash' },
-    { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.3-70B-Instruct' },
-    { provider: 'google-paid', model: 'gemini-2.5-flash' },
-    { provider: 'together', model: 'meta-llama/Llama-3.3-70B-Instruct-Lite' },
     { provider: 'google', model: 'gemini-2.5-pro' },
+    { provider: 'google-paid', model: 'gemini-2.5-flash' },
+    { provider: 'zai', model: 'glm-5.3-flash' },
+    { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.3-70B-Instruct' },
+    { provider: 'together', model: 'meta-llama/Llama-3.3-70B-Instruct-Lite' },
     { provider: 'deepseek', model: 'deepseek-v4-pro' },
+    { provider: 'zai', model: 'glm-5.3' },
     { provider: 'google-paid', model: 'gemini-2.5-pro' },
     { provider: 'anthropic', model: 'claude-sonnet-4-6' },
     { provider: 'openai', model: 'gpt-5' },
@@ -103,25 +107,27 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
     { provider: 'google-paid', model: 'gemini-2.5-flash' },
     { provider: 'anthropic', model: 'claude-sonnet-4-6' },
   ],
-  // Code generation / completion.
+  // Code generation / completion. Price-ordered after DeepSeek V4 Flash,
+  // same $0.25/M tie rule as auto:smart above.
   'auto:code': [
     { provider: 'deepseek', model: 'deepseek-v4-flash' },
-    { provider: 'zai', model: 'glm-5.3-flash' },
-    { provider: 'zai', model: 'glm-5.3' },
     { provider: 'google', model: 'gemini-2.5-flash' },
     { provider: 'groq', model: 'qwen/qwen3.6-27b' },
-    { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.3-70B-Instruct' },
     { provider: 'google-paid', model: 'gemini-2.5-flash' },
+    { provider: 'zai', model: 'glm-5.3-flash' },
+    { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.3-70B-Instruct' },
     { provider: 'openai', model: 'gpt-5-mini' },
+    { provider: 'zai', model: 'glm-5.3' },
   ],
-  // Reasoning / planning / multi-step.
+  // Reasoning / planning / multi-step. Price-ordered after DeepSeek V4 Flash,
+  // same $0.25/M tie rule as auto:smart above.
   'auto:reasoning': [
     { provider: 'deepseek', model: 'deepseek-v4-flash' },
-    { provider: 'deepseek', model: 'deepseek-v4-pro' },
-    { provider: 'zai', model: 'glm-5.3-flash' },
-    { provider: 'zai', model: 'glm-5.3' },
     { provider: 'google', model: 'gemini-2.5-pro' },
+    { provider: 'zai', model: 'glm-5.3-flash' },
+    { provider: 'deepseek', model: 'deepseek-v4-pro' },
     { provider: 'deepinfra', model: 'deepseek-ai/DeepSeek-V3' },
+    { provider: 'zai', model: 'glm-5.3' },
     { provider: 'google-paid', model: 'gemini-2.5-pro' },
     { provider: 'anthropic', model: 'claude-sonnet-4-6' },
     { provider: 'openai', model: 'gpt-5' },
@@ -133,16 +139,14 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
     { provider: 'anthropic', model: 'claude-sonnet-4-6' },
     { provider: 'google-paid', model: 'gemini-2.5-pro' },
   ],
-  // Large-context tasks (long docs, big diffs). Local gemma4:26b leads
-  // because long-context prompts on the cloud free tier consume the
-  // 1500-RPD quota quickly.
-  // Large-context tasks (long docs, big diffs).
+  // Large-context tasks (long docs, big diffs). Price-ordered after
+  // DeepSeek V4 Flash, same $0.25/M tie rule as auto:smart above.
   'auto:big': [
     { provider: 'deepseek', model: 'deepseek-v4-flash' },
-    { provider: 'zai', model: 'glm-5.3-flash' },
-    { provider: 'zai', model: 'glm-5.3' },
     { provider: 'google', model: 'gemini-2.5-pro' },
+    { provider: 'zai', model: 'glm-5.3-flash' },
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.3-70B-Instruct' },
+    { provider: 'zai', model: 'glm-5.3' },
     { provider: 'google-paid', model: 'gemini-2.5-pro' },
     { provider: 'openai', model: 'gpt-5' },
   ],

@@ -54,16 +54,22 @@ from .usage import record_usage
 #   anthropic:claude-sonnet-4-6      $3     / $15
 #   openai:gpt-5                     $3     / $15
 DEFAULT_ALIASES: dict[str, list[Spec]] = {
+    # DeepSeek V4 Flash leads for reliability (see comment above);
+    # everything after it is price-ordered ascending ($/M input+output),
+    # treating prices within $0.25/M of each other as a tie and keeping the
+    # prior curated order there so a marginally cheaper generalist model
+    # can't bump a task-suited specialist (e.g. GLM stays ahead of plain
+    # Llama-3.3-70B). Mirrors src/router.ts.
     "auto:smart": [
         Spec("deepseek", "deepseek-v4-flash"),
-        Spec("zai", "glm-5.3-flash"),
-        Spec("zai", "glm-5.3"),
         Spec("google", "gemini-2.5-flash"),
-        Spec("deepinfra", "meta-llama/Meta-Llama-3.3-70B-Instruct"),
-        Spec("google-paid", "gemini-2.5-flash"),
-        Spec("together", "meta-llama/Llama-3.3-70B-Instruct-Lite"),
         Spec("google", "gemini-2.5-pro"),
+        Spec("google-paid", "gemini-2.5-flash"),
+        Spec("zai", "glm-5.3-flash"),
+        Spec("deepinfra", "meta-llama/Meta-Llama-3.3-70B-Instruct"),
+        Spec("together", "meta-llama/Llama-3.3-70B-Instruct-Lite"),
         Spec("deepseek", "deepseek-v4-pro"),
+        Spec("zai", "glm-5.3"),
         Spec("google-paid", "gemini-2.5-pro"),
         Spec("anthropic", "claude-sonnet-4-6"),
         Spec("openai", "gpt-5"),
@@ -82,23 +88,27 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
         Spec("google-paid", "gemini-2.5-flash"),
         Spec("anthropic", "claude-sonnet-4-6"),
     ],
+    # Price-ordered after DeepSeek V4 Flash, same $0.25/M tie rule as
+    # auto:smart above.
     "auto:code": [
         Spec("deepseek", "deepseek-v4-flash"),
-        Spec("zai", "glm-5.3-flash"),
-        Spec("zai", "glm-5.3"),
         Spec("google", "gemini-2.5-flash"),
         Spec("groq", "qwen/qwen3.6-27b"),
-        Spec("deepinfra", "meta-llama/Meta-Llama-3.3-70B-Instruct"),
         Spec("google-paid", "gemini-2.5-flash"),
+        Spec("zai", "glm-5.3-flash"),
+        Spec("deepinfra", "meta-llama/Meta-Llama-3.3-70B-Instruct"),
         Spec("openai", "gpt-5-mini"),
+        Spec("zai", "glm-5.3"),
     ],
+    # Price-ordered after DeepSeek V4 Flash, same $0.25/M tie rule as
+    # auto:smart above.
     "auto:reasoning": [
         Spec("deepseek", "deepseek-v4-flash"),
-        Spec("deepseek", "deepseek-v4-pro"),
-        Spec("zai", "glm-5.3-flash"),
-        Spec("zai", "glm-5.3"),
         Spec("google", "gemini-2.5-pro"),
+        Spec("zai", "glm-5.3-flash"),
+        Spec("deepseek", "deepseek-v4-pro"),
         Spec("deepinfra", "deepseek-ai/DeepSeek-V3"),
+        Spec("zai", "glm-5.3"),
         Spec("google-paid", "gemini-2.5-pro"),
         Spec("anthropic", "claude-sonnet-4-6"),
         Spec("openai", "gpt-5"),
@@ -109,12 +119,14 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
         Spec("anthropic", "claude-sonnet-4-6"),
         Spec("google-paid", "gemini-2.5-pro"),
     ],
+    # Price-ordered after DeepSeek V4 Flash, same $0.25/M tie rule as
+    # auto:smart above.
     "auto:big": [
         Spec("deepseek", "deepseek-v4-flash"),
-        Spec("zai", "glm-5.3-flash"),
-        Spec("zai", "glm-5.3"),
         Spec("google", "gemini-2.5-pro"),
+        Spec("zai", "glm-5.3-flash"),
         Spec("deepinfra", "meta-llama/Meta-Llama-3.3-70B-Instruct"),
+        Spec("zai", "glm-5.3"),
         Spec("google-paid", "gemini-2.5-pro"),
         Spec("openai", "gpt-5"),
     ],

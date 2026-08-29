@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.19.0] - 2026-08-29
+
+### Changed
+
+- Reorder `auto:smart`, `auto:code`, `auto:reasoning`, and `auto:big` by
+  ascending price ($/M input+output) after the reliability-first
+  `deepseek-v4-flash` slot, instead of the prior hand-curated order.
+  Prices within $0.25/M of each other are treated as a tie and keep their
+  prior relative order, so a marginally cheaper generalist model can't
+  bump a task-suited specialist (e.g. `zai:glm-5.3-flash` stays ahead of
+  plain Llama-3.3-70B in `auto:code`). `zai:glm-5.3` moves out of the
+  fixed slot right after Flash into its price-ordered position in each
+  chain.
+
 ## [0.18.0] - 2026-08-29
 
 ### Added
