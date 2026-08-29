@@ -100,12 +100,12 @@ retried once only when every failure in the first pass is transient.
 
 | Alias | Use case | Attempt order |
 |-------|----------|--------------------|
-| `auto:smart` | Chat, generic | **deepseek-v4-flash** → glm-5.3-flash → google-free → deepinfra-70b → google-paid → together → google-pro → deepseek-v4-pro → paid quality tiers |
+| `auto:smart` | Chat, generic | **deepseek-v4-flash** → glm-5.3-flash → glm-5.3 → google-free → deepinfra-70b → google-paid → together → google-pro → deepseek-v4-pro → paid quality tiers |
 | `auto:fast` | Classification, short tasks | groq-qwen-27b → google-free → deepinfra-8b → google-paid → openai-mini → anthropic-haiku |
 | `auto:translate` | Batch translation | google-free → deepinfra-70b → google-paid → anthropic |
-| `auto:code` | Code generation | **deepseek-v4-flash** → glm-5.3-flash → google-free → groq-qwen-27b → deepinfra-70b → google-paid → openai-mini |
-| `auto:reasoning` | Planning, multi-step | **deepseek-v4-flash** → deepseek-v4-pro → glm-5.3-flash → google-free-pro → deepinfra-deepseek-v3 → paid quality tiers |
-| `auto:big` | Long context | **deepseek-v4-flash** → glm-5.3-flash → google-free-pro → deepinfra-70b → google-paid-pro → openai |
+| `auto:code` | Code generation | **deepseek-v4-flash** → glm-5.3-flash → glm-5.3 → google-free → groq-qwen-27b → deepinfra-70b → google-paid → openai-mini |
+| `auto:reasoning` | Planning, multi-step | **deepseek-v4-flash** → deepseek-v4-pro → glm-5.3-flash → glm-5.3 → google-free-pro → deepinfra-deepseek-v3 → paid quality tiers |
+| `auto:big` | Long context | **deepseek-v4-flash** → glm-5.3-flash → glm-5.3 → google-free-pro → deepinfra-70b → google-paid-pro → openai |
 | `auto:cheap` | Cost-first, strict | groq-qwen-27b → google-free → deepinfra-8b → deepinfra-70b → google-paid-flash |
 | `auto:paid` | Top quality, opt-in | openai → openai-mini → anthropic → google-paid-pro |
 | `auto:local` | Air-gapped | ollama only |
@@ -269,11 +269,15 @@ The reviewed catalog exposes `family:qwen`, `family:kimi`, `family:glm`,
 reviewed is excluded by default. Pass `allowUnknownPricing: true` (Python:
 `allow_unknown_pricing=True`) only after approving that provider's current
 price. The Kimi family retains the public-data pilot guard.
-`family:glm` and the explicit `auto:glm-flash-pilot` alias select
-`zai:glm-5.3-flash`. Its API model ID and permanent list price are reviewed, so
-normal automatic aliases can select it without `allowUnknownPricing`. Cost
-tracking uses the conservative list price of $0.15/M input and $0.50/M output,
-not Z.ai's temporary promotional discount.
+The explicit `auto:glm-flash-pilot` alias selects `zai:glm-5.3-flash` only.
+`family:glm` and the default automatic chains (`auto:smart`, `auto:code`,
+`auto:reasoning`, `auto:big`) also fall through to the flagship
+`zai:glm-5.3` right after Flash, for tasks that need more capability. Both
+models' API model IDs and permanent list prices are reviewed, so normal
+automatic aliases can select them without `allowUnknownPricing`. Cost
+tracking uses the conservative list price — $0.15/M input and $0.50/M
+output for Flash, $1.40/M input and $4.40/M output for glm-5.3 — not
+Z.ai's temporary promotional discounts.
 
 When more than one Google free key is present, the router expands each
 `google:` spec in the chain into one fallback slot per key — so a chain

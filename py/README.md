@@ -68,12 +68,16 @@ approval.
 
 ## GLM-5.3-Flash pilot
 
-`auto:glm-flash-pilot` and `family:glm` select `zai:glm-5.3-flash`. The model's
-API model ID and permanent list price are reviewed, so normal automatic aliases
-can select it without `allow_unknown_pricing=True`. Cost tracking uses the
-conservative list price of $0.15/M input and $0.50/M output, not a temporary
-promotional discount. Start with `CCO_LLM_BUDGET_ZAI_USD=10` as a local monthly
-safety net and configure a hard limit in the Z.ai dashboard.
+`auto:glm-flash-pilot` selects `zai:glm-5.3-flash` only. `family:glm` and the
+default automatic chains (`auto:smart`, `auto:code`, `auto:reasoning`,
+`auto:big`) also fall through to the flagship `zai:glm-5.3` right after Flash,
+for tasks that need more capability. Both models' API model IDs and permanent
+list prices are reviewed, so normal automatic aliases can select them without
+`allow_unknown_pricing=True`. Cost tracking uses the conservative list price —
+$0.15/M input and $0.50/M output for Flash, $1.40/M input and $4.40/M output
+for glm-5.3 — not Z.ai's temporary promotional discounts. Start with
+`CCO_LLM_BUDGET_ZAI_USD=10` as a local monthly safety net and configure a hard
+limit in the Z.ai dashboard.
 
 ## Environment variables
 

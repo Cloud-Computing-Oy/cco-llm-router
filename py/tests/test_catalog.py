@@ -11,25 +11,35 @@ def test_catalog_covers_supported_families():
 
 def test_glm_family_uses_reviewed_pricing_without_override(monkeypatch):
     monkeypatch.setenv("ZAI_API_KEY", "test-key")
-    expected = [MODEL_CATALOG[3][0]]
-    assert resolve_model("family:glm").specs == expected
-    assert any(spec == expected[0] for spec in resolve_model("auto:smart").specs)
+    flash = MODEL_CATALOG[3][0]
+    pro = MODEL_CATALOG[4][0]
+    assert resolve_model("family:glm").specs == [flash, pro]
+    assert any(spec == flash for spec in resolve_model("auto:smart").specs)
+    assert any(spec == pro for spec in resolve_model("auto:smart").specs)
     assert price_of("zai", "glm-5.3-flash") == {
         "input_per_m": 0.15,
         "output_per_m": 0.5,
     }
     assert estimate_cost_usd("zai", "glm-5.3-flash", 1_000_000, 1_000_000) == 0.65
+    assert price_of("zai", "glm-5.3") == {
+        "input_per_m": 1.4,
+        "output_per_m": 4.4,
+    }
+    assert estimate_cost_usd("zai", "glm-5.3", 1_000_000, 1_000_000) == 5.800000000000001
 
 
 def test_glm_flash_has_task_specific_priority(monkeypatch):
     monkeypatch.setenv("ZAI_API_KEY", "test-key")
-    expected = [MODEL_CATALOG[3][0]]
-    assert resolve_model("auto:glm-flash-pilot").specs == expected
-    assert resolve_model("family:glm").specs == expected
+    flash = MODEL_CATALOG[3][0]
+    pro = MODEL_CATALOG[4][0]
+    assert resolve_model("auto:glm-flash-pilot").specs == [flash]
+    assert resolve_model("family:glm").specs == [flash, pro]
 
     for alias in ("auto:smart", "auto:code", "auto:big"):
         assert DEFAULT_ALIASES[alias][1].label == "zai:glm-5.3-flash"
+        assert DEFAULT_ALIASES[alias][2].label == "zai:glm-5.3"
     assert DEFAULT_ALIASES["auto:reasoning"][2].label == "zai:glm-5.3-flash"
+    assert DEFAULT_ALIASES["auto:reasoning"][3].label == "zai:glm-5.3"
 
     for alias in ("auto:fast", "auto:translate", "auto:cheap", "auto:paid"):
         assert all(spec.provider != "zai" for spec in DEFAULT_ALIASES[alias])

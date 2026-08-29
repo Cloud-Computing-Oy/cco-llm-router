@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.18.0] - 2026-08-29
+
+### Added
+
+- Add the flagship `zai:glm-5.3` route alongside GLM-5.3-Flash in
+  TypeScript and Python, reviewed at its permanent $1.40/M input and
+  $4.40/M output list price.
+- Wire `glm-5.3` into the default `auto:smart`, `auto:code`,
+  `auto:reasoning`, and `auto:big` chains right after GLM-5.3-Flash, as
+  an escalation for tasks that need more capability. `family:glm` now
+  resolves to both models in that order. The explicit
+  `auto:glm-flash-pilot` alias is unchanged and still selects
+  `zai:glm-5.3-flash` only.
+
 ## [0.17.1] - 2026-08-28
 
 ### Fixed
