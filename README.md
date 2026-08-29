@@ -91,21 +91,24 @@ on the corresponding stronger route. Callers may supply `taskKind` and
 
 Available default aliases prioritize currently supported, reliable models.
 DeepSeek V4 Flash leads general, coding, reasoning, and large-context cloud
-routes. GLM-5.3-Flash is the next attempt for general, coding, and large-context
-work, and follows DeepSeek V4 Pro for reasoning. Cheaper specialist routes
-retain their own latency/cost ordering.
+routes for reliability. Everything after it in those four chains is ordered
+by ascending price ($/M input+output), treating prices within $0.25/M of
+each other as a tie so a marginally cheaper generalist model can't bump a
+task-suited specialist (e.g. GLM-5.3-Flash stays ahead of plain
+Llama-3.3-70B in `auto:code`). Cheaper specialist routes retain their own
+latency/cost ordering.
 Every available provider in a chain is attempted before the request fails.
 Only caller cancellation stops traversal immediately. The whole chain is
 retried once only when every failure in the first pass is transient.
 
 | Alias | Use case | Attempt order |
 |-------|----------|--------------------|
-| `auto:smart` | Chat, generic | **deepseek-v4-flash** → glm-5.3-flash → glm-5.3 → google-free → deepinfra-70b → google-paid → together → google-pro → deepseek-v4-pro → paid quality tiers |
+| `auto:smart` | Chat, generic | **deepseek-v4-flash** → google-free → google-free-pro → google-paid-flash → glm-5.3-flash → deepinfra-70b → together → deepseek-v4-pro → glm-5.3 → google-paid-pro → paid quality tiers |
 | `auto:fast` | Classification, short tasks | groq-qwen-27b → google-free → deepinfra-8b → google-paid → openai-mini → anthropic-haiku |
 | `auto:translate` | Batch translation | google-free → deepinfra-70b → google-paid → anthropic |
-| `auto:code` | Code generation | **deepseek-v4-flash** → glm-5.3-flash → glm-5.3 → google-free → groq-qwen-27b → deepinfra-70b → google-paid → openai-mini |
-| `auto:reasoning` | Planning, multi-step | **deepseek-v4-flash** → deepseek-v4-pro → glm-5.3-flash → glm-5.3 → google-free-pro → deepinfra-deepseek-v3 → paid quality tiers |
-| `auto:big` | Long context | **deepseek-v4-flash** → glm-5.3-flash → glm-5.3 → google-free-pro → deepinfra-70b → google-paid-pro → openai |
+| `auto:code` | Code generation | **deepseek-v4-flash** → google-free → groq-qwen-27b → google-paid-flash → glm-5.3-flash → deepinfra-70b → openai-mini → glm-5.3 |
+| `auto:reasoning` | Planning, multi-step | **deepseek-v4-flash** → google-free-pro → glm-5.3-flash → deepseek-v4-pro → deepinfra-deepseek-v3 → glm-5.3 → paid quality tiers |
+| `auto:big` | Long context | **deepseek-v4-flash** → google-free-pro → glm-5.3-flash → deepinfra-70b → glm-5.3 → google-paid-pro → openai |
 | `auto:cheap` | Cost-first, strict | groq-qwen-27b → google-free → deepinfra-8b → deepinfra-70b → google-paid-flash |
 | `auto:paid` | Top quality, opt-in | openai → openai-mini → anthropic → google-paid-pro |
 | `auto:local` | Air-gapped | ollama only |
@@ -270,22 +273,24 @@ reviewed is excluded by default. Pass `allowUnknownPricing: true` (Python:
 `allow_unknown_pricing=True`) only after approving that provider's current
 price. The Kimi family retains the public-data pilot guard.
 The explicit `auto:glm-flash-pilot` alias selects `zai:glm-5.3-flash` only.
-`family:glm` and the default automatic chains (`auto:smart`, `auto:code`,
-`auto:reasoning`, `auto:big`) also fall through to the flagship
-`zai:glm-5.3` right after Flash, for tasks that need more capability. Both
-models' API model IDs and permanent list prices are reviewed, so normal
-automatic aliases can select them without `allowUnknownPricing`. Cost
-tracking uses the conservative list price — $0.15/M input and $0.50/M
-output for Flash, $1.40/M input and $4.40/M output for glm-5.3 — not
-Z.ai's temporary promotional discounts.
+`family:glm` resolves to `zai:glm-5.3-flash` then `zai:glm-5.3`. The default
+automatic chains (`auto:smart`, `auto:code`, `auto:reasoning`, `auto:big`)
+also fall through to the flagship `zai:glm-5.3`, priced into its price-ordered
+position in each chain (see the alias table above) rather than placed
+directly after Flash. Both models' API model IDs and permanent list prices
+are reviewed, so normal automatic aliases can select them without
+`allowUnknownPricing`. Cost tracking uses the conservative list price —
+$0.15/M input and $0.50/M output for Flash, $1.40/M input and $4.40/M
+output for glm-5.3 — not Z.ai's temporary promotional discounts.
 
 When more than one Google free key is present, the router expands each
-`google:` spec in the chain into one fallback slot per key — so a chain
-like `auto:smart` with 4 keys gets 4 Google attempts before falling
-through to OpenRouter / DeepInfra / Google-paid. Slots in the log are
-tagged `google:gemini-2.5-flash#2` etc. Pool keys live in the separate
-`google-paid` provider so paid usage never starts until the entire free
-pool is exhausted.
+`google:` spec in the chain into one fallback slot per key — with N keys,
+a chain with a single `google:` spec gets N Google attempts before falling
+through to DeepInfra / Google-paid, and a chain with two `google:` specs
+(e.g. `auto:smart` has both `gemini-2.5-flash` and `gemini-2.5-pro`) gets
+2N. Slots in the log are tagged `google:gemini-2.5-flash#2` etc. Pool keys
+live in the separate `google-paid` provider so paid usage never starts
+until the entire free pool is exhausted.
 
 The router skips unavailable providers when building the fallback chain.
 If no provider in an alias is available, `resolveModel` throws — which

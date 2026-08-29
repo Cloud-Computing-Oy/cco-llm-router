@@ -35,11 +35,17 @@ def test_glm_flash_has_task_specific_priority(monkeypatch):
     assert resolve_model("auto:glm-flash-pilot").specs == [flash]
     assert resolve_model("family:glm").specs == [flash, pro]
 
-    for alias in ("auto:smart", "auto:code", "auto:big"):
-        assert DEFAULT_ALIASES[alias][1].label == "zai:glm-5.3-flash"
-        assert DEFAULT_ALIASES[alias][2].label == "zai:glm-5.3"
-    assert DEFAULT_ALIASES["auto:reasoning"][2].label == "zai:glm-5.3-flash"
-    assert DEFAULT_ALIASES["auto:reasoning"][3].label == "zai:glm-5.3"
+    # Positions reflect each chain's price ordering after deepseek-v4-flash,
+    # not a fixed offset — see the $0.25/M tie-rule comment in router.py.
+    glm_positions = {
+        "auto:smart": (4, 8),
+        "auto:code": (4, 7),
+        "auto:reasoning": (2, 5),
+        "auto:big": (2, 4),
+    }
+    for alias, (flash_idx, pro_idx) in glm_positions.items():
+        assert DEFAULT_ALIASES[alias][flash_idx].label == "zai:glm-5.3-flash"
+        assert DEFAULT_ALIASES[alias][pro_idx].label == "zai:glm-5.3"
 
     for alias in ("auto:fast", "auto:translate", "auto:cheap", "auto:paid"):
         assert all(spec.provider != "zai" for spec in DEFAULT_ALIASES[alias])

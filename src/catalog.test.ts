@@ -49,24 +49,24 @@ test('GLM Flash has task-specific priority without entering specialist chains', 
     { provider: 'zai', model: 'glm-5.3' },
   ]);
 
-  for (const alias of ['auto:smart', 'auto:code', 'auto:big']) {
-    assert.deepEqual(DEFAULT_ALIASES[alias][1], {
+  // Positions reflect each chain's price ordering after deepseek-v4-flash,
+  // not a fixed offset — see the $0.25/M tie-rule comment in router.ts.
+  const glmPositions: Record<string, [number, number]> = {
+    'auto:smart': [4, 8],
+    'auto:code': [4, 7],
+    'auto:reasoning': [2, 5],
+    'auto:big': [2, 4],
+  };
+  for (const [alias, [flashIdx, proIdx]] of Object.entries(glmPositions)) {
+    assert.deepEqual(DEFAULT_ALIASES[alias][flashIdx], {
       provider: 'zai',
       model: 'glm-5.3-flash',
     });
-    assert.deepEqual(DEFAULT_ALIASES[alias][2], {
+    assert.deepEqual(DEFAULT_ALIASES[alias][proIdx], {
       provider: 'zai',
       model: 'glm-5.3',
     });
   }
-  assert.deepEqual(DEFAULT_ALIASES['auto:reasoning'][2], {
-    provider: 'zai',
-    model: 'glm-5.3-flash',
-  });
-  assert.deepEqual(DEFAULT_ALIASES['auto:reasoning'][3], {
-    provider: 'zai',
-    model: 'glm-5.3',
-  });
 
   for (const alias of ['auto:fast', 'auto:translate', 'auto:cheap', 'auto:paid']) {
     assert.equal(
