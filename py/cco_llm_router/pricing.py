@@ -63,6 +63,7 @@ PRICING: dict[str, Price] = {
 
     # --- Z.ai (permanent list price; do not encode temporary discounts) ---
     "zai:glm-5.3-flash": {"input_per_m": 0.15, "output_per_m": 0.5},
+    "zai:glm-5.3": {"input_per_m": 1.4, "output_per_m": 4.4},
 }
 
 

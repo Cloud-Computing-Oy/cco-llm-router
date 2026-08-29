@@ -68,6 +68,7 @@ export const PRICING: Record<string, Price> = {
 
   // --- Z.ai (permanent list price; do not encode temporary discounts) ---
   'zai:glm-5.3-flash': { inputPerM: 0.15, outputPerM: 0.5 },
+  'zai:glm-5.3': { inputPerM: 1.4, outputPerM: 4.4 },
 };
 
 export function priceOf(provider: Provider, model: string): Price {
