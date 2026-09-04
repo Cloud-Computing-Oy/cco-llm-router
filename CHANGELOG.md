@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.20.0] - 2026-09-04
+
+### Changed
+
+- **BREAKING**: Removed the Kimi/Moonshot "public-data pilot" gate. Kimi K3
+  no longer requires `allowPilot: true` (Python: `allow_pilot=True`) plus
+  `dataClass: 'public'` to resolve — that option has been removed from
+  `ResolveOptions`/`ChatRequest` (TS) and `resolve_model`/`chat`/`chat_json`
+  (Python) entirely. Requests routed through `auto:smart`, `auto:reasoning`,
+  `auto:big`, `auto:paid`, `family:kimi`, `auto:kimi-pilot`, or a direct
+  `moonshot:*` selector can now reach Moonshot with no extra opt-in.
+  **Callers with data-residency constraints must explicitly exclude
+  `moonshot` via `createRouter({ aliases })`** for confidential/regulated/
+  restricted traffic — see the README's Kimi K3 section.
+- Kimi K3 added to the default `auto:smart`, `auto:reasoning`, `auto:big`,
+  and `auto:paid` chains (TS and Python), placed after the existing
+  Claude Sonnet / GPT-5 tier since it ties their $3/$15-per-M price point.
+  Left out of `auto:code`/`auto:fast`/`auto:translate`/`auto:cheap`, which
+  stay under $1/M. `deepseek-v4-flash` remains pinned first in every chain.
+- Catalog: `moonshot:kimi-k3` capability `multimodal` corrected to `true`
+  (Moonshot's Sept 2026 announcement confirms image input support).
+- Trigger: Moonshot announced native OpenAI Responses API and Anthropic
+  Messages API compatibility for the Kimi API (2026-09-03), reducing the
+  original protocol-risk rationale for keeping Kimi opt-in-only. The
+  provider adapter still uses the OpenAI-compatible Chat Completions
+  protocol (verified, unchanged) — only the default-chain gating changed.
+
 ## [0.19.0] - 2026-08-29
 
 ### Changed

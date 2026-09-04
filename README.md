@@ -103,17 +103,17 @@ retried once only when every failure in the first pass is transient.
 
 | Alias | Use case | Attempt order |
 |-------|----------|--------------------|
-| `auto:smart` | Chat, generic | **deepseek-v4-flash** → google-free → google-free-pro → google-paid-flash → glm-5.3-flash → deepinfra-70b → together → deepseek-v4-pro → glm-5.3 → google-paid-pro → paid quality tiers |
+| `auto:smart` | Chat, generic | **deepseek-v4-flash** → google-free → google-free-pro → google-paid-flash → glm-5.3-flash → deepinfra-70b → together → deepseek-v4-pro → glm-5.3 → google-paid-pro → paid quality tiers → kimi-k3 |
 | `auto:fast` | Classification, short tasks | groq-qwen-27b → google-free → deepinfra-8b → google-paid → openai-mini → anthropic-haiku |
 | `auto:translate` | Batch translation | google-free → deepinfra-70b → google-paid → anthropic |
 | `auto:code` | Code generation | **deepseek-v4-flash** → google-free → groq-qwen-27b → google-paid-flash → glm-5.3-flash → deepinfra-70b → openai-mini → glm-5.3 |
-| `auto:reasoning` | Planning, multi-step | **deepseek-v4-flash** → google-free-pro → glm-5.3-flash → deepseek-v4-pro → deepinfra-deepseek-v3 → glm-5.3 → paid quality tiers |
-| `auto:big` | Long context | **deepseek-v4-flash** → google-free-pro → glm-5.3-flash → deepinfra-70b → glm-5.3 → google-paid-pro → openai |
+| `auto:reasoning` | Planning, multi-step | **deepseek-v4-flash** → google-free-pro → glm-5.3-flash → deepseek-v4-pro → deepinfra-deepseek-v3 → glm-5.3 → paid quality tiers → kimi-k3 |
+| `auto:big` | Long context | **deepseek-v4-flash** → google-free-pro → glm-5.3-flash → deepinfra-70b → glm-5.3 → google-paid-pro → openai → kimi-k3 |
 | `auto:cheap` | Cost-first, strict | groq-qwen-27b → google-free → deepinfra-8b → deepinfra-70b → google-paid-flash |
-| `auto:paid` | Top quality, opt-in | openai → openai-mini → anthropic → google-paid-pro |
+| `auto:paid` | Top quality, opt-in | openai → openai-mini → anthropic → google-paid-pro → kimi-k3 |
 | `auto:local` | Air-gapped | ollama only |
 | `auto:laptop-assisted` | Opt-in intermittent laptop GPU | ollama → google-free → deepinfra-8b → google-paid |
-| `auto:kimi-pilot` | Explicit Kimi K3 pilot | moonshot:kimi-k3 only |
+| `auto:kimi-pilot` | Explicit Kimi K3 selector | moonshot:kimi-k3 only |
 | `auto:glm-flash-pilot` | Explicit GLM-5.3-Flash pilot | zai:glm-5.3-flash only |
 
 Ollama specs are no-op on hosts without `OLLAMA_BASE_URL` set — the router
@@ -141,10 +141,12 @@ Direct selectors still obey the local budget guard. Bypassing it requires the
 explicit `bypassBudget: true` option and should be protected by application
 authorization.
 
-### Kimi K3 pilot
+### Kimi K3
 
-Kimi K3 is intentionally opt-in and is not present in any existing default
-fallback chain. Configure a Kimi Platform key and select the pilot alias:
+Kimi K3 ships in the top-tier default chains (`auto:smart`, `auto:reasoning`,
+`auto:big`, `auto:paid`) alongside Claude Sonnet and GPT-5, at the same
+$3/$15-per-M price point. No opt-in flag is required. Configure a Kimi
+Platform key to make the provider available:
 
 ```bash
 MOONSHOT_API_KEY=sk-...
@@ -153,11 +155,8 @@ CCO_LLM_BUDGET_MOONSHOT_USD=20
 ```
 
 ```ts
-const { model } = resolveModel('auto:kimi-pilot', {
-  allowPilot: true,
-  dataClass: 'public',
-});
-// Equivalent direct selection: moonshot:kimi-k3
+const { model } = resolveModel('auto:kimi-pilot');
+// Equivalent: resolveModel('moonshot:kimi-k3') or resolveModel('family:kimi')
 ```
 
 Kimi K3 currently accepts only `temperature: 1`; omit the parameter or set it
@@ -166,14 +165,19 @@ Regional Kimi Platform keys are not interchangeable with the separate
 `https://api.moonshot.cn/v1` service, so override `MOONSHOT_BASE_URL` only when
 the key was issued for that endpoint.
 
-The provider is pinned to the OpenAI-compatible Chat Completions protocol;
-Moonshot does not expose the OpenAI Responses endpoint used by the AI SDK's
-default OpenAI model constructor.
+The provider is wired through the OpenAI-compatible Chat Completions
+protocol (tested and working). Moonshot announced native OpenAI Responses API
+and Anthropic Messages API compatibility in September 2026; the router keeps
+the Chat Completions adapter for now since it is the verified path, but this
+is worth revisiting if a Responses-API-only feature (e.g. certain structured
+output modes) is needed later.
 
-The router rejects this alias and direct `moonshot:*` selectors unless the
-caller supplies both `allowPilot: true` and `dataClass: 'public'`. Never
-misclassify internal, personal, customer, legal, financial, regulated,
-confidential, or restricted data to enable a provider.
+**Data residency**: routing a request to `auto:smart`/`auto:reasoning`/
+`auto:big`/`auto:paid` (or any direct `moonshot:*`/`family:kimi` selector) can
+now send prompt data to Moonshot (a China-based provider) with no extra
+opt-in. Callers with data-residency constraints should override the default
+chain (`createRouter({ aliases })`) to exclude `moonshot` for confidential,
+regulated, or restricted `dataClass` traffic.
 
 The router records K3 at the conservative cache-miss price ($3 input / $15
 output per million tokens). Cache-hit discounts are not subtracted by the
@@ -271,8 +275,9 @@ The reviewed catalog exposes `family:qwen`, `family:kimi`, `family:glm`,
 `family:nemotron`. A paid catalog model whose current token price has not been
 reviewed is excluded by default. Pass `allowUnknownPricing: true` (Python:
 `allow_unknown_pricing=True`) only after approving that provider's current
-price. The Kimi family retains the public-data pilot guard.
-The explicit `auto:glm-flash-pilot` alias selects `zai:glm-5.3-flash` only.
+price. The Kimi family (`family:kimi`) is no longer gated — see
+[Kimi K3](#kimi-k3) above for its default-chain placement and data-residency
+note. The explicit `auto:glm-flash-pilot` alias selects `zai:glm-5.3-flash` only.
 `family:glm` resolves to `zai:glm-5.3-flash` then `zai:glm-5.3`. The default
 automatic chains (`auto:smart`, `auto:code`, `auto:reasoning`, `auto:big`)
 also fall through to the flagship `zai:glm-5.3`, priced into its price-ordered

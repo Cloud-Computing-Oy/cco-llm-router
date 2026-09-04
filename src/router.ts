@@ -90,6 +90,7 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
     { provider: 'google-paid', model: 'gemini-2.5-pro' },
     { provider: 'anthropic', model: 'claude-sonnet-4-6' },
     { provider: 'openai', model: 'gpt-5' },
+    { provider: 'moonshot', model: 'kimi-k3' },
   ],
   // Classification, language detection, short tasks.
   'auto:fast': [
@@ -131,6 +132,7 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
     { provider: 'google-paid', model: 'gemini-2.5-pro' },
     { provider: 'anthropic', model: 'claude-sonnet-4-6' },
     { provider: 'openai', model: 'gpt-5' },
+    { provider: 'moonshot', model: 'kimi-k3' },
   ],
   // Explicit paid only — for tasks where top quality is needed and budget approved.
   'auto:paid': [
@@ -138,6 +140,7 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
     { provider: 'openai', model: 'gpt-5-mini' },
     { provider: 'anthropic', model: 'claude-sonnet-4-6' },
     { provider: 'google-paid', model: 'gemini-2.5-pro' },
+    { provider: 'moonshot', model: 'kimi-k3' },
   ],
   // Large-context tasks (long docs, big diffs). Price-ordered after
   // DeepSeek V4 Flash, same $0.25/M tie rule as auto:smart above.
@@ -149,6 +152,7 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
     { provider: 'zai', model: 'glm-5.3' },
     { provider: 'google-paid', model: 'gemini-2.5-pro' },
     { provider: 'openai', model: 'gpt-5' },
+    { provider: 'moonshot', model: 'kimi-k3' },
   ],
   // Local-only — for fully offline / air-gapped paths. Opt-in: callers must
   // explicitly select this alias. Not safe as a default fallback because
@@ -182,8 +186,10 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.3-70B-Instruct' },
     { provider: 'google-paid', model: 'gemini-2.5-flash' },
   ],
-  // Explicit Kimi K3 pilot. Deliberately excluded from every existing
-  // default chain so no service can send data to Moonshot accidentally.
+  // Kimi K3 direct-only alias. No longer gated: Moonshot is now natively
+  // OpenAI/Anthropic-protocol compatible and ships in the top-tier default
+  // chains above (auto:smart/reasoning/paid/big); this alias remains for
+  // callers who want Kimi K3 specifically without the rest of the chain.
   'auto:kimi-pilot': [
     { provider: 'moonshot', model: 'kimi-k3' },
   ],
@@ -336,10 +342,8 @@ export type ResolveOptions = {
    * Overridden providers count as available even when their env key is unset.
    */
   perCallKeys?: PerCallKeys;
-  /** Classification of prompt data; pilot providers accept only public data. */
+  /** Classification of prompt data; the FACF laptop routes accept only public/synthetic data. */
   dataClass?: 'public' | 'synthetic' | 'internal' | 'confidential' | 'restricted';
-  /** Explicit opt-in required for experimental providers such as Moonshot. */
-  allowPilot?: boolean;
   /** Explicitly allow a direct selection to bypass the local budget safety net. */
   bypassBudget?: boolean;
   /** Allow models whose current token price has not been reviewed. */
@@ -368,13 +372,6 @@ export function createRouter(opts: RouterOptions = {}): Router {
   ): { model: LanguageModel; specs: Spec[] } {
     const perCallKeys = callOpts.perCallKeys;
     const dataClass = callOpts.dataClass ?? 'internal';
-    const pilotRequested =
-      alias === 'auto:kimi-pilot' || alias === 'family:kimi' || alias.startsWith('moonshot:');
-    if (pilotRequested && (!callOpts.allowPilot || dataClass !== 'public')) {
-      throw new Error(
-        'Moonshot/Kimi is an explicit public-data pilot; set allowPilot=true and dataClass="public"',
-      );
-    }
     const facfLaptopRequested =
       alias === 'auto:facf-laptop' || alias === 'auto:laptop-assisted';
     if (facfLaptopRequested && dataClass !== 'public' && dataClass !== 'synthetic') {

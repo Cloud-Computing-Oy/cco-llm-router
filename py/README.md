@@ -2,8 +2,8 @@
 
 Python binding for the provider-neutral
 [`cco-llm-router`](https://github.com/Cloud-Computing-Oy/cco-llm-router).
-It mirrors the TypeScript aliases, provider availability, local budget
-estimates, usage reporting, and public-data pilot policy.
+It mirrors the TypeScript aliases, provider availability, and local budget
+estimates and usage reporting.
 
 ## Install
 
@@ -48,23 +48,19 @@ routes. Agents may pass `task_kind` and `task_risk` metadata, and an explicit
 Direct selectors obey the local budget guard by default. The
 `bypass_budget=True` override should require application authorization.
 
-## Public-data pilot
+## Kimi K3
 
-Kimi is never included in a normal fallback chain. It requires both explicit
-pilot approval and a public data classification:
+Kimi K3 ships in the top-tier default chains (`auto:smart`, `auto:reasoning`,
+`auto:big`, `auto:paid`) alongside Claude Sonnet and GPT-5, at the same
+$3/$15-per-M price point — no opt-in required. Select it directly when needed:
 
 ```python
-callspec = resolve_model(
-    "auto:kimi-pilot",
-    allow_pilot=True,
-    data_class="public",
-)
+callspec = resolve_model("auto:kimi-pilot")
+# Equivalent: resolve_model("moonshot:kimi-k3") or resolve_model("family:kimi")
 ```
 
-The router rejects internal, confidential, and restricted classifications for
-this pilot. It does not inspect prompt contents, so callers remain responsible
-for correct classification, minimization, consent, residency, and provider
-approval.
+Callers still choose `data_class` per request as usual; it no longer gates
+Moonshot specifically. Set `MOONSHOT_API_KEY` to make the provider available.
 
 ## GLM-5.3-Flash pilot
 
