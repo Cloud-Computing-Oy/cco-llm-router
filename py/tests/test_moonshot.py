@@ -2,38 +2,22 @@ from cco_llm_router.pricing import estimate_cost_usd, price_of
 from cco_llm_router.router import DEFAULT_ALIASES, resolve_model
 
 
-def test_kimi_is_explicit_opt_in_only():
-    assert [spec.label for spec in DEFAULT_ALIASES["auto:kimi-pilot"]] == [
-        "moonshot:kimi-k3"
-    ]
-    assert all(
-        spec.provider != "moonshot"
-        for alias, chain in DEFAULT_ALIASES.items()
-        if alias not in {"auto:kimi-pilot", "family:kimi"}
-        for spec in chain
-    )
+def test_kimi_ships_in_top_tier_default_chains():
+    for alias in ("auto:smart", "auto:reasoning", "auto:big", "auto:paid"):
+        assert any(
+            spec.provider == "moonshot" and spec.model == "kimi-k3"
+            for spec in DEFAULT_ALIASES[alias]
+        ), alias
+    for alias in ("auto:fast", "auto:translate", "auto:code", "auto:cheap", "auto:local"):
+        assert all(spec.provider != "moonshot" for spec in DEFAULT_ALIASES[alias]), alias
 
 
-def test_kimi_resolves_when_key_is_configured(monkeypatch):
+def test_kimi_resolves_without_any_opt_in_flag(monkeypatch):
     monkeypatch.setenv("MOONSHOT_API_KEY", "test-key")
-    resolved = resolve_model(
-        "auto:kimi-pilot", allow_pilot=True, data_class="public"
-    )
+    resolved = resolve_model("family:kimi")
     assert [spec.label for spec in resolved.specs] == ["moonshot:kimi-k3"]
-
-
-def test_kimi_fails_closed_without_public_data_opt_in(monkeypatch):
-    monkeypatch.setenv("MOONSHOT_API_KEY", "test-key")
-    for options in (
-        {},
-        {"allow_pilot": True, "data_class": "confidential"},
-    ):
-        try:
-            resolve_model("auto:kimi-pilot", **options)
-        except RuntimeError as exc:
-            assert "explicit public-data pilot" in str(exc)
-        else:
-            raise AssertionError("Kimi pilot unexpectedly accepted unsafe options")
+    resolved = resolve_model("moonshot:kimi-k3")
+    assert [spec.label for spec in resolved.specs] == ["moonshot:kimi-k3"]
 
 
 def test_kimi_uses_conservative_cache_miss_pricing():

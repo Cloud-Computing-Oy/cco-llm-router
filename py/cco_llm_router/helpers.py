@@ -19,7 +19,6 @@ def chat(
     data_class: str = "internal",
     task_risk: str | None = None,
     task_kind: str | None = None,
-    allow_pilot: bool = False,
     bypass_budget: bool = False,
 ) -> str:
     """Resolve `alias`, walk the available chain, return the text."""
@@ -33,7 +32,6 @@ def chat(
     callspec = resolve_model(
         selected_alias,
         data_class=data_class,
-        allow_pilot=allow_pilot,
         bypass_budget=bypass_budget,
     )
     return callspec.call(
@@ -57,7 +55,6 @@ def chat_json(
     data_class: str = "internal",
     task_risk: str | None = None,
     task_kind: str | None = None,
-    allow_pilot: bool = False,
     bypass_budget: bool = False,
 ) -> Any | None:
     """Same as chat() but expects JSON. Strips ```json fences if present;
@@ -71,7 +68,6 @@ def chat_json(
         data_class=data_class,
         task_risk=task_risk,
         task_kind=task_kind,
-        allow_pilot=allow_pilot,
         bypass_budget=bypass_budget,
     )
     cleaned = raw.strip()

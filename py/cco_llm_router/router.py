@@ -73,6 +73,7 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
         Spec("google-paid", "gemini-2.5-pro"),
         Spec("anthropic", "claude-sonnet-4-6"),
         Spec("openai", "gpt-5"),
+        Spec("moonshot", "kimi-k3"),
     ],
     "auto:fast": [
         Spec("groq", "qwen/qwen3.6-27b"),
@@ -112,12 +113,14 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
         Spec("google-paid", "gemini-2.5-pro"),
         Spec("anthropic", "claude-sonnet-4-6"),
         Spec("openai", "gpt-5"),
+        Spec("moonshot", "kimi-k3"),
     ],
     "auto:paid": [
         Spec("openai", "gpt-5"),
         Spec("openai", "gpt-5-mini"),
         Spec("anthropic", "claude-sonnet-4-6"),
         Spec("google-paid", "gemini-2.5-pro"),
+        Spec("moonshot", "kimi-k3"),
     ],
     # Price-ordered after DeepSeek V4 Flash, same $0.25/M tie rule as
     # auto:smart above.
@@ -129,6 +132,7 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
         Spec("zai", "glm-5.3"),
         Spec("google-paid", "gemini-2.5-pro"),
         Spec("openai", "gpt-5"),
+        Spec("moonshot", "kimi-k3"),
     ],
     "auto:local": [
         Spec("ollama", "qwen2.5:14b"),
@@ -153,7 +157,10 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
         Spec("deepinfra", "meta-llama/Meta-Llama-3.3-70B-Instruct"),
         Spec("google-paid", "gemini-2.5-flash"),
     ],
-    # Explicit Kimi K3 pilot; never selected by an existing default alias.
+    # Kimi K3 direct-only alias. No longer gated: Moonshot is now natively
+    # OpenAI/Anthropic-protocol compatible and ships in the top-tier default
+    # chains above (auto:smart/reasoning/paid/big); this alias remains for
+    # callers who want Kimi K3 specifically without the rest of the chain.
     "auto:kimi-pilot": [
         Spec("moonshot", "kimi-k3"),
     ],
@@ -285,7 +292,6 @@ def resolve_model(
     *,
     aliases: dict[str, list[Spec]] | None = None,
     data_class: str = "internal",
-    allow_pilot: bool = False,
     bypass_budget: bool = False,
     allow_unknown_pricing: bool = False,
 ) -> CallSpec:
@@ -295,19 +301,11 @@ def resolve_model(
       - A registered alias like "auto:smart"
       - A direct "provider:model" string (e.g. "anthropic:claude-sonnet-4-6")
 
-    Pilot providers require explicit public-data approval. Direct calls obey
+    The FACF laptop routes require public/synthetic data. Direct calls obey
     the local budget safety net unless ``bypass_budget=True`` is approved.
     """
     if data_class not in {"public", "synthetic", "internal", "confidential", "restricted"}:
         raise ValueError(f"Unknown data class: {data_class}")
-    pilot_requested = alias in {"auto:kimi-pilot", "family:kimi"} or alias.startswith(
-        "moonshot:"
-    )
-    if pilot_requested and (not allow_pilot or data_class != "public"):
-        raise RuntimeError(
-            'Moonshot/Kimi is an explicit public-data pilot; '
-            'set allow_pilot=True and data_class="public"'
-        )
     if alias in {"auto:facf-laptop", "auto:laptop-assisted"} and data_class not in {
         "public",
         "synthetic",

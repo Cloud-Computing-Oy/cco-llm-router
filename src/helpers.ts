@@ -38,8 +38,6 @@ export type ChatRequest = {
   taskRisk?: TaskRisk;
   /** Optional agent-supplied task kind; otherwise conservative prompt heuristics apply. */
   taskKind?: TaskKind;
-  /** Explicit opt-in for experimental public-data-only providers. */
-  allowPilot?: boolean;
   /** Explicitly bypass the local direct-selector budget safety net. */
   bypassBudget?: boolean;
   /** Overall abort signal. Defaults to AbortSignal.timeout(DEFAULT_CALL_TIMEOUT_MS). */
@@ -77,7 +75,6 @@ export async function chat(req: ChatRequest): Promise<string> {
   const { model } = resolveModel(selectedAlias, {
     perCallKeys: req.perCallKeys,
     dataClass: req.dataClass,
-    allowPilot: req.allowPilot,
     bypassBudget: req.bypassBudget,
   });
   const { text } = await aiGenerateText({
@@ -126,7 +123,6 @@ export async function chatJsonStrict<T>(req: ChatRequest & { schema: z.ZodSchema
   const { model } = resolveModel(selectedAlias, {
     perCallKeys: req.perCallKeys,
     dataClass: req.dataClass,
-    allowPilot: req.allowPilot,
     bypassBudget: req.bypassBudget,
   });
   const { object } = await aiGenerateObject({

@@ -4,62 +4,45 @@ import test from 'node:test';
 import { DEFAULT_ALIASES, createRouter } from './router';
 import { estimateCostUSD, priceOf } from './pricing';
 
-test('Kimi K3 is available only through explicit pilot routes', () => {
-  assert.deepEqual(DEFAULT_ALIASES['auto:kimi-pilot'], [
-    { provider: 'moonshot', model: 'kimi-k3' },
-  ]);
-
-  for (const [alias, chain] of Object.entries(DEFAULT_ALIASES)) {
-    if (alias === 'auto:kimi-pilot' || alias === 'family:kimi') continue;
-    assert.equal(chain.some((spec) => spec.provider === 'moonshot'), false, alias);
+test('Kimi K3 ships in the top-tier default chains', () => {
+  for (const alias of ['auto:smart', 'auto:reasoning', 'auto:big', 'auto:paid']) {
+    assert.equal(
+      DEFAULT_ALIASES[alias].some((spec) => spec.provider === 'moonshot' && spec.model === 'kimi-k3'),
+      true,
+      alias,
+    );
+  }
+  // Cost-sensitive chains stay clear of Kimi K3's $3/$15 price point.
+  for (const alias of ['auto:fast', 'auto:translate', 'auto:code', 'auto:cheap', 'auto:local']) {
+    assert.equal(
+      DEFAULT_ALIASES[alias].some((spec) => spec.provider === 'moonshot'),
+      false,
+      alias,
+    );
   }
 });
 
-test('Kimi family route keeps the public-data pilot guard', () => {
+test('Kimi K3 resolves without any opt-in flag', () => {
   const router = createRouter();
   const key = { perCallKeys: { moonshot: 'test-key' } };
-  assert.throws(() => router.resolveModel('family:kimi', key), /explicit public-data pilot/);
-  assert.deepEqual(
-    router.resolveModel('family:kimi', {
-      ...key,
-      allowPilot: true,
-      dataClass: 'public',
-    }).specs,
-    [{ provider: 'moonshot', model: 'kimi-k3' }],
-  );
+  assert.deepEqual(router.resolveModel('family:kimi', key).specs, [
+    { provider: 'moonshot', model: 'kimi-k3' },
+  ]);
+  assert.deepEqual(router.resolveModel('moonshot:kimi-k3', key).specs, [
+    { provider: 'moonshot', model: 'kimi-k3' },
+  ]);
 });
 
 test('Moonshot supports BYOK without a process-level key', () => {
   const router = createRouter();
   const resolved = router.resolveModel('auto:kimi-pilot', {
     perCallKeys: { moonshot: 'test-key' },
-    allowPilot: true,
-    dataClass: 'public',
   });
 
   assert.deepEqual(resolved.specs, [{ provider: 'moonshot', model: 'kimi-k3' }]);
   const model = resolved.model as { provider?: string; modelId?: string };
   assert.equal(model.provider, 'openai.chat');
   assert.equal(model.modelId, 'kimi-k3');
-});
-
-test('Moonshot pilot fails closed without public-data opt-in', () => {
-  const router = createRouter();
-  const key = { perCallKeys: { moonshot: 'test-key' } };
-
-  assert.throws(
-    () => router.resolveModel('auto:kimi-pilot', key),
-    /explicit public-data pilot/,
-  );
-  assert.throws(
-    () =>
-      router.resolveModel('moonshot:kimi-k3', {
-        ...key,
-        allowPilot: true,
-        dataClass: 'confidential',
-      }),
-    /explicit public-data pilot/,
-  );
 });
 
 test('Kimi K3 uses conservative cache-miss pricing', () => {
