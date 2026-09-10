@@ -1,0 +1,231 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "1970-01-01T00:00:00Z",
+  "models": [
+    {
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-6",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 3,
+        "outputPerM": 15
+      }
+    },
+    {
+      "provider": "anthropic",
+      "model": "claude-haiku-4-5-20251001",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 1,
+        "outputPerM": 5
+      }
+    },
+    {
+      "provider": "anthropic",
+      "model": "claude-opus-4-7",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 15,
+        "outputPerM": 75
+      }
+    },
+    {
+      "provider": "google",
+      "model": "gemini-2.5-flash",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 0,
+        "outputPerM": 0
+      }
+    },
+    {
+      "provider": "google",
+      "model": "gemini-2.5-pro",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 0,
+        "outputPerM": 0
+      }
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-2.5-flash",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 0.075,
+        "outputPerM": 0.3
+      }
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-2.5-pro",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 1.25,
+        "outputPerM": 5
+      }
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 3,
+        "outputPerM": 15
+      }
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5-mini",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 0.25,
+        "outputPerM": 2
+      }
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5-nano",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 0.05,
+        "outputPerM": 0.4
+      }
+    },
+    {
+      "provider": "groq",
+      "model": "qwen/qwen3.6-27b",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 0,
+        "outputPerM": 0
+      }
+    },
+    {
+      "provider": "deepinfra",
+      "model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 0.04,
+        "outputPerM": 0.04
+      }
+    },
+    {
+      "provider": "deepinfra",
+      "model": "meta-llama/Meta-Llama-3.3-70B-Instruct",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 0.23,
+        "outputPerM": 0.4
+      }
+    },
+    {
+      "provider": "deepinfra",
+      "model": "meta-llama/Meta-Llama-3.3-70B-Instruct-Turbo",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 0.13,
+        "outputPerM": 0.39
+      }
+    },
+    {
+      "provider": "deepinfra",
+      "model": "Qwen/Qwen2.5-72B-Instruct",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 0.27,
+        "outputPerM": 0.4
+      }
+    },
+    {
+      "provider": "deepinfra",
+      "model": "deepseek-ai/DeepSeek-V3",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 0.49,
+        "outputPerM": 0.89
+      }
+    },
+    {
+      "provider": "together",
+      "model": "meta-llama/Llama-3.3-70B-Instruct-Turbo",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 0.88,
+        "outputPerM": 0.88
+      }
+    },
+    {
+      "provider": "together",
+      "model": "meta-llama/Llama-3.3-70B-Instruct-Lite",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 0.54,
+        "outputPerM": 0.88
+      }
+    },
+    {
+      "provider": "together",
+      "model": "Qwen/Qwen2.5-72B-Instruct-Turbo",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 1.2,
+        "outputPerM": 1.2
+      }
+    },
+    {
+      "provider": "together",
+      "model": "deepseek-ai/DeepSeek-V3",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 1.25,
+        "outputPerM": 1.25
+      }
+    },
+    {
+      "provider": "deepseek",
+      "model": "deepseek-v4-flash",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 0.14,
+        "outputPerM": 0.28
+      }
+    },
+    {
+      "provider": "deepseek",
+      "model": "deepseek-v4-pro",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 0.435,
+        "outputPerM": 0.87
+      }
+    },
+    {
+      "provider": "moonshot",
+      "model": "kimi-k3",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 3,
+        "outputPerM": 15
+      }
+    },
+    {
+      "provider": "zai",
+      "model": "glm-5.3-flash",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 0.15,
+        "outputPerM": 0.5
+      }
+    },
+    {
+      "provider": "zai",
+      "model": "glm-5.3",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 1.4,
+        "outputPerM": 4.4
+      }
+    }
+  ]
+}

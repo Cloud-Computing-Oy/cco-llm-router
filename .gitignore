@@ -4,3 +4,9 @@ dist
 .DS_Store
 .env
 .env.local
+
+# Superpowers SDD workspace (git-ignored scratch)
+.superpowers/
+
+# CI intermediate written to the repo root by scripts/check-provider-models.ts
+availability.json

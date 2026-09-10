@@ -35,3 +35,10 @@ text = model.call(system="Be concise", prompt="Summarize this text")
 Do not migrate confidential or regulated workflows until every possible
 provider in the selected chain is contractually and technically approved for
 that data class. The router does not inspect prompt contents.
+
+## Runtime model data (TypeScript, 0.21.0)
+
+No action is required. The TypeScript router now ships a bundled model-data
+snapshot and refreshes availability and pricing in the background by default.
+To restore the previous fully static behavior, set
+`CCO_MODEL_DATA_REFRESH_HOURS=0` (see the README's "Model data" section).

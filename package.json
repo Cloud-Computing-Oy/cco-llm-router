@@ -1,6 +1,6 @@
 {
   "name": "@cloud-computing-oy/llm-router",
-  "version": "0.20.0",
+  "version": "0.21.0",
   "license": "Apache-2.0",
   "description": "Provider-neutral LLM fallback chains with local budget estimates.",
   "publishConfig": {
@@ -58,6 +58,8 @@
   },
   "scripts": {
     "build:cli": "esbuild src/bin/usage.ts src/bin/claude-router.ts --bundle --platform=node --format=cjs --outdir=dist --out-extension:.js=.cjs",
+    "build:model-data": "node --import tsx scripts/build-model-data-cli.ts",
+    "check:models": "node --import tsx scripts/check-provider-models.ts",
     "prepack": "npm run build:cli",
     "test": "node --import tsx --test src/*.test.ts",
     "typecheck": "tsc --noEmit"
@@ -67,6 +69,7 @@
   },
   "files": [
     "src",
-    "docs"
+    "docs",
+    "data"
   ]
 }

@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.21.0] - 2026-09-10
+
+### Added
+
+- Runtime model data: the router loads a bundled `data/model-data.json`
+  snapshot (availability + pricing) at import and refreshes it from the
+  `model-data` GitHub release asset every 6 hours by default.
+  `CCO_MODEL_DATA_URL` overrides the dataset URL;
+  `CCO_MODEL_DATA_REFRESH_HOURS=0` disables polling entirely (restoring
+  fully static behavior). Retired models are skipped at resolve time, and
+  dataset prices feed `estimateCostUSD` and the budget gates. New exports:
+  `getModelDataStatus()`, `startModelDataRefresh()`, `stopModelDataRefresh()`,
+  `applyDataset()`, `DEFAULT_MODEL_DATA_URL`. A dataset that would retire
+  every hop of an active default chain is refused rather than applied, and
+  stale snapshots raise a warning.
+- CI tooling for the dataset: `npm run check:models` checks each remote
+  provider's list-models API and `npm run build:model-data` merges the
+  results with the curated `data/pricing.json` into `data/model-data.json`.
+  A nightly workflow runs both and publishes the dataset as the
+  `model-data` release asset.
+- Regression tests for the dataset merge and provider-check scripts
+  (`node --import tsx --test scripts/*.test.ts`); `tsconfig.json` now
+  typechecks `scripts/` along with `src/`.
+
 ## [0.20.0] - 2026-09-04
 
 ### Changed
