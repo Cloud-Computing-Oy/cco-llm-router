@@ -68,7 +68,7 @@ const CHECKS: ProviderCheck[] = [
 
 const TIMEOUT_MS = 15_000;
 
-export async function checkProviderModels(checks: ProviderCheck[] = CHECKS): Promise<AvailabilityReport> {
+export async function checkProviderModels(checks: ProviderCheck[] = CHECKS, fetchImpl: typeof fetch = fetch): Promise<AvailabilityReport> {
   const report: AvailabilityReport = {};
   for (const check of checks) {
     const key = process.env[check.keyEnv] ?? (check.keyEnvAlt ? process.env[check.keyEnvAlt] : undefined);
@@ -79,7 +79,7 @@ export async function checkProviderModels(checks: ProviderCheck[] = CHECKS): Pro
       continue;
     }
     try {
-      const res = await fetch(check.endpoint, {
+      const res = await fetchImpl(check.endpoint, {
         headers: authHeaders(check.auth, key),
         signal: AbortSignal.timeout(TIMEOUT_MS),
       });
@@ -98,21 +98,23 @@ export async function checkProviderModels(checks: ProviderCheck[] = CHECKS): Pro
   return report;
 }
 
+// All providers unreachable / keyless must fail the run so health is not
+// mistaken for a partial success (CI must not look green on total outage).
+export function summarizeReports(reports: AvailabilityReport): { okCount: number; exitCode: 0 | 1 } {
+  const okCount = Object.values(reports).filter((r) => r.ok).length;
+  return { okCount, exitCode: okCount === 0 ? 1 : 0 };
+}
+
 async function main(): Promise<void> {
   const report = await checkProviderModels();
   await fs.promises.writeFile("availability.json", JSON.stringify(report, null, 2) + "\n");
-  let okCount = 0;
   for (const [name, r] of Object.entries(report)) {
-    if (r.ok) okCount++;
     console.log(`check-provider-models: ${name}: ${r.ok ? `ok (${r.models.length} models)` : "unavailable — state will carry over"}`);
   }
+  const { okCount, exitCode } = summarizeReports(report);
   console.log(`check-provider-models: ${okCount}/${Object.keys(report).length} providers ok, wrote availability.json`);
-  if (okCount === 0) {
-    // All providers unreachable / keyless: fail the run so health is not
-    // mistaken for a partial success (CI must not look green on total outage).
-    console.error("check-provider-models: no provider checks succeeded");
-    process.exitCode = 1;
-  }
+  if (exitCode !== 0) console.error("check-provider-models: no provider checks succeeded");
+  process.exitCode = exitCode;
 }
 
 // Run only when executed directly; safe to import (e.g. from tests).
