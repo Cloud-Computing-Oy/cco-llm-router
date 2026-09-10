@@ -101,12 +101,17 @@ export async function refreshNow(opts: { url?: string; fetchImpl?: typeof fetch 
   }
 }
 
+const MAX_REFRESH_HOURS = 596; // below Node's ~596.5 h interval clamp
+export function clampRefreshHours(raw: number): number {
+  if (!Number.isFinite(raw)) return 0;
+  return Math.min(Math.max(raw, 0), MAX_REFRESH_HOURS);
+}
+
 let timer: NodeJS.Timeout | null = null;
 
 export function startModelDataRefresh(opts: { url?: string; refreshHours?: number; fetchImpl?: typeof fetch } = {}): void {
   if (timer) return;
-  const hoursRaw = opts.refreshHours ?? Number(process.env.CCO_MODEL_DATA_REFRESH_HOURS ?? 6);
-  const hours = Number.isFinite(hoursRaw) ? hoursRaw : 0;
+  const hours = clampRefreshHours(opts.refreshHours ?? Number(process.env.CCO_MODEL_DATA_REFRESH_HOURS ?? 6));
   if (hours <= 0) return;
   const url = opts.url ?? process.env.CCO_MODEL_DATA_URL ?? DEFAULT_MODEL_DATA_URL;
   status.polling = true;

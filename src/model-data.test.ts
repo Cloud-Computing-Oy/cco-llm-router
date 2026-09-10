@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { ModelDataSchema, SUPPORTED_SCHEMA_VERSION, loadBundledDataset, getLiveDataset, applyDataset, refreshNow, startModelDataRefresh, stopModelDataRefresh, getModelDataStatus } from "./model-data";
+import { ModelDataSchema, SUPPORTED_SCHEMA_VERSION, loadBundledDataset, getLiveDataset, applyDataset, refreshNow, startModelDataRefresh, stopModelDataRefresh, getModelDataStatus, clampRefreshHours } from "./model-data";
 import { DEFAULT_ALIASES } from "./router";
 
 test("bundled dataset loads from the package data dir and validates", () => {
@@ -103,4 +103,10 @@ test("startModelDataRefresh stays disabled for non-finite refresh hours", () => 
   assert.equal(getModelDataStatus().polling, false);
   if (old === undefined) delete process.env.CCO_MODEL_DATA_REFRESH_HOURS;
   else process.env.CCO_MODEL_DATA_REFRESH_HOURS = old;
+});
+
+test("clampRefreshHours caps the poll interval below Node's 1ms clamp threshold", () => {
+  assert.equal(clampRefreshHours(720), 596);
+  assert.equal(clampRefreshHours(Number.NaN), 0);
+  assert.equal(clampRefreshHours(6), 6);
 });
