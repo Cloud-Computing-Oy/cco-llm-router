@@ -32,7 +32,12 @@ export function mergeDataset(
   }
   for (const [key, prev] of previousModels) {
     if (seen.has(key)) continue;
-    const [provider, model] = key.split(":");
+    // Split on the FIRST colon only: model ids may themselves contain colons
+    // (e.g. OpenRouter "auto:free"), so key.split(":") would truncate the id
+    // in the carryover path and create phantom entries.
+    const i = key.indexOf(":");
+    const provider = key.slice(0, i);
+    const model = key.slice(i + 1);
     const report = availability[provider];
     const isRetired = report?.ok === true; // successful check + absent = retired
     models.push({

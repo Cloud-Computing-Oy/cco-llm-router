@@ -28,6 +28,20 @@ test("mergeDataset carries over previous status when the API check failed", () =
   assert.equal(merged.models.find((m) => m.model === "gemini-2.5-pro")!.status, "retired");
 });
 
+test("mergeDataset carryover preserves model ids containing colons", () => {
+  const availability: AvailabilityReport = { openrouter: { ok: true, models: [] } };
+  const previous: PreviousState = {
+    schemaVersion: 1,
+    generatedAt: "2026-09-01T00:00:00Z",
+    models: [{ provider: "openrouter", model: "auto:free", status: "available" }],
+  };
+  const merged = mergeDataset(availability, [], previous);
+  const kept = merged.models.find((m) => m.model === "auto:free");
+  assert.ok(kept, "exact model id preserved");
+  assert.equal(kept.status, "retired");
+  assert.ok(!merged.models.some((m) => m.model === "auto"), "no truncated phantom entry");
+});
+
 test("mergeDataset adds newly seen models with pricing when available", () => {
   const availability: AvailabilityReport = { google: { ok: true, models: ["gemini-3.1-p"] } };
   const pricing = [{ provider: "google", model: "gemini-3.1-p", pricing: { inputPerM: 2.5, outputPerM: 10 } }];
