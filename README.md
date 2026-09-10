@@ -302,6 +302,19 @@ If no provider in an alias is available, `resolveModel` throws — which
 is intentional: failing loudly during cold start is better than failing
 silently in production.
 
+## Model data (availability + pricing)
+
+The router ships a bundled `model-data.json` snapshot and refreshes it
+from a stable GitHub release URL every 6 hours by default.
+
+- `CCO_MODEL_DATA_URL` — override the dataset URL (default: this repo's `model-data` release asset)
+- `CCO_MODEL_DATA_REFRESH_HOURS` — refresh interval; `0` disables polling entirely
+
+Retired models are skipped at resolve time; prices feed `estimateCostUSD`
+and budget gates. `getModelDataStatus()` reports source, last fetch, and errors.
+The dataset is rebuilt nightly by CI from provider list-models APIs plus
+the curated `data/pricing.json` (prices are updated by PR).
+
 ## Budget enforcement
 
 The router enforces per-provider monthly spend caps. Set the cap in USD
