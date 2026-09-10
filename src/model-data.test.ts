@@ -1,7 +1,8 @@
+import "./test-ollama-env";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { ModelDataSchema, SUPPORTED_SCHEMA_VERSION, loadBundledDataset, getLiveDataset, applyDataset, refreshNow, startModelDataRefresh, stopModelDataRefresh, getModelDataStatus, clampRefreshHours } from "./model-data";
-import { createRouter, DEFAULT_ALIASES } from "./router";
+import { createRouter, DEFAULT_ALIASES, type PerCallKeys } from "./router";
 
 test("bundled dataset loads from the package data dir and validates", () => {
   const d = loadBundledDataset();
@@ -145,5 +146,42 @@ test("no-provider error names retired hops and points at CCO_MODEL_DATA_URL", ()
   assert.throws(
     () => router.resolveModel("test:retired-only"),
     /No available provider.*1 hop\(s\) retired by model data; check CCO_MODEL_DATA_URL/,
+  );
+});
+
+test("dataset-absent local hops keep pre-feature reviewed-pricing behavior (ollama)", () => {
+  // spec §7.8: local providers stay available; the pricing filter must not
+  // drop hops absent from both the live dataset and the static PRICING table.
+  const router = createRouter({
+    aliases: { "test:ollama-only": [{ provider: "ollama" as const, model: "qwen2.5:14b" }] },
+  });
+  // PerCallKeys excludes 'ollama' at the type level, but isAvailable checks
+  // per-call keys at runtime before falling back to provider env availability.
+  const options = { perCallKeys: { ollama: "test-key" } as unknown as PerCallKeys };
+  const { specs } = router.resolveModel("test:ollama-only", options);
+  assert.deepEqual(specs, [{ provider: "ollama", model: "qwen2.5:14b" }]);
+});
+
+test("catalog-priced hops absent from PRICING keep their reviewed status", () => {
+  // ollama:gemma3:27b is MODEL_CATALOG pricing:'free' and absent from the
+  // static PRICING table — the catalog fallback's non-'unknown' branch.
+  const router = createRouter({
+    aliases: { "test:gemma-local": [{ provider: "ollama" as const, model: "gemma3:27b" }] },
+  });
+  const options = { perCallKeys: { ollama: "test-key" } as unknown as PerCallKeys };
+  const { specs } = router.resolveModel("test:gemma-local", options);
+  assert.deepEqual(specs, [{ provider: "ollama", model: "gemma3:27b" }]);
+});
+
+test("catalog pricing:'unknown' hops still require allowUnknownPricing", () => {
+  // Pins the pre-feature rejection: mistral:mistral-large-latest is catalog
+  // pricing:'unknown' and absent from PRICING — reviewed-pricing filtering
+  // rejects it exactly as before the dataset feature.
+  const router = createRouter({
+    aliases: { "test:mistral-only": [{ provider: "mistral" as const, model: "mistral-large-latest" }] },
+  });
+  assert.throws(
+    () => router.resolveModel("test:mistral-only", { perCallKeys: { mistral: "test-key" } }),
+    /No reviewed-price provider/,
   );
 });

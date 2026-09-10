@@ -17,9 +17,8 @@ import { mistralAvailable, mistralModel } from './providers/mistral';
 import { nvidiaAvailable, nvidiaModel } from './providers/nvidia';
 import { createFallbackModel } from './fallback';
 import { withinBudget } from './budget';
-import { requiresUnknownPricingApproval } from './catalog';
+import { MODEL_CATALOG, requiresUnknownPricingApproval } from './catalog';
 import { DEFAULT_ALIASES } from './aliases';
-import { PRICING } from './pricing';
 import { getLiveDataset } from './model-data';
 
 export type { Provider, Spec } from './types';
@@ -36,7 +35,10 @@ function isRetired(provider: string, model: string): boolean {
 function hasReviewedPricing(spec: Spec): boolean {
   const live = getLiveDataset().models.find((m) => m.provider === spec.provider && m.model === spec.model);
   if (live) return live.pricing !== undefined;
-  return Object.prototype.hasOwnProperty.call(PRICING, `${spec.provider}:${spec.model}`);
+  // Pre-feature behavior for dataset-absent models (spec §7.8: local
+  // providers stay available; catalog-absent hops remain reviewed).
+  const entry = MODEL_CATALOG.find((e) => e.provider === spec.provider && e.model === spec.model);
+  return !entry || entry.pricing !== "unknown";
 }
 
 function hasKey(p: Provider): boolean {
