@@ -94,6 +94,9 @@ export async function refreshNow(opts: { url?: string; fetchImpl?: typeof fetch 
     status.source = "remote";
     status.fetchedAt = new Date().toISOString();
     status.datasetAgeHours = Math.max(0, (Date.now() - Date.parse(parsed.data.generatedAt)) / 3_600_000);
+    if ((status.datasetAgeHours ?? 0) > 7 * 24) {
+      console.warn(`[cco-llm-router] model data is ${Math.round(status.datasetAgeHours! / 24)} days old — CI may be down`);
+    }
     return getModelDataStatus();
   } catch (err) {
     status.lastError = (err as Error).message;

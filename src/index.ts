@@ -80,3 +80,13 @@ export {
   type ModelCapabilities,
   type ModelFamily,
 } from './catalog';
+
+export {
+  getModelDataStatus,
+  startModelDataRefresh,
+  stopModelDataRefresh,
+  applyDataset,
+  DEFAULT_MODEL_DATA_URL,
+  type ModelDataStatus,
+  type ModelDataDataset,
+} from './model-data';

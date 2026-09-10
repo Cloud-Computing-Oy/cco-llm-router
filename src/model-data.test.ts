@@ -185,3 +185,24 @@ test("catalog pricing:'unknown' hops still require allowUnknownPricing", () => {
     /No reviewed-price provider/,
   );
 });
+
+test("public API is exported from index", async () => {
+  const idx = await import("./index");
+  assert.equal(typeof idx.getModelDataStatus, "function");
+  assert.equal(typeof idx.startModelDataRefresh, "function");
+  assert.equal(typeof idx.stopModelDataRefresh, "function");
+  assert.equal(typeof idx.applyDataset, "function");
+  assert.equal(typeof idx.DEFAULT_MODEL_DATA_URL, "string");
+});
+
+test("refreshNow warns when the dataset is older than 7 days", async () => {
+  const old = {
+    schemaVersion: 1,
+    generatedAt: new Date(Date.now() - 8 * 24 * 3_600_000).toISOString(),
+    models: [],
+  };
+  const fakeFetch = async () =>
+    new Response(JSON.stringify(old), { status: 200, headers: { "content-type": "application/json" } });
+  const st = await refreshNow({ url: "https://example.test/md.json", fetchImpl: fakeFetch });
+  assert.ok((st.datasetAgeHours ?? 0) > 7 * 24);
+});
