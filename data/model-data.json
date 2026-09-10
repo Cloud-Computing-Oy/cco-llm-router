@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-10T18:01:18.443Z",
+  "generatedAt": "2026-09-10T18:05:50.292Z",
   "models": [
     {
       "provider": "anthropic",
@@ -91,7 +91,7 @@
       "provider": "deepseek",
       "model": "deepseek-v4-flash",
       "status": "retired",
-      "retiredAt": "2026-09-10T18:01:18.443Z",
+      "retiredAt": "2026-09-10T18:05:50.292Z",
       "pricing": {
         "inputPerM": 0.15,
         "outputPerM": 0.6,
