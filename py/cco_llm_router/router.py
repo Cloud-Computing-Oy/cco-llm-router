@@ -44,10 +44,10 @@ from .usage import record_usage
 #   groq:qwen3.6-27b                 free (rate-limited)
 #   google:gemini-2.5-flash          free tier — 1500 RPD per GCP project
 #   deepinfra:llama-3.1-8b           $0.04  / $0.04
-#   deepseek:deepseek-v4-flash       $0.14  / $0.28   (reasoning, thinks by default)
+#   deepseek:deepseek-v4-flash       $0.15  / $0.60   (reasoning, thinks by default)
 #   google-paid:gemini-2.5-flash     $0.075 / $0.30
 #   deepinfra:llama-3.3-70b          $0.23  / $0.40
-#   deepseek:deepseek-flash         $0.14 / $0.28   (V4 Pro retires 2026-09-14)
+#   deepseek:deepseek-flash         $0.15 / $0.60   (V4 Pro retires 2026-09-14)
 #   together:llama-3.3-70b-lite      $0.54  / $0.88
 #   openai:gpt-5-mini                $0.25  / $2
 #   google-paid:gemini-2.5-pro       $1.25  / $5

@@ -1,8 +1,9 @@
 import fs from "node:fs";
 
 export type AvailabilityReport = Record<string, { ok: boolean; models: string[] }>;
-export type PreviousState = { schemaVersion: number; generatedAt: string; models: Array<{ provider: string; model: string; status: "available" | "retired"; retiredAt?: string; pricing?: { inputPerM: number; outputPerM: number } }> };
-export type PricingEntry = { provider: string; model: string; pricing: { inputPerM: number; outputPerM: number } };
+export type Pricing = { inputPerM: number; outputPerM: number; peak?: { inputPerM: number; outputPerM: number } };
+export type PreviousState = { schemaVersion: number; generatedAt: string; models: Array<{ provider: string; model: string; status: "available" | "retired"; retiredAt?: string; pricing?: Pricing }> };
+export type PricingEntry = { provider: string; model: string; pricing: Pricing };
 
 export function mergeDataset(
   availability: AvailabilityReport,

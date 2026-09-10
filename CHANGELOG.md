@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.21.1] - 2026-09-10
+
+### Added
+
+- Peak/off-peak pricing. `Price` gains an optional `peak` block; the top-level
+  fields are then the off-peak rates. `effectivePrice(provider, model, at?)`
+  resolves which rates apply and `estimateCostUSD(..., at?)` bills the rate in
+  effect at the call instant, so `recordUsage` follows the wall clock. Peak
+  windows live in `PEAK_WINDOWS_UTC` (DeepSeek: UTC weekdays 01-04 and 06-10).
+  The dataset schema accepts `peak`, and `priceOf` returns dataset pricing
+  whole — rebuilding it field-by-field silently dropped the new block.
+
+### Fixed
+
+- DeepSeek prices were stale at the retired V4 Flash list price
+  ($0.14/$0.28). Corrected to the published V4.1 Flash rates: $0.15/$0.6
+  off-peak, $0.3/$1.2 peak. `deepseek-flash`, the legacy `deepseek-v4-flash`
+  redirect and the `deepseek-v4-pro` identifier all bill V4.1 Flash rates.
+  Applied to `data/pricing.json`, the bundled `data/model-data.json` snapshot
+  and the Python sibling (`py/cco_llm_router/pricing.py`).
+
 ## [0.21.0] - 2026-09-10
 
 ### Added

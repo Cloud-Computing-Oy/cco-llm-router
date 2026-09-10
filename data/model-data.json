@@ -187,8 +187,12 @@
       "model": "deepseek-v4-flash",
       "status": "available",
       "pricing": {
-        "inputPerM": 0.14,
-        "outputPerM": 0.28
+        "inputPerM": 0.15,
+        "outputPerM": 0.6,
+        "peak": {
+          "inputPerM": 0.3,
+          "outputPerM": 1.2
+        }
       }
     },
     {
@@ -196,8 +200,12 @@
       "model": "deepseek-v4-pro",
       "status": "available",
       "pricing": {
-        "inputPerM": 0.435,
-        "outputPerM": 0.87
+        "inputPerM": 0.15,
+        "outputPerM": 0.6,
+        "peak": {
+          "inputPerM": 0.3,
+          "outputPerM": 1.2
+        }
       }
     },
     {
