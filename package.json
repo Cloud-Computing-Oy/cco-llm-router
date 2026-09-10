@@ -58,6 +58,8 @@
   },
   "scripts": {
     "build:cli": "esbuild src/bin/usage.ts src/bin/claude-router.ts --bundle --platform=node --format=cjs --outdir=dist --out-extension:.js=.cjs",
+    "build:model-data": "node --import tsx scripts/build-model-data-cli.ts",
+    "check:models": "node --import tsx scripts/check-provider-models.ts",
     "prepack": "npm run build:cli",
     "test": "node --import tsx --test src/*.test.ts",
     "typecheck": "tsc --noEmit"

@@ -86,10 +86,15 @@ export async function checkProviderModels(checks: ProviderCheck[] = CHECKS): Pro
       if (!res.ok) throw new Error(`${check.name}: HTTP ${res.status}`);
       const json = await res.json();
       report[check.name] = { ok: true, models: check.parse(json) };
-    } catch {
+    } catch (err) {
+      console.error(`${check.name}: check failed: ${err instanceof Error ? err.message : String(err)}`);
       report[check.name] = { ok: false, models: [] };
     }
   }
+  // google-paid is the same API under a paid billing tier (src/providers/google-paid.ts):
+  // mirror google's report so google-paid entries retire in lockstep with google.
+  const google = report.google;
+  if (google) report["google-paid"] = { ok: google.ok, models: google.models };
   return report;
 }
 
@@ -102,6 +107,12 @@ async function main(): Promise<void> {
     console.log(`check-provider-models: ${name}: ${r.ok ? `ok (${r.models.length} models)` : "unavailable — state will carry over"}`);
   }
   console.log(`check-provider-models: ${okCount}/${Object.keys(report).length} providers ok, wrote availability.json`);
+  if (okCount === 0) {
+    // All providers unreachable / keyless: fail the run so health is not
+    // mistaken for a partial success (CI must not look green on total outage).
+    console.error("check-provider-models: no provider checks succeeded");
+    process.exitCode = 1;
+  }
 }
 
 // Run only when executed directly; safe to import (e.g. from tests).
