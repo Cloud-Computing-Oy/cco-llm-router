@@ -60,3 +60,17 @@ def test_estimate_cost_bills_the_rate_in_effect_at_the_call_instant():
     peak = datetime(2026, 9, 10, 2, 0, tzinfo=timezone.utc)
     assert estimate_cost_usd("deepseek", "deepseek-flash", 1_000_000, 1_000_000, off) == 0.75
     assert estimate_cost_usd("deepseek", "deepseek-flash", 1_000_000, 1_000_000, peak) == 1.5
+
+
+def test_default_chains_lead_with_the_canonical_deepseek_flash_id():
+    from cco_llm_router.router import DEFAULT_ALIASES
+
+    for alias, chain in DEFAULT_ALIASES.items():
+        hops = [s for s in chain if s.provider == "deepseek"]
+        if not hops:
+            continue
+        # Upstream /models no longer lists deepseek-v4-flash, so the nightly
+        # dataset marks it retired and the resolver skips it — leading with it
+        # silently hands the chain to the next provider.
+        assert hops[0].model == "deepseek-flash", alias
+        assert all(s.model != "deepseek-v4-flash" for s in chain), alias

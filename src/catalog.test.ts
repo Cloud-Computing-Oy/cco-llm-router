@@ -49,12 +49,12 @@ test('GLM Flash has task-specific priority without entering specialist chains', 
     { provider: 'zai', model: 'glm-5.3' },
   ]);
 
-  // Positions reflect each chain's price ordering after deepseek-v4-flash,
+  // Positions reflect each chain's price ordering after deepseek-flash,
   // not a fixed offset — see the $0.25/M tie-rule comment in router.ts.
   const glmPositions: Record<string, [number, number]> = {
-    'auto:smart': [4, 8],
+    'auto:smart': [4, 7],
     'auto:code': [4, 7],
-    'auto:reasoning': [2, 5],
+    'auto:reasoning': [2, 4],
     'auto:big': [2, 4],
   };
   for (const [alias, [flashIdx, proIdx]] of Object.entries(glmPositions)) {

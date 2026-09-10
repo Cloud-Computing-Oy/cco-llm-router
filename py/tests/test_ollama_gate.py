@@ -23,7 +23,7 @@ def test_laptop_alias_matches_typescript_chain():
 
 def test_deepseek_leads_strong_cloud_routes():
     for alias in ("auto:smart", "auto:code", "auto:reasoning", "auto:big"):
-        assert DEFAULT_ALIASES[alias][0].label == "deepseek:deepseek-v4-flash"
+        assert DEFAULT_ALIASES[alias][0].label == "deepseek:deepseek-flash"
 
 
 def test_retired_groq_models_are_not_in_default_routes():

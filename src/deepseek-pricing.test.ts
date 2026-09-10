@@ -57,3 +57,26 @@ test('estimateCostUSD bills the rate in effect at the call instant', () => {
   assert.equal(estimateCostUSD('deepseek', 'deepseek-flash', 1_000_000, 1_000_000, OFF_PEAK_INSIDE), 0.75);
   assert.equal(estimateCostUSD('deepseek', 'deepseek-flash', 1_000_000, 1_000_000, PEAK_INSIDE), 1.5);
 });
+
+test('default chains lead with the canonical deepseek-flash id', async () => {
+  const { DEFAULT_ALIASES } = await import('./aliases');
+  for (const [alias, chain] of Object.entries(DEFAULT_ALIASES)) {
+    const hops = chain.filter((s) => s.provider === 'deepseek');
+    if (hops.length === 0) continue;
+    // Upstream /models no longer lists deepseek-v4-flash, so the nightly dataset
+    // marks it retired and the resolver skips it. Leading with a retired id
+    // silently hands the chain to the next provider (free Gemini).
+    assert.equal(hops[0].model, 'deepseek-flash', `${alias} leads with ${hops[0].model}`);
+  }
+});
+
+test('no default chain references the retired deepseek-v4-flash id', async () => {
+  const { DEFAULT_ALIASES } = await import('./aliases');
+  for (const [alias, chain] of Object.entries(DEFAULT_ALIASES)) {
+    assert.equal(
+      chain.some((s) => s.provider === 'deepseek' && s.model === 'deepseek-v4-flash'),
+      false,
+      alias,
+    );
+  }
+});

@@ -35,12 +35,12 @@ def test_glm_flash_has_task_specific_priority(monkeypatch):
     assert resolve_model("auto:glm-flash-pilot").specs == [flash]
     assert resolve_model("family:glm").specs == [flash, pro]
 
-    # Positions reflect each chain's price ordering after deepseek-v4-flash,
+    # Positions reflect each chain's price ordering after deepseek-flash,
     # not a fixed offset — see the $0.25/M tie-rule comment in router.py.
     glm_positions = {
-        "auto:smart": (4, 8),
+        "auto:smart": (4, 7),
         "auto:code": (4, 7),
-        "auto:reasoning": (2, 5),
+        "auto:reasoning": (2, 4),
         "auto:big": (2, 4),
     }
     for alias, (flash_idx, pro_idx) in glm_positions.items():

@@ -20,7 +20,7 @@ test('prioritizes DeepSeek for strong cloud routes', () => {
   for (const alias of ['auto:smart', 'auto:code', 'auto:reasoning', 'auto:big']) {
     assert.deepEqual(DEFAULT_ALIASES[alias][0], {
       provider: 'deepseek',
-      model: 'deepseek-v4-flash',
+      model: 'deepseek-flash',
     });
   }
 });
