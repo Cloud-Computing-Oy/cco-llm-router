@@ -1,4 +1,6 @@
 import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import { DEFAULT_ALIASES } from "./aliases";
 
@@ -19,10 +21,17 @@ export const ModelDataSchema = z.object({
 });
 export type ModelDataDataset = z.infer<typeof ModelDataSchema>;
 
-const BUNDLED_PATH = new URL("../data/model-data.json", import.meta.url);
+function bundledDataPath(): string {
+  // esbuild's CJS bundle (build:cli → dist/*.cjs) has __dirname and an
+  // empty import.meta.url; tsx/ESM runs have import.meta.url only.
+  if (typeof __dirname !== "undefined") {
+    return path.join(__dirname, "..", "data", "model-data.json");
+  }
+  return fileURLToPath(new URL("../data/model-data.json", import.meta.url));
+}
 
 export function loadBundledDataset(): ModelDataDataset {
-  const raw = fs.readFileSync(BUNDLED_PATH, "utf8");
+  const raw = fs.readFileSync(bundledDataPath(), "utf8");
   const parsed = ModelDataSchema.safeParse(JSON.parse(raw));
   if (!parsed.success) {
     throw new Error(`bundled model-data.json is invalid: ${parsed.error.message}`);
