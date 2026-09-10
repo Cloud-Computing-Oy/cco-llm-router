@@ -67,6 +67,7 @@
   },
   "files": [
     "src",
-    "docs"
+    "docs",
+    "data"
   ]
 }
