@@ -13,9 +13,39 @@
 import type { Provider } from './types';
 import { getLiveDataset } from './model-data';
 
-export type Price = { inputPerM: number; outputPerM: number };
+export type Price = {
+  inputPerM: number;
+  outputPerM: number;
+  /**
+   * Peak-hour rates, when the provider charges more at defined times.
+   * The top-level fields are then the off-peak rates, and priceOf() keeps
+   * returning them: only effectivePrice()/estimateCostUSD() are time-aware.
+   */
+  peak?: { inputPerM: number; outputPerM: number };
+};
 
 const Z: Price = { inputPerM: 0, outputPerM: 0 };
+
+/**
+ * Provider peak windows in UTC, weekdays only. Half-open [start, end) in
+ * whole hours. DeepSeek charges double during peak; off-peak is the list
+ * price. Source: DeepSeek pricing docs, effective 2026-09-10.
+ */
+const PEAK_WINDOWS_UTC: Partial<Record<Provider, ReadonlyArray<readonly [number, number]>>> = {
+  deepseek: [
+    [1, 4],
+    [6, 10],
+  ],
+};
+
+function isPeakHour(provider: Provider, at: Date): boolean {
+  const windows = PEAK_WINDOWS_UTC[provider];
+  if (!windows) return false;
+  const day = at.getUTCDay(); // 0 = Sunday
+  if (day === 0 || day === 6) return false;
+  const hour = at.getUTCHours();
+  return windows.some(([start, end]) => hour >= start && hour < end);
+}
 
 export const PRICING: Record<string, Price> = {
   // --- anthropic ---
@@ -57,15 +87,18 @@ export const PRICING: Record<string, Price> = {
   'together:Qwen/Qwen2.5-72B-Instruct-Turbo': { inputPerM: 1.2, outputPerM: 1.2 },
   'together:deepseek-ai/DeepSeek-V3': { inputPerM: 1.25, outputPerM: 1.25 },
 
-  // --- deepseek (native api.deepseek.com, V4) ---
-  // Priced at cache-MISS input: the usage tracker has no cache-hit
+  // --- deepseek (native api.deepseek.com) ---
+  // V4.1 Flash list price (2026-09-10): $0.15 / $0.6 off-peak, $0.3 / $1.2
+  // peak. Priced at cache-MISS input: the usage tracker has no cache-hit
   // accounting, so this over-estimates spend (safe for the budget net).
-  'deepseek:deepseek-v4-flash': { inputPerM: 0.14, outputPerM: 0.28 },
-  // V4 Pro retires 2026-09-14; its traffic routes to V4.1 Flash at Flash prices.
-  'deepseek:deepseek-flash': { inputPerM: 0.14, outputPerM: 0.28 },
-  // Keep the redirected identifier priced at Flash rates so direct callers keep
-  // cost tracking + budget gates working after the 2026-09-14 redirect.
-  'deepseek:deepseek-v4-pro': { inputPerM: 0.14, outputPerM: 0.28 },
+  // `deepseek-flash` and the legacy `deepseek-v4-flash` id are both served by
+  // V4.1 Flash. `deepseek-v4-pro` still runs on V4 Pro until it starts
+  // redirecting on 2026-09-14, so it keeps V4 Pro rates ($0.66/$1.98 off-peak,
+  // $1.32/$3.96 peak) — pricing it at Flash rates early would under-bill every
+  // direct call in the meantime. Switch this entry to Flash rates on 2026-09-14.
+  'deepseek:deepseek-flash': { inputPerM: 0.15, outputPerM: 0.6, peak: { inputPerM: 0.3, outputPerM: 1.2 } },
+  'deepseek:deepseek-v4-flash': { inputPerM: 0.15, outputPerM: 0.6, peak: { inputPerM: 0.3, outputPerM: 1.2 } },
+  'deepseek:deepseek-v4-pro': { inputPerM: 0.66, outputPerM: 1.98, peak: { inputPerM: 1.32, outputPerM: 3.96 } },
 
   // --- moonshot (Kimi Platform; cache-miss input for conservative budgets) ---
   'moonshot:kimi-k3': { inputPerM: 3, outputPerM: 15 },
@@ -78,10 +111,23 @@ export const PRICING: Record<string, Price> = {
 export function priceOf(provider: Provider, model: string): Price {
   const live = getLiveDataset().models.find((m) => m.provider === provider && m.model === model);
   if (live?.pricing) {
-    return { inputPerM: live.pricing.inputPerM, outputPerM: live.pricing.outputPerM };
+    // Return the dataset object whole: rebuilding it field-by-field silently
+    // dropped `peak` and made the live snapshot outrank the peak-aware table.
+    return live.pricing;
   }
   const k = `${provider}:${model}` as keyof typeof PRICING;
   return PRICING[k] ?? Z;
+}
+
+/**
+ * Rates actually in effect at `at` (default: now). Strips the `peak` field so
+ * callers get plain rates; falls back to the list price outside peak windows
+ * and for providers without peak pricing.
+ */
+export function effectivePrice(provider: Provider, model: string, at: Date = new Date()): Price {
+  const base = priceOf(provider, model);
+  const rates = base.peak && isPeakHour(provider, at) ? base.peak : base;
+  return { inputPerM: rates.inputPerM, outputPerM: rates.outputPerM };
 }
 
 export function estimateCostUSD(
@@ -89,7 +135,8 @@ export function estimateCostUSD(
   model: string,
   inputTokens: number,
   outputTokens: number,
+  at: Date = new Date(),
 ): number {
-  const p = priceOf(provider, model);
+  const p = effectivePrice(provider, model, at);
   return (inputTokens / 1_000_000) * p.inputPerM + (outputTokens / 1_000_000) * p.outputPerM;
 }

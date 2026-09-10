@@ -31,7 +31,7 @@ jobs:
       - name: Build dataset
         run: npm run build:model-data
       - name: Validate schema
-        run: node --import tsx -e "import('./src/model-data').then(({ ModelDataSchema }) => { const fs = require('fs'); const r = ModelDataSchema.safeParse(JSON.parse(fs.readFileSync('data/model-data.json', 'utf8'))); if (!r.success) { console.error(r.error); process.exit(1); } console.log('schema OK,', r.data.models.length, 'models'); })"
+        run: node --import tsx scripts/validate-model-data.ts
       - name: Commit regenerated bundle
         run: |
           git config user.name "github-actions[bot]"
@@ -46,5 +46,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
       - name: Self-check asset URL
         run: |
-          curl -fsS https://github.com/${{ github.repository }}/releases/download/model-data/model-data.json -o /tmp/asset.json
-          node -e "const d = require('/tmp/asset.json'); if (!Array.isArray(d.models)) process.exit(1); console.log('asset fetch OK')"
+          # -L follows the redirect to object storage; without it curl saves the
+          # empty 302 body and the check fails on valid assets. The retry covers
+          # the window where the download URL still serves nothing after upload.
+          for attempt in 1 2 3 4 5; do
+            if curl -fsSL "https://github.com/${{ github.repository }}/releases/download/model-data/model-data.json" -o /tmp/asset.json \
+               && node -e "const d = require('/tmp/asset.json'); if (!Array.isArray(d.models)) process.exit(1); console.log('asset fetch OK')"; then
+              exit 0
+            fi
+            echo "attempt $attempt failed; retrying in 5s"
+            sleep 5
+          done
+          echo "asset self-check failed after 5 attempts"
+          exit 1

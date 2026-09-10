@@ -30,6 +30,26 @@ test("schema accepts a valid minimal dataset", () => {
   assert.equal(ModelDataSchema.safeParse(good).success, true);
 });
 
+test("schema preserves peak rates on dataset pricing", () => {
+  const ds = {
+    schemaVersion: 1,
+    generatedAt: "2026-09-10T00:00:00Z",
+    models: [
+      {
+        provider: "deepseek",
+        model: "deepseek-flash",
+        status: "available",
+        pricing: { inputPerM: 0.15, outputPerM: 0.6, peak: { inputPerM: 0.3, outputPerM: 1.2 } },
+      },
+    ],
+  };
+  assert.deepEqual(ModelDataSchema.parse(ds).models[0].pricing, {
+    inputPerM: 0.15,
+    outputPerM: 0.6,
+    peak: { inputPerM: 0.3, outputPerM: 1.2 },
+  });
+});
+
 const goodDataset = {
   schemaVersion: 1,
   generatedAt: "2026-09-10T00:00:00Z",

@@ -15,7 +15,14 @@ export const ModelDataSchema = z.object({
       model: z.string(),
       status: z.enum(["available", "retired"]),
       retiredAt: z.string().optional(),
-      pricing: z.object({ inputPerM: z.number(), outputPerM: z.number() }).optional(),
+      pricing: z
+        .object({
+          inputPerM: z.number(),
+          outputPerM: z.number(),
+          // Peak-hour rates; absent for flat-rate providers. See pricing.ts.
+          peak: z.object({ inputPerM: z.number(), outputPerM: z.number() }).optional(),
+        })
+        .optional(),
     }),
   ),
 });

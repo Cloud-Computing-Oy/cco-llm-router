@@ -1,16 +1,7 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "1970-01-01T00:00:00Z",
+  "generatedAt": "2026-09-10T18:01:18.443Z",
   "models": [
-    {
-      "provider": "anthropic",
-      "model": "claude-sonnet-4-6",
-      "status": "available",
-      "pricing": {
-        "inputPerM": 3,
-        "outputPerM": 15
-      }
-    },
     {
       "provider": "anthropic",
       "model": "claude-haiku-4-5-20251001",
@@ -30,44 +21,8 @@
       }
     },
     {
-      "provider": "google",
-      "model": "gemini-2.5-flash",
-      "status": "available",
-      "pricing": {
-        "inputPerM": 0,
-        "outputPerM": 0
-      }
-    },
-    {
-      "provider": "google",
-      "model": "gemini-2.5-pro",
-      "status": "available",
-      "pricing": {
-        "inputPerM": 0,
-        "outputPerM": 0
-      }
-    },
-    {
-      "provider": "google-paid",
-      "model": "gemini-2.5-flash",
-      "status": "available",
-      "pricing": {
-        "inputPerM": 0.075,
-        "outputPerM": 0.3
-      }
-    },
-    {
-      "provider": "google-paid",
-      "model": "gemini-2.5-pro",
-      "status": "available",
-      "pricing": {
-        "inputPerM": 1.25,
-        "outputPerM": 5
-      }
-    },
-    {
-      "provider": "openai",
-      "model": "gpt-5",
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-6",
       "status": "available",
       "pricing": {
         "inputPerM": 3,
@@ -75,30 +30,12 @@
       }
     },
     {
-      "provider": "openai",
-      "model": "gpt-5-mini",
+      "provider": "deepinfra",
+      "model": "deepseek-ai/DeepSeek-V3",
       "status": "available",
       "pricing": {
-        "inputPerM": 0.25,
-        "outputPerM": 2
-      }
-    },
-    {
-      "provider": "openai",
-      "model": "gpt-5-nano",
-      "status": "available",
-      "pricing": {
-        "inputPerM": 0.05,
-        "outputPerM": 0.4
-      }
-    },
-    {
-      "provider": "groq",
-      "model": "qwen/qwen3.6-27b",
-      "status": "available",
-      "pricing": {
-        "inputPerM": 0,
-        "outputPerM": 0
+        "inputPerM": 0.49,
+        "outputPerM": 0.89
       }
     },
     {
@@ -138,21 +75,3548 @@
       }
     },
     {
-      "provider": "deepinfra",
-      "model": "deepseek-ai/DeepSeek-V3",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
       "status": "available",
       "pricing": {
-        "inputPerM": 0.49,
-        "outputPerM": 0.89
+        "inputPerM": 0.15,
+        "outputPerM": 0.6,
+        "peak": {
+          "inputPerM": 0.3,
+          "outputPerM": 1.2
+        }
       }
     },
     {
-      "provider": "together",
-      "model": "meta-llama/Llama-3.3-70B-Instruct-Turbo",
+      "provider": "deepseek",
+      "model": "deepseek-v4-flash",
+      "status": "retired",
+      "retiredAt": "2026-09-10T18:01:18.443Z",
+      "pricing": {
+        "inputPerM": 0.15,
+        "outputPerM": 0.6,
+        "peak": {
+          "inputPerM": 0.3,
+          "outputPerM": 1.2
+        }
+      }
+    },
+    {
+      "provider": "deepseek",
+      "model": "deepseek-v4-pro",
       "status": "available",
       "pricing": {
-        "inputPerM": 0.88,
-        "outputPerM": 0.88
+        "inputPerM": 0.66,
+        "outputPerM": 1.98,
+        "peak": {
+          "inputPerM": 1.32,
+          "outputPerM": 3.96
+        }
+      }
+    },
+    {
+      "provider": "google-paid",
+      "model": "antigravity-preview-05-2026",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "aqa",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "deep-research-max-preview-04-2026",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "deep-research-preview-04-2026",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "deep-research-pro-preview-12-2025",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-2.5-computer-use-preview-10-2025",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-2.5-flash",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 0.075,
+        "outputPerM": 0.3
+      }
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-2.5-flash-image",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-2.5-flash-lite",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-2.5-flash-native-audio-latest",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-2.5-flash-native-audio-preview-09-2025",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-2.5-flash-native-audio-preview-12-2025",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-2.5-flash-preview-tts",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-2.5-pro",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 1.25,
+        "outputPerM": 5
+      }
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-2.5-pro-preview-tts",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-3-flash-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-3-pro-image",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-3-pro-image-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-3.1-flash-image",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-3.1-flash-image-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-3.1-flash-lite",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-3.1-flash-lite-image",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-3.1-flash-lite-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-3.1-flash-live-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-3.1-flash-tts-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-3.1-pro-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-3.1-pro-preview-customtools",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-3.5-flash",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-3.5-flash-lite",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-3.5-live-translate-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-3.5-transcribe",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-3.5-transcribe-live",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-3.6-flash",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-3.7-flash",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-3.8-flash",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-embedding-001",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-embedding-2",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-embedding-2-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-flash-latest",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-flash-lite-latest",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-omni-1.1-flash",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-omni-flash-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-pro-latest",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-robotics-er-2-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemini-robotics-er-2-streaming-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemma-4-26b-a4b-it",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "gemma-4-31b-it",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "lyria-3-clip-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "lyria-3-pro-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "lyria-3.5",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "lyria-realtime-exp",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "nano-banana-pro-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "veo-3.1-fast-generate-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "veo-3.1-generate-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "veo-3.1-lite-generate-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "antigravity-preview-05-2026",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "aqa",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "deep-research-max-preview-04-2026",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "deep-research-preview-04-2026",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "deep-research-pro-preview-12-2025",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-2.5-computer-use-preview-10-2025",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-2.5-flash",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 0,
+        "outputPerM": 0
+      }
+    },
+    {
+      "provider": "google",
+      "model": "gemini-2.5-flash-image",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-2.5-flash-lite",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-2.5-flash-native-audio-latest",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-2.5-flash-native-audio-preview-09-2025",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-2.5-flash-native-audio-preview-12-2025",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-2.5-flash-preview-tts",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-2.5-pro",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 0,
+        "outputPerM": 0
+      }
+    },
+    {
+      "provider": "google",
+      "model": "gemini-2.5-pro-preview-tts",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-3-flash-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-3-pro-image",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-3-pro-image-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-3.1-flash-image",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-3.1-flash-image-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-3.1-flash-lite",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-3.1-flash-lite-image",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-3.1-flash-lite-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-3.1-flash-live-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-3.1-flash-tts-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-3.1-pro-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-3.1-pro-preview-customtools",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-3.5-flash",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-3.5-flash-lite",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-3.5-live-translate-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-3.5-transcribe",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-3.5-transcribe-live",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-3.6-flash",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-3.7-flash",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-3.8-flash",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-embedding-001",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-embedding-2",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-embedding-2-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-flash-latest",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-flash-lite-latest",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-omni-1.1-flash",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-omni-flash-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-pro-latest",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-robotics-er-2-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemini-robotics-er-2-streaming-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemma-4-26b-a4b-it",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "gemma-4-31b-it",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "lyria-3-clip-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "lyria-3-pro-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "lyria-3.5",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "lyria-realtime-exp",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "nano-banana-pro-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "veo-3.1-fast-generate-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "veo-3.1-generate-preview",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "veo-3.1-lite-generate-preview",
+      "status": "available"
+    },
+    {
+      "provider": "groq",
+      "model": "allam-2-7b",
+      "status": "available"
+    },
+    {
+      "provider": "groq",
+      "model": "canopylabs/orpheus-arabic-saudi",
+      "status": "available"
+    },
+    {
+      "provider": "groq",
+      "model": "canopylabs/orpheus-v1-english",
+      "status": "available"
+    },
+    {
+      "provider": "groq",
+      "model": "groq/compound",
+      "status": "available"
+    },
+    {
+      "provider": "groq",
+      "model": "groq/compound-mini",
+      "status": "available"
+    },
+    {
+      "provider": "groq",
+      "model": "meta-llama/llama-prompt-guard-2-22m",
+      "status": "available"
+    },
+    {
+      "provider": "groq",
+      "model": "meta-llama/llama-prompt-guard-2-86m",
+      "status": "available"
+    },
+    {
+      "provider": "groq",
+      "model": "openai/gpt-oss-120b",
+      "status": "available"
+    },
+    {
+      "provider": "groq",
+      "model": "openai/gpt-oss-20b",
+      "status": "available"
+    },
+    {
+      "provider": "groq",
+      "model": "openai/gpt-oss-safeguard-20b",
+      "status": "available"
+    },
+    {
+      "provider": "groq",
+      "model": "qwen/qwen3.6-27b",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 0,
+        "outputPerM": 0
+      }
+    },
+    {
+      "provider": "groq",
+      "model": "qwen/qwen3.8-27b",
+      "status": "available"
+    },
+    {
+      "provider": "groq",
+      "model": "whisper-large-v3",
+      "status": "available"
+    },
+    {
+      "provider": "groq",
+      "model": "whisper-large-v3-turbo",
+      "status": "available"
+    },
+    {
+      "provider": "moonshot",
+      "model": "kimi-k3",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 3,
+        "outputPerM": 15
+      }
+    },
+    {
+      "provider": "openai",
+      "model": "babbage-002",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "chat-latest",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "chatgpt-image-latest",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "davinci-002",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-3.5-turbo",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-3.5-turbo-0125",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-3.5-turbo-1106",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-3.5-turbo-16k",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-3.5-turbo-instruct",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-3.5-turbo-instruct-0914",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4-0613",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4-turbo",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4-turbo-2024-04-09",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4.1",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4.1-2025-04-14",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4.1-mini",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4.1-mini-2025-04-14",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4.1-nano",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4.1-nano-2025-04-14",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4o",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4o-2024-05-13",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4o-2024-08-06",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4o-2024-11-20",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4o-mini",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4o-mini-2024-07-18",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4o-mini-search-preview",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4o-mini-search-preview-2025-03-11",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4o-mini-transcribe",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4o-mini-transcribe-2025-03-20",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4o-mini-transcribe-2025-12-15",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4o-mini-tts",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4o-mini-tts-2025-03-20",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4o-mini-tts-2025-12-15",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4o-search-preview",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4o-search-preview-2025-03-11",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4o-transcribe",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-4o-transcribe-diarize",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 3,
+        "outputPerM": 15
+      }
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5-2025-08-07",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5-chat-latest",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5-codex",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5-mini",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 0.25,
+        "outputPerM": 2
+      }
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5-mini-2025-08-07",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5-nano",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 0.05,
+        "outputPerM": 0.4
+      }
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5-nano-2025-08-07",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5-pro",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5-pro-2025-10-06",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5-search-api",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5-search-api-2025-10-14",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.1",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.1-2025-11-13",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.1-chat-latest",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.1-codex",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.1-codex-max",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.1-codex-mini",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.2",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.2-2025-12-11",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.2-chat-latest",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.2-codex",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.2-pro",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.2-pro-2025-12-11",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.3-chat-latest",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.3-codex",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.4",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.4-2026-03-05",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.4-mini",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.4-mini-2026-03-17",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.4-nano",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.4-nano-2026-03-17",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.4-pro",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.4-pro-2026-03-05",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.5",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.5-2026-04-23",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.5-pro",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.5-pro-2026-04-23",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.6-luna",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.6-sol",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-5.6-terra",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-6-astra",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-audio",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-audio-1.5",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-audio-2025-08-28",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-audio-mini",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-audio-mini-2025-10-06",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-audio-mini-2025-12-15",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-image-1",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-image-1-mini",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-image-1.5",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-image-2",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-image-2-2026-04-21",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-image-2.5-flare",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-image-2.5-flare-2026-09-08",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-image-2.5-sunburst",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-image-2.5-sunburst-2026-09-08",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-live-1",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-live-transcribe",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-realtime",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-realtime-1.5",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-realtime-2",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-realtime-2.1",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-realtime-2.1-mini",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-realtime-2025-08-28",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-realtime-mini",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-realtime-mini-2025-12-15",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-realtime-translate",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-realtime-whisper",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-transcribe",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "o1",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "o1-2024-12-17",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "o1-pro",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "o1-pro-2025-03-19",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "o3",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "o3-2025-04-16",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "o3-mini",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "o3-mini-2025-01-31",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "o4-mini",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "o4-mini-2025-04-16",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "omni-moderation-2024-09-26",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "omni-moderation-latest",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "sora-2",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "sora-2-pro",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "text-embedding-3-large",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "text-embedding-3-small",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "text-embedding-ada-002",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "tts-1",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "tts-1-1106",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "tts-1-hd",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "tts-1-hd-1106",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "whisper-1",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "~anthropic/claude-fable-latest",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "~anthropic/claude-haiku-latest",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "~anthropic/claude-opus-latest",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "~anthropic/claude-sonnet-latest",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "~deepseek/deepseek-v4-flash-latest",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "~google/gemini-flash-latest",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "~google/gemini-pro-latest",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "~moonshotai/kimi-latest",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "~openai/gpt-latest",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "~openai/gpt-mini-latest",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "~x-ai/grok-latest",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "~z-ai/glm-flash-latest",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "~z-ai/glm-latest",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "aion-labs/aion-2.0",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "aion-labs/aion-3.0",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "aion-labs/aion-3.0-mini",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "aion-labs/aion-rp-llama-3.1-8b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "amazon/nova-2-lite-v1",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "amazon/nova-lite-v1",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "amazon/nova-micro-v1",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "amazon/nova-premier-v1",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "amazon/nova-pro-v1",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "anthracite-org/magnum-v4-72b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "anthropic/claude-3-haiku",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "anthropic/claude-fable-5",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "anthropic/claude-fable-5:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "anthropic/claude-fable-5.1",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "anthropic/claude-fable-5.1:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "anthropic/claude-haiku-4.5",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "anthropic/claude-haiku-4.5:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "anthropic/claude-opus-4",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "anthropic/claude-opus-4.1",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "anthropic/claude-opus-4.1:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "anthropic/claude-opus-4.5",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "anthropic/claude-opus-4.5:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "anthropic/claude-opus-4.6",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "anthropic/claude-opus-4.6:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "anthropic/claude-opus-4.7",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "anthropic/claude-opus-4.7:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "anthropic/claude-opus-4.8",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "anthropic/claude-opus-4.8:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "anthropic/claude-opus-5",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "anthropic/claude-opus-5:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "anthropic/claude-sonnet-4",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "anthropic/claude-sonnet-4.5",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "anthropic/claude-sonnet-4.5:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "anthropic/claude-sonnet-4.6",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "anthropic/claude-sonnet-4.6:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "anthropic/claude-sonnet-5",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "anthropic/claude-sonnet-5:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "arcee-ai/trinity-large-thinking",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "baidu/ernie-4.5-vl-424b-a47b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "bytedance-seed/seed-1.6",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "bytedance-seed/seed-1.6-flash",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "bytedance-seed/seed-2-1-turbo",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "bytedance-seed/seed-2.0-code",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "bytedance-seed/seed-2.0-lite",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "bytedance-seed/seed-2.0-mini",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "bytedance/ui-tars-1.5-7b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "cognitivecomputations/dolphin-mistral-24b-venice-edition",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "cohere/command-a",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "cohere/command-r-08-2024",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "cohere/command-r-plus-08-2024",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "cohere/command-r7b-12-2024",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "cohere/north-mini-code:free",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "deepseek/deepseek-chat",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "deepseek/deepseek-chat-v3-0324",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "deepseek/deepseek-chat-v3.1",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "deepseek/deepseek-r1",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "deepseek/deepseek-r1-0528",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "deepseek/deepseek-r1-distill-llama-70b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "deepseek/deepseek-v3.1-terminus",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "deepseek/deepseek-v3.2",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "deepseek/deepseek-v3.2-exp",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "deepseek/deepseek-v4-flash",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "deepseek/deepseek-v4-flash-0731",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "deepseek/deepseek-v4-flash-0731:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "deepseek/deepseek-v4-flash-vision-exp",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "deepseek/deepseek-v4-flash-vision-exp:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "deepseek/deepseek-v4-pro",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "deepseek/deepseek-v4-pro-0813",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "deepseek/deepseek-v4-pro-0813:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "deepseek/deepseek-v4.1-flash",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "dots-studio/dots-3-note-preview:free",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemini-2.5-flash",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemini-2.5-flash-image",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemini-2.5-flash-lite",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemini-2.5-flash-lite:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemini-2.5-flash:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemini-2.5-pro",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemini-2.5-pro-preview",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemini-2.5-pro-preview-05-06",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemini-2.5-pro:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemini-3-flash-preview",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemini-3-flash-preview:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemini-3-pro-image",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemini-3-pro-image-preview",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemini-3.1-flash-image",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemini-3.1-flash-image-preview",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemini-3.1-flash-lite",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemini-3.1-flash-lite-image",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemini-3.1-flash-lite-preview",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemini-3.1-flash-lite:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemini-3.1-pro-preview",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemini-3.1-pro-preview-customtools",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemini-3.1-pro-preview:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemini-3.5-flash",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemini-3.5-flash-lite",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemini-3.5-flash-lite:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemini-3.5-flash:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemini-3.6-flash",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemini-3.6-flash:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemini-3.7-flash",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemini-3.7-flash:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemini-3.8-flash",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemini-3.8-flash:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemma-2-27b-it",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemma-3-12b-it",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemma-3-27b-it",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemma-3-4b-it",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemma-4-26b-a4b-it",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemma-4-26b-a4b-it:free",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemma-4-31b-it",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemma-4-31b-it:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/gemma-4-31b-it:free",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/lyria-3-clip-preview",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "google/lyria-3-pro-preview",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "gryphe/mythomax-l2-13b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "ibm-granite/granite-4.0-h-micro",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "ibm-granite/granite-4.2-8b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "inception/mercury-2",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "inception/mercury-2.5",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "inclusionai/ling-3.0-flash",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "inclusionai/ling-3.0-flash-fin",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "inclusionai/ling-3.0-flash-fin:free",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "inclusionai/ling-3.0-flash-sante:free",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "inclusionai/ling-3.0-flash-vl:free",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "kwaipilot/kat-coder-pro-v2",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "kwaipilot/kat-coder-pro-v2.5",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "liquid/lfm-2.5-2.6b:free",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "mancer/weaver",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "meituan/longcat-2.0",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "meta-llama/llama-3.1-70b-instruct",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "meta-llama/llama-3.1-8b-instruct",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "meta-llama/llama-3.2-1b-instruct",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "meta-llama/llama-3.2-3b-instruct",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "meta-llama/llama-3.3-70b-instruct",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "meta-llama/llama-4-maverick",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "meta-llama/llama-4-scout",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "meta-llama/llama-guard-4-12b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "meta/muse-glimmer-30b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "meta/muse-glimmer-30b:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "meta/muse-spark-1.1",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "meta/muse-spark-1.2",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "meta/muse-spark-1.2-contributor",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "meta/muse-spark-1.3",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "meta/muse-spark-1.3-contributor",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "microsoft/phi-4",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "microsoft/wizardlm-2-8x22b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "minimax/minimax-01",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "minimax/minimax-m1",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "minimax/minimax-m2",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "minimax/minimax-m2-her",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "minimax/minimax-m2.1",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "minimax/minimax-m2.5",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "minimax/minimax-m2.7",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "minimax/minimax-m3",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "minimax/minimax-m3:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "mistralai/codestral-2508",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "mistralai/codestral-2508:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "mistralai/devstral-2512",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "mistralai/ministral-14b-2512",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "mistralai/ministral-3b-2512",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "mistralai/ministral-8b-2512",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "mistralai/ministral-8b-2512:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "mistralai/mistral-large",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "mistralai/mistral-large-2407",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "mistralai/mistral-large-2512",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "mistralai/mistral-large-2512:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "mistralai/mistral-medium-3",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "mistralai/mistral-medium-3-5",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "mistralai/mistral-medium-3-5:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "mistralai/mistral-medium-3.1",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "mistralai/mistral-medium-3.1:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "mistralai/mistral-nemo",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "mistralai/mistral-saba",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "mistralai/mistral-small-24b-instruct-2501",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "mistralai/mistral-small-2603",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "mistralai/mistral-small-2603:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "mistralai/mistral-small-3.1-24b-instruct",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "mistralai/mistral-small-3.2-24b-instruct",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "mistralai/mixtral-8x22b-instruct",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "mistralai/voxtral-small-24b-2507",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "moonshotai/kimi-k2",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "moonshotai/kimi-k2-0905",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "moonshotai/kimi-k2-thinking",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "moonshotai/kimi-k2.5",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "moonshotai/kimi-k2.6",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "moonshotai/kimi-k2.7-code",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "moonshotai/kimi-k3",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "moonshotai/kimi-k3:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "morph/morph-v3-fast",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "morph/morph-v3-large",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "nex-agi/nex-n2.5-mini:free",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "nex-agi/nex-n2.5-pro:free",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "nousresearch/hermes-3-llama-3.1-405b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "nousresearch/hermes-3-llama-3.1-70b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "nousresearch/hermes-4-405b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3-nano-30b-a3b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3-super-120b-a12b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3-super-120b-a12b:free",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-content-safety",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-content-safety:free",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-3.5-turbo",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-3.5-turbo-0613",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-3.5-turbo-16k",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-3.5-turbo-instruct",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-3.5-turbo:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-4",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-4-turbo",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-4-turbo-preview",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-4-turbo:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-4.1",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-4.1-mini",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-4.1-mini:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-4.1-nano",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-4.1-nano:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-4.1:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-4o",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-4o-2024-05-13",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-4o-2024-08-06",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-4o-2024-11-20",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-4o-mini",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-4o-mini-2024-07-18",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-4o-mini:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-4o:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5-image",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5-image-mini",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5-mini",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5-mini:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5-nano",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5-nano:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5-pro",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5-pro:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.1",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.1-codex",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.1-codex-max",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.1-codex-mini",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.1:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.2",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.2-chat",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.2-codex",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.2-pro",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.2-pro:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.2:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.3-codex",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.4",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.4-image-2",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.4-mini",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.4-mini:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.4-nano",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.4-nano:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.4-pro",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.4-pro:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.4:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.5",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.5-pro",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.5-pro:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.5:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.6-luna",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.6-luna-pro",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.6-luna-pro:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.6-luna:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.6-sol",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.6-sol-pro",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.6-sol-pro:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.6-sol:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.6-terra",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.6-terra-pro",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.6-terra-pro:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-5.6-terra:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-6-astra",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-6-astra-pro",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-6-astra-pro:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-6-astra:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-audio",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-audio-mini",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-chat-latest",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-oss-120b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-oss-120b:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-oss-20b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-oss-20b:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-oss-safeguard-20b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/o1",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/o1-pro",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/o3",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/o3-mini",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/o3-mini-high",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/o3-mini:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/o3-pro",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/o3:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/o4-mini",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/o4-mini-high",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/o4-mini:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openrouter/auto",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openrouter/auto-beta",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openrouter/bodybuilder",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openrouter/free",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openrouter/fusion",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openrouter/pareto-code",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "perceptron/perceptron-mk1",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "perplexity/sonar",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "perplexity/sonar-deep-research",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "perplexity/sonar-pro",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "perplexity/sonar-pro-search",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "perplexity/sonar-reasoning-pro",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "poolside/laguna-s-2.1",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "poolside/laguna-s-2.1:free",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "poolside/laguna-xs-2.1",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "poolside/laguna-xs-2.1:free",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen-2.5-72b-instruct",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen-2.5-7b-instruct",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen-2.5-coder-32b-instruct",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen-plus",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen-plus-2025-07-28",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen2.5-vl-72b-instruct",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-14b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-235b-a22b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-235b-a22b-2507",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-235b-a22b-thinking-2507",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-30b-a3b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-30b-a3b-instruct-2507",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-30b-a3b-thinking-2507",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-32b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-8b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-coder",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-coder-30b-a3b-instruct",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-coder-flash",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-coder-next",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-coder-plus",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-max",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-max-thinking",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-next-80b-a3b-instruct",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-next-80b-a3b-thinking",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-vl-235b-a22b-instruct",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-vl-235b-a22b-thinking",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-vl-30b-a3b-instruct",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-vl-30b-a3b-thinking",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-vl-32b-instruct",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-vl-8b-instruct",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3-vl-8b-thinking",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3.5-122b-a10b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3.5-27b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3.5-35b-a3b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3.5-397b-a17b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3.5-9b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3.5-9b:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3.5-flash-02-23",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3.5-plus-02-15",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3.5-plus-20260420",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3.6-27b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3.6-35b-a3b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3.6-flash",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3.6-max-preview",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3.6-plus",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3.7-flash",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3.7-max",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3.7-plus",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3.8-2.4t-a95b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3.8-2.4t-a95b:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3.8-27b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3.8-flash",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3.8-max-0902",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "rekaai/reka-edge",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "rekaai/reka-flash-3",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "relace/relace-apply-3",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "relace/relace-search",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "sakana/fugu-ultra",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "sakana/sakana-namazu",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "sao10k/l3-lunaris-8b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "sao10k/l3.1-euryale-70b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "sao10k/l3.3-euryale-70b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "stepfun/step-3.5-flash",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "stepfun/step-3.7-flash",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "tencent/hunyuan-a13b-instruct",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "tencent/hy-mt2-1.8b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "tencent/hy-mt2-30b-a3b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "tencent/hy-mt2-7b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "tencent/hy3",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "tencent/hy3-preview",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "tencent/hy4-preview",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "thedrummer/cydonia-24b-v4.1",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "thedrummer/skyfall-36b-v2",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "thedrummer/unslopnemo-12b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "thinkingmachines/inkling",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "thinkingmachines/inkling-small",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "thinkingmachines/inkling-small:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "thinkingmachines/inkling-small:free",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "thinkingmachines/inkling:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "thinkingmachines/inkling:free",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "undi95/remm-slerp-l2-13b",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "upstage/solar-pro-3",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "upstage/solar-pro4",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "writer/palmyra-x5",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "x-ai/grok-4.20",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "x-ai/grok-4.20-multi-agent",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "x-ai/grok-4.3",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "x-ai/grok-4.3:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "x-ai/grok-4.5",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "x-ai/grok-4.6",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "x-ai/grok-build-0.1",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "xiaomi/mimo-v2.5",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "xiaomi/mimo-v2.5-pro",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "z-ai/glm-4.5",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "z-ai/glm-4.5-air",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "z-ai/glm-4.5v",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "z-ai/glm-4.6",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "z-ai/glm-4.6v",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "z-ai/glm-4.7",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "z-ai/glm-4.7-flash",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "z-ai/glm-5",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "z-ai/glm-5-turbo",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "z-ai/glm-5.1",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "z-ai/glm-5.2",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "z-ai/glm-5.2:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "z-ai/glm-5.3",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "z-ai/glm-5.3-flash",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "z-ai/glm-5.3-flash:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "z-ai/glm-5.3:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "z-ai/glm-5v-turbo",
+      "status": "available"
+    },
+    {
+      "provider": "together",
+      "model": "deepseek-ai/DeepSeek-V3",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 1.25,
+        "outputPerM": 1.25
       }
     },
     {
@@ -166,56 +3630,20 @@
     },
     {
       "provider": "together",
+      "model": "meta-llama/Llama-3.3-70B-Instruct-Turbo",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 0.88,
+        "outputPerM": 0.88
+      }
+    },
+    {
+      "provider": "together",
       "model": "Qwen/Qwen2.5-72B-Instruct-Turbo",
       "status": "available",
       "pricing": {
         "inputPerM": 1.2,
         "outputPerM": 1.2
-      }
-    },
-    {
-      "provider": "together",
-      "model": "deepseek-ai/DeepSeek-V3",
-      "status": "available",
-      "pricing": {
-        "inputPerM": 1.25,
-        "outputPerM": 1.25
-      }
-    },
-    {
-      "provider": "deepseek",
-      "model": "deepseek-v4-flash",
-      "status": "available",
-      "pricing": {
-        "inputPerM": 0.14,
-        "outputPerM": 0.28
-      }
-    },
-    {
-      "provider": "deepseek",
-      "model": "deepseek-v4-pro",
-      "status": "available",
-      "pricing": {
-        "inputPerM": 0.435,
-        "outputPerM": 0.87
-      }
-    },
-    {
-      "provider": "moonshot",
-      "model": "kimi-k3",
-      "status": "available",
-      "pricing": {
-        "inputPerM": 3,
-        "outputPerM": 15
-      }
-    },
-    {
-      "provider": "zai",
-      "model": "glm-5.3-flash",
-      "status": "available",
-      "pricing": {
-        "inputPerM": 0.15,
-        "outputPerM": 0.5
       }
     },
     {
@@ -225,6 +3653,15 @@
       "pricing": {
         "inputPerM": 1.4,
         "outputPerM": 4.4
+      }
+    },
+    {
+      "provider": "zai",
+      "model": "glm-5.3-flash",
+      "status": "available",
+      "pricing": {
+        "inputPerM": 0.15,
+        "outputPerM": 0.5
       }
     }
   ]

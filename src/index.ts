@@ -49,7 +49,7 @@ export {
   resetUsage,
 } from './usage';
 export { getBudgetUSD, withinBudget, onBudgetWarning, type BudgetWarning } from './budget';
-export { PRICING, priceOf, estimateCostUSD, type Price } from './pricing';
+export { PRICING, priceOf, effectivePrice, estimateCostUSD, type Price } from './pricing';
 
 // Provider availability flags + raw constructors, for the rare service
 // that wants to wire a provider directly (e.g. embeddings, which are not
