@@ -48,6 +48,8 @@ export function mergeDataset(
       ...(prev.pricing ? { pricing: prev.pricing } : {}),
     });
   }
+  // Deterministic order keeps the nightly commit-back diff quiet.
+  models.sort((a, b) => (a.provider + ":" + a.model).localeCompare(b.provider + ":" + b.model));
   return { schemaVersion: 1, generatedAt: today, models };
 }
 

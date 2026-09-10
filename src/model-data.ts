@@ -94,7 +94,7 @@ export async function refreshNow(opts: { url?: string; fetchImpl?: typeof fetch 
   const url = opts.url ?? process.env.CCO_MODEL_DATA_URL ?? DEFAULT_MODEL_DATA_URL;
   const fetchImpl = opts.fetchImpl ?? fetch;
   try {
-    const res = await fetchImpl(url, { headers: { accept: "application/json" } });
+    const res = await fetchImpl(url, { headers: { accept: "application/json" }, signal: AbortSignal.timeout(30_000) });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const parsed = ModelDataSchema.safeParse(await res.json());
     if (!parsed.success) throw new Error(`invalid dataset: ${parsed.error.message}`);

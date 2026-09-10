@@ -315,6 +315,14 @@ and budget gates. `getModelDataStatus()` reports source, last fetch, and errors.
 The dataset is rebuilt nightly by CI from provider list-models APIs plus
 the curated `data/pricing.json` (prices are updated by PR).
 
+A retired model stays retired even if a later API check lists it again
+(anti-flap); to un-retire a model, remove its entry from `data/model-data.json`
+and let CI regenerate the dataset.
+
+`applyDataset` validates shape but not semantics: the bricking guard covers
+default chains only — custom-chain consumers should inspect their datasets
+before applying.
+
 ## Budget enforcement
 
 The router enforces per-provider monthly spend caps. Set the cap in USD

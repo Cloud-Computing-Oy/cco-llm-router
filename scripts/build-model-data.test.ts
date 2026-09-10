@@ -50,3 +50,15 @@ test("mergeDataset adds newly seen models with pricing when available", () => {
   assert.equal(g.status, "available");
   assert.deepEqual(g.pricing, { inputPerM: 2.5, outputPerM: 10 });
 });
+
+test("mergeDataset emits models in deterministic provider:model order", () => {
+  const availability: AvailabilityReport = {
+    openai: { ok: true, models: ["gpt-z"] },
+    google: { ok: true, models: ["z-flash", "a-flash"] },
+  };
+  const merged = mergeDataset(availability, [], { schemaVersion: 1, generatedAt: "x", models: [] });
+  assert.deepEqual(
+    merged.models.map((m) => `${m.provider}:${m.model}`),
+    ["google:a-flash", "google:z-flash", "openai:gpt-z"],
+  );
+});
