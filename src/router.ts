@@ -34,7 +34,7 @@ import type { Provider, Spec } from './types';
  *   google:gemini-2.5-flash          free tier — 1500 RPD per GCP project
  *   deepinfra:llama-3.1-8b           $0.04 / $0.04   (ultra-cheap tier)
  *   deepseek:deepseek-v4-flash       $0.14 / $0.28   (reasoning model — thinks by default)
- *   deepseek:deepseek-v4-pro         $0.435 / $0.87  (top reasoning/quality)
+ *   deepseek:deepseek-flash         $0.14 / $0.28   (V4.1 Flash; V4 Pro retires 2026-09-14)
  *   google-paid:gemini-2.5-flash     $0.075 / $0.30
  *   deepinfra:llama-3.3-70b          $0.23  / $0.40
  *   together:llama-3.3-70b-lite      $0.54  / $0.88
@@ -85,7 +85,7 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
     { provider: 'zai', model: 'glm-5.3-flash' },
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.3-70B-Instruct' },
     { provider: 'together', model: 'meta-llama/Llama-3.3-70B-Instruct-Lite' },
-    { provider: 'deepseek', model: 'deepseek-v4-pro' },
+    { provider: 'deepseek', model: 'deepseek-flash' }, // V4.1 Flash (V4 Pro retires 2026-09-14)
     { provider: 'zai', model: 'glm-5.3' },
     { provider: 'google-paid', model: 'gemini-2.5-pro' },
     { provider: 'anthropic', model: 'claude-sonnet-4-6' },
@@ -126,7 +126,7 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
     { provider: 'deepseek', model: 'deepseek-v4-flash' },
     { provider: 'google', model: 'gemini-2.5-pro' },
     { provider: 'zai', model: 'glm-5.3-flash' },
-    { provider: 'deepseek', model: 'deepseek-v4-pro' },
+    { provider: 'deepseek', model: 'deepseek-flash' }, // V4.1 Flash (V4 Pro retires 2026-09-14)
     { provider: 'deepinfra', model: 'deepseek-ai/DeepSeek-V3' },
     { provider: 'zai', model: 'glm-5.3' },
     { provider: 'google-paid', model: 'gemini-2.5-pro' },
