@@ -78,13 +78,20 @@ function wouldBrickDefaultChains(next: ModelDataDataset): boolean {
 }
 
 export function applyDataset(dataset: ModelDataDataset): { ok: true } | { ok: false; reason: string } {
-  if (dataset.schemaVersion > SUPPORTED_SCHEMA_VERSION) {
-    return { ok: false, reason: `schemaVersion ${dataset.schemaVersion} > supported ${SUPPORTED_SCHEMA_VERSION}` };
+  // Public API: validate shape even though the parameter is typed — callers
+  // may pass untyped/malformed data (codex P2).
+  const parsed = ModelDataSchema.safeParse(dataset);
+  if (!parsed.success) {
+    return { ok: false, reason: `invalid dataset shape: ${parsed.error.issues[0]?.message ?? "schema"}` };
   }
-  if (wouldBrickDefaultChains(dataset)) {
+  const ds = parsed.data;
+  if (ds.schemaVersion > SUPPORTED_SCHEMA_VERSION) {
+    return { ok: false, reason: `schemaVersion ${ds.schemaVersion} > supported ${SUPPORTED_SCHEMA_VERSION}` };
+  }
+  if (wouldBrickDefaultChains(ds)) {
     return { ok: false, reason: "refusing: dataset retires all hops of an active default chain" };
   }
-  live = dataset;
+  live = ds;
   status.appliedAt = new Date().toISOString();
   status.lastError = null;
   return { ok: true };
@@ -109,6 +116,14 @@ export async function refreshNow(opts: { url?: string; fetchImpl?: typeof fetch 
     return getModelDataStatus();
   } catch (err) {
     status.lastError = (err as Error).message;
+    // Recompute age from the live dataset even when the refresh failed —
+    // otherwise a stale dataset with failing refreshes never triggers the
+    // age warning (the CI/network-down scenario the warning exists for).
+    const ageMs = Date.now() - Date.parse(live.generatedAt);
+    status.datasetAgeHours = Number.isFinite(ageMs) ? Math.max(0, ageMs / 3_600_000) : null;
+    if ((status.datasetAgeHours ?? 0) > 7 * 24) {
+      console.warn(`[cco-llm-router] model data is ${Math.round(status.datasetAgeHours! / 24)} days old and refreshes are failing — CI may be down`);
+    }
     return getModelDataStatus();
   }
 }

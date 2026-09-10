@@ -62,3 +62,15 @@ test("mergeDataset emits models in deterministic provider:model order", () => {
     ["google:a-flash", "google:z-flash", "openai:gpt-z"],
   );
 });
+
+test("carryover applies current pricing.json prices over previous pricing", () => {
+  const availability: AvailabilityReport = { openai: { ok: false, models: [] } };
+  const pricing = [{ provider: "openai", model: "gpt-5", pricing: { inputPerM: 9, outputPerM: 9 } }];
+  const previous: PreviousState = {
+    schemaVersion: 1,
+    generatedAt: "2026-09-01T00:00:00Z",
+    models: [{ provider: "openai", model: "gpt-5", status: "available", pricing: { inputPerM: 3, outputPerM: 15 } }],
+  };
+  const merged = mergeDataset(availability, pricing, previous);
+  assert.deepEqual(merged.models.find((m) => m.model === "gpt-5")!.pricing, { inputPerM: 9, outputPerM: 9 });
+});

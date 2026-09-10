@@ -40,12 +40,17 @@ export function mergeDataset(
     const model = key.slice(i + 1);
     const report = availability[provider];
     const isRetired = report?.ok === true; // successful check + absent = retired
+    // Prices are curated data — always prefer the current pricing.json value
+    // (a pricing PR must reach carried-over models even when the provider
+    // check fails); fall back to the previous price only if pricing.json
+    // has no entry for the model.
+    const carryPricing = priceOf(provider, model) ?? prev.pricing;
     models.push({
       provider,
       model,
       status: isRetired ? "retired" : prev.status, // carryover on failed check
       ...(isRetired ? { retiredAt: today } : {}),
-      ...(prev.pricing ? { pricing: prev.pricing } : {}),
+      ...(carryPricing ? { pricing: carryPricing } : {}),
     });
   }
   // Deterministic order keeps the nightly commit-back diff quiet.

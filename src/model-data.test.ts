@@ -206,3 +206,21 @@ test("refreshNow warns when the dataset is older than 7 days", async () => {
   const st = await refreshNow({ url: "https://example.test/md.json", fetchImpl: fakeFetch });
   assert.ok((st.datasetAgeHours ?? 0) > 7 * 24);
 });
+
+test("applyDataset rejects malformed datasets from untyped callers", () => {
+  const bad = { schemaVersion: 1, generatedAt: "x" }; // models missing
+  const r = applyDataset(bad as never);
+  assert.equal(r.ok, false);
+});
+
+test("refreshNow failure recomputes dataset age from the live dataset", async () => {
+  const orig = console.warn;
+  console.warn = () => {};
+  try {
+    const fakeFetch = async () => { throw new Error("network down"); };
+    const st = await refreshNow({ url: "https://x.test/md.json", fetchImpl: fakeFetch });
+    assert.ok(st.datasetAgeHours !== null);
+  } finally {
+    console.warn = orig;
+  }
+});
