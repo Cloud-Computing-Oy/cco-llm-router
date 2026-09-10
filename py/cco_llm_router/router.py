@@ -47,7 +47,7 @@ from .usage import record_usage
 #   deepseek:deepseek-v4-flash       $0.14  / $0.28   (reasoning, thinks by default)
 #   google-paid:gemini-2.5-flash     $0.075 / $0.30
 #   deepinfra:llama-3.3-70b          $0.23  / $0.40
-#   deepseek:deepseek-v4-pro         $0.435 / $0.87
+#   deepseek:deepseek-flash         $0.14 / $0.28   (V4 Pro retires 2026-09-14)
 #   together:llama-3.3-70b-lite      $0.54  / $0.88
 #   openai:gpt-5-mini                $0.25  / $2
 #   google-paid:gemini-2.5-pro       $1.25  / $5
@@ -68,7 +68,7 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
         Spec("zai", "glm-5.3-flash"),
         Spec("deepinfra", "meta-llama/Meta-Llama-3.3-70B-Instruct"),
         Spec("together", "meta-llama/Llama-3.3-70B-Instruct-Lite"),
-        Spec("deepseek", "deepseek-v4-pro"),
+        Spec("deepseek", "deepseek-flash"),  # V4.1 Flash (V4 Pro retires 2026-09-14)
         Spec("zai", "glm-5.3"),
         Spec("google-paid", "gemini-2.5-pro"),
         Spec("anthropic", "claude-sonnet-4-6"),
@@ -107,7 +107,7 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
         Spec("deepseek", "deepseek-v4-flash"),
         Spec("google", "gemini-2.5-pro"),
         Spec("zai", "glm-5.3-flash"),
-        Spec("deepseek", "deepseek-v4-pro"),
+        Spec("deepseek", "deepseek-flash"),  # V4.1 Flash (V4 Pro retires 2026-09-14)
         Spec("deepinfra", "deepseek-ai/DeepSeek-V3"),
         Spec("zai", "glm-5.3"),
         Spec("google-paid", "gemini-2.5-pro"),

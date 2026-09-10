@@ -59,9 +59,12 @@ export const PRICING: Record<string, Price> = {
   // --- deepseek (native api.deepseek.com, V4) ---
   // Priced at cache-MISS input: the usage tracker has no cache-hit
   // accounting, so this over-estimates spend (safe for the budget net).
-  // v4-pro reflects the 75%-off promo through 2026-05-31 — revisit after.
   'deepseek:deepseek-v4-flash': { inputPerM: 0.14, outputPerM: 0.28 },
-  'deepseek:deepseek-v4-pro': { inputPerM: 0.435, outputPerM: 0.87 },
+  // V4 Pro retires 2026-09-14; its traffic routes to V4.1 Flash at Flash prices.
+  'deepseek:deepseek-flash': { inputPerM: 0.14, outputPerM: 0.28 },
+  // Keep the redirected identifier priced at Flash rates so direct callers keep
+  // cost tracking + budget gates working after the 2026-09-14 redirect.
+  'deepseek:deepseek-v4-pro': { inputPerM: 0.14, outputPerM: 0.28 },
 
   // --- moonshot (Kimi Platform; cache-miss input for conservative budgets) ---
   'moonshot:kimi-k3': { inputPerM: 3, outputPerM: 15 },
