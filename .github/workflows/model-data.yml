@@ -31,7 +31,7 @@ jobs:
       - name: Build dataset
         run: npm run build:model-data
       - name: Validate schema
-        run: node --import tsx -e "import('./src/model-data').then(({ ModelDataSchema }) => { const fs = require('fs'); const r = ModelDataSchema.safeParse(JSON.parse(fs.readFileSync('data/model-data.json', 'utf8'))); if (!r.success) { console.error(r.error); process.exit(1); } console.log('schema OK,', r.data.models.length, 'models'); })"
+        run: node --import tsx scripts/validate-model-data.ts
       - name: Commit regenerated bundle
         run: |
           git config user.name "github-actions[bot]"

@@ -44,7 +44,9 @@ def test_weekends_are_off_peak_regardless_of_hour():
 
 
 def test_naive_datetimes_are_treated_as_utc():
-    assert effective_price("deepseek", "deepseek-flash", datetime(2026, 9, 10, 2, 0)) == PEAK
+    # Naiivi aikaleima on testin tarkoitus: se tulkitaan UTC:ksi.
+    naive = datetime(2026, 9, 10, 2, 0)  # noqa: DTZ001
+    assert effective_price("deepseek", "deepseek-flash", naive) == PEAK
 
 
 def test_providers_without_peak_rates_are_unaffected():
