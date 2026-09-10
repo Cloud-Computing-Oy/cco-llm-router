@@ -11,6 +11,7 @@
  * which feeds the per-provider monthly budget enforced in budget.ts.
  */
 import type { Provider } from './types';
+import { getLiveDataset } from './model-data';
 
 export type Price = { inputPerM: number; outputPerM: number };
 
@@ -72,7 +73,12 @@ export const PRICING: Record<string, Price> = {
 };
 
 export function priceOf(provider: Provider, model: string): Price {
-  return PRICING[`${provider}:${model}`] ?? Z;
+  const live = getLiveDataset().models.find((m) => m.provider === provider && m.model === model);
+  if (live?.pricing) {
+    return { inputPerM: live.pricing.inputPerM, outputPerM: live.pricing.outputPerM };
+  }
+  const k = `${provider}:${model}` as keyof typeof PRICING;
+  return PRICING[k] ?? Z;
 }
 
 export function estimateCostUSD(

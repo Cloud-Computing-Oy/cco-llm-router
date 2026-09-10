@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { ModelDataSchema, SUPPORTED_SCHEMA_VERSION, loadBundledDataset, getLiveDataset, applyDataset, refreshNow, startModelDataRefresh, stopModelDataRefresh, getModelDataStatus, clampRefreshHours } from "./model-data";
-import { DEFAULT_ALIASES } from "./router";
+import { createRouter, DEFAULT_ALIASES } from "./router";
 
 test("bundled dataset loads from the package data dir and validates", () => {
   const d = loadBundledDataset();
@@ -109,4 +109,41 @@ test("clampRefreshHours caps the poll interval below Node's 1ms clamp threshold"
   assert.equal(clampRefreshHours(720), 596);
   assert.equal(clampRefreshHours(Number.NaN), 0);
   assert.equal(clampRefreshHours(6), 6);
+});
+
+test("resolveModel skips a retired model mid-chain (gemini-2.5 regression)", () => {
+  const dataset = {
+    schemaVersion: 1,
+    generatedAt: "2026-09-10T00:00:00Z",
+    models: [{ provider: "google", model: "gemini-2.5-flash", status: "retired" as const }],
+  };
+  const applied = applyDataset(dataset);
+  assert.equal(applied.ok, true);
+  const router = createRouter();
+  // find the first default chain that contains gemini-2.5-flash and assert it is filtered
+  const chainWithRetired = Object.values(DEFAULT_ALIASES).find((c) =>
+    c.some((s) => s.provider === "google" && s.model === "gemini-2.5-flash"),
+  );
+  assert.ok(chainWithRetired, "test setup: a default chain uses gemini-2.5-flash");
+  const alias = Object.entries(DEFAULT_ALIASES).find(([, c]) => c === chainWithRetired)![0];
+  // per-call key keeps the chain resolvable even with no env keys; the
+  // retired hop itself is supplied the key so the assertion is meaningful
+  const { specs } = router.resolveModel(alias, { perCallKeys: { google: "test-key" } });
+  assert.ok(!specs.some((s) => s.provider === "google" && s.model === "gemini-2.5-flash"));
+});
+
+test("no-provider error names retired hops and points at CCO_MODEL_DATA_URL", () => {
+  const dataset = {
+    schemaVersion: 1,
+    generatedAt: "2026-09-10T00:00:00Z",
+    models: [{ provider: "google", model: "gemini-2.5-flash", status: "retired" as const }],
+  };
+  assert.equal(applyDataset(dataset).ok, true);
+  const router = createRouter({
+    aliases: { "test:retired-only": [{ provider: "google" as const, model: "gemini-2.5-flash" }] },
+  });
+  assert.throws(
+    () => router.resolveModel("test:retired-only"),
+    /No available provider.*1 hop\(s\) retired by model data; check CCO_MODEL_DATA_URL/,
+  );
 });

@@ -17,13 +17,27 @@ import { mistralAvailable, mistralModel } from './providers/mistral';
 import { nvidiaAvailable, nvidiaModel } from './providers/nvidia';
 import { createFallbackModel } from './fallback';
 import { withinBudget } from './budget';
-import { hasReviewedAutomaticPricing, requiresUnknownPricingApproval } from './catalog';
+import { requiresUnknownPricingApproval } from './catalog';
 import { DEFAULT_ALIASES } from './aliases';
+import { PRICING } from './pricing';
+import { getLiveDataset } from './model-data';
 
 export type { Provider, Spec } from './types';
 import type { Provider, Spec } from './types';
 
 export { DEFAULT_ALIASES };
+
+function isRetired(provider: string, model: string): boolean {
+  return getLiveDataset().models.some(
+    (m) => m.provider === provider && m.model === model && m.status === "retired",
+  );
+}
+
+function hasReviewedPricing(spec: Spec): boolean {
+  const live = getLiveDataset().models.find((m) => m.provider === spec.provider && m.model === spec.model);
+  if (live) return live.pricing !== undefined;
+  return Object.prototype.hasOwnProperty.call(PRICING, `${spec.provider}:${spec.model}`);
+}
 
 function hasKey(p: Provider): boolean {
   switch (p) {
@@ -206,10 +220,12 @@ export function createRouter(opts: RouterOptions = {}): Router {
     if (!chain) throw new Error(`Unknown model alias: ${alias}`);
     // When per-call keys are supplied, skip the env-pool expansion for
     // `google` — a BYOK key is a single concrete credential, not a pool.
-    const availableByKey = chain.filter((s) => isAvailable(s.provider, perCallKeys));
+    const availableByKey = chain.filter(
+      (s) => isAvailable(s.provider, perCallKeys) && !isRetired(s.provider, s.model),
+    );
     const filtered = callOpts.allowUnknownPricing
       ? availableByKey
-      : availableByKey.filter(hasReviewedAutomaticPricing);
+      : availableByKey.filter(hasReviewedPricing);
     const available = perCallKeys?.google ? filtered : expandGoogleKeys(filtered);
     if (available.length === 0) {
       if (availableByKey.length > 0 && !callOpts.allowUnknownPricing) {
@@ -217,7 +233,11 @@ export function createRouter(opts: RouterOptions = {}): Router {
           `No reviewed-price provider for alias ${alias}; set allowUnknownPricing=true`,
         );
       }
-      throw new Error(`No available provider for alias ${alias} — set at least one API key`);
+      const retiredCount = chain.filter((s) => isRetired(s.provider, s.model)).length;
+      throw new Error(
+        `No available provider for alias ${alias} — set at least one API key` +
+          (retiredCount > 0 ? ` (${retiredCount} hop(s) retired by model data; check CCO_MODEL_DATA_URL)` : ""),
+      );
     }
     if (available.length === 1 && available[0].provider !== 'ollama') {
       return { model: instantiate(available[0], perCallKeys), specs: available };
@@ -233,7 +253,9 @@ export function createRouter(opts: RouterOptions = {}): Router {
 
   function listAliases() {
     return Object.entries(aliases).map(([alias, chain]) => {
-      const available = expandGoogleKeys(chain.filter((s) => providerAvailable(s.provider)));
+      const available = expandGoogleKeys(
+        chain.filter((s) => providerAvailable(s.provider) && !isRetired(s.provider, s.model)),
+      );
       return { alias, chain, availableCount: available.length };
     });
   }
