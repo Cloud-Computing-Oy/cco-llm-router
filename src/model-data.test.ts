@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { ModelDataSchema, SUPPORTED_SCHEMA_VERSION, loadBundledDataset, getLiveDataset, applyDataset, refreshNow, startModelDataRefresh, stopModelDataRefresh, getModelDataStatus, DEFAULT_MODEL_DATA_URL } from "./model-data";
+import { ModelDataSchema, SUPPORTED_SCHEMA_VERSION, loadBundledDataset, getLiveDataset, applyDataset, refreshNow, startModelDataRefresh, stopModelDataRefresh, getModelDataStatus } from "./model-data";
 import { DEFAULT_ALIASES } from "./router";
 
 test("bundled dataset loads from the package data dir and validates", () => {
@@ -84,6 +84,22 @@ test("startModelDataRefresh honors CCO_MODEL_DATA_REFRESH_HOURS=0", () => {
   const old = process.env.CCO_MODEL_DATA_REFRESH_HOURS;
   process.env.CCO_MODEL_DATA_REFRESH_HOURS = "0";
   startModelDataRefresh({ fetchImpl: async () => new Response("{}") });
+  assert.equal(getModelDataStatus().polling, false);
+  if (old === undefined) delete process.env.CCO_MODEL_DATA_REFRESH_HOURS;
+  else process.env.CCO_MODEL_DATA_REFRESH_HOURS = old;
+});
+
+test("startModelDataRefresh stays disabled for non-finite refresh hours", () => {
+  stopModelDataRefresh();
+  const old = process.env.CCO_MODEL_DATA_REFRESH_HOURS;
+  const noopFetch = async () => new Response("{}");
+  // env path: a non-numeric value must not arm a runaway timer
+  process.env.CCO_MODEL_DATA_REFRESH_HOURS = "abc";
+  startModelDataRefresh({ fetchImpl: noopFetch });
+  assert.equal(getModelDataStatus().polling, false);
+  // opts path: explicit NaN disables even when the env var names a valid interval
+  process.env.CCO_MODEL_DATA_REFRESH_HOURS = "6";
+  startModelDataRefresh({ refreshHours: Number.NaN, fetchImpl: noopFetch });
   assert.equal(getModelDataStatus().polling, false);
   if (old === undefined) delete process.env.CCO_MODEL_DATA_REFRESH_HOURS;
   else process.env.CCO_MODEL_DATA_REFRESH_HOURS = old;

@@ -105,7 +105,8 @@ let timer: NodeJS.Timeout | null = null;
 
 export function startModelDataRefresh(opts: { url?: string; refreshHours?: number; fetchImpl?: typeof fetch } = {}): void {
   if (timer) return;
-  const hours = opts.refreshHours ?? Number(process.env.CCO_MODEL_DATA_REFRESH_HOURS ?? 6);
+  const hoursRaw = opts.refreshHours ?? Number(process.env.CCO_MODEL_DATA_REFRESH_HOURS ?? 6);
+  const hours = Number.isFinite(hoursRaw) ? hoursRaw : 0;
   if (hours <= 0) return;
   const url = opts.url ?? process.env.CCO_MODEL_DATA_URL ?? DEFAULT_MODEL_DATA_URL;
   status.polling = true;
