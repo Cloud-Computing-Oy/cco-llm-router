@@ -16,8 +16,9 @@
 
 - DeepSeek prices were stale at the retired V4 Flash list price
   ($0.14/$0.28). Corrected to the published V4.1 Flash rates: $0.15/$0.6
-  off-peak, $0.3/$1.2 peak. `deepseek-flash`, the legacy `deepseek-v4-flash`
-  redirect and the `deepseek-v4-pro` identifier all bill V4.1 Flash rates.
+  off-peak, $0.3/$1.2 peak. `deepseek-flash` and the legacy `deepseek-v4-flash`
+  redirect bill V4.1 Flash rates; `deepseek-v4-pro` keeps its own V4 Pro rates
+  ($0.66/$1.98 off-peak) until it starts redirecting on 2026-09-14.
   Applied to `data/pricing.json`, the bundled `data/model-data.json` snapshot
   and the Python sibling (`py/cco_llm_router/pricing.py`).
 

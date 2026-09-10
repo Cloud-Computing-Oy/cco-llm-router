@@ -99,10 +99,13 @@ PRICING: dict[str, Price] = {
         "output_per_m": 0.6,
         "peak": {"input_per_m": 0.3, "output_per_m": 1.2},
     },
+    # V4 Pro still runs on V4 Pro until it starts redirecting on 2026-09-14, so
+    # it keeps V4 Pro rates — pricing it at Flash rates early would under-bill
+    # every direct call in the meantime. Switch to Flash rates on 2026-09-14.
     "deepseek:deepseek-v4-pro": {
-        "input_per_m": 0.15,
-        "output_per_m": 0.6,
-        "peak": {"input_per_m": 0.3, "output_per_m": 1.2},
+        "input_per_m": 0.66,
+        "output_per_m": 1.98,
+        "peak": {"input_per_m": 1.32, "output_per_m": 3.96},
     },
 
     # --- moonshot (Kimi Platform; conservative cache-miss input price) ---

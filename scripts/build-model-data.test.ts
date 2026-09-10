@@ -83,7 +83,7 @@ test("curated pricing.json carries DeepSeek peak rates into the dataset", async 
   // The nightly model-data job merges pricing.json into the published dataset;
   // without the peak block here, the bundled snapshot regains stale flat rates
   // and priceOf() would silently outrank the peak-aware table.
-  for (const model of ["deepseek-flash", "deepseek-v4-flash", "deepseek-v4-pro"]) {
+  for (const model of ["deepseek-flash", "deepseek-v4-flash"]) {
     const entry = pricing.models.find((m) => m.provider === "deepseek" && m.model === model);
     assert.ok(entry, `pricing.json is missing ${model}`);
     assert.deepEqual(entry.pricing, {
@@ -92,4 +92,11 @@ test("curated pricing.json carries DeepSeek peak rates into the dataset", async 
       peak: { inputPerM: 0.3, outputPerM: 1.2 },
     });
   }
+  // V4 Pro keeps its own rates until the 2026-09-14 redirect.
+  const pro = pricing.models.find((m) => m.provider === "deepseek" && m.model === "deepseek-v4-pro");
+  assert.deepEqual(pro?.pricing, {
+    inputPerM: 0.66,
+    outputPerM: 1.98,
+    peak: { inputPerM: 1.32, outputPerM: 3.96 },
+  });
 });

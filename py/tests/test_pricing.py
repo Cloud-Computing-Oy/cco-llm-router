@@ -10,11 +10,24 @@ PEAK = {"input_per_m": 0.3, "output_per_m": 1.2}
 
 
 def test_v41_flash_list_price_carries_off_peak_and_peak_rates():
-    for model in ("deepseek-flash", "deepseek-v4-flash", "deepseek-v4-pro"):
+    for model in ("deepseek-flash", "deepseek-v4-flash"):
         price = price_of("deepseek", model)
         assert price["input_per_m"] == 0.15
         assert price["output_per_m"] == 0.6
         assert price["peak"] == PEAK
+
+
+def test_v4_pro_keeps_its_own_rates_until_it_redirects():
+    price = price_of("deepseek", "deepseek-v4-pro")
+    assert price["input_per_m"] == 0.66
+    assert price["output_per_m"] == 1.98
+    assert price["peak"] == {"input_per_m": 1.32, "output_per_m": 3.96}
+
+
+def test_effective_price_is_exported_from_the_package_root():
+    from cco_llm_router import effective_price as exported
+
+    assert exported is effective_price
 
 
 def test_effective_price_off_peak_outside_windows():

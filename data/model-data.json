@@ -200,11 +200,11 @@
       "model": "deepseek-v4-pro",
       "status": "available",
       "pricing": {
-        "inputPerM": 0.15,
-        "outputPerM": 0.6,
+        "inputPerM": 0.66,
+        "outputPerM": 1.98,
         "peak": {
-          "inputPerM": 0.3,
-          "outputPerM": 1.2
+          "inputPerM": 1.32,
+          "outputPerM": 3.96
         }
       }
     },

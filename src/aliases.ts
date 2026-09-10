@@ -12,7 +12,7 @@ import type { Spec } from './types';
  *   google:gemini-2.5-flash          free tier — 1500 RPD per GCP project
  *   deepinfra:llama-3.1-8b           $0.04 / $0.04   (ultra-cheap tier)
  *   deepseek:deepseek-flash         $0.15 / $0.60   (V4.1 Flash, canonical id; peak 2x)
- *   deepseek:deepseek-v4-pro        $0.15 / $0.60   (redirects to V4.1 Flash 2026-09-14)
+ *   deepseek:deepseek-v4-pro        $0.66 / $1.98   (V4 Pro until it redirects 2026-09-14)
  *   google-paid:gemini-2.5-flash     $0.075 / $0.30
  *   deepinfra:llama-3.3-70b          $0.23  / $0.40
  *   together:llama-3.3-70b-lite      $0.54  / $0.88

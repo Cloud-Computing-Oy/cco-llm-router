@@ -19,8 +19,14 @@ test('legacy deepseek-v4-flash id is priced as V4.1 Flash', () => {
   assert.deepEqual(priceOf('deepseek', 'deepseek-v4-flash'), { ...OFF_PEAK, peak: PEAK });
 });
 
-test('redirected deepseek-v4-pro id is priced as V4.1 Flash', () => {
-  assert.deepEqual(priceOf('deepseek', 'deepseek-v4-pro'), { ...OFF_PEAK, peak: PEAK });
+test('deepseek-v4-pro keeps V4 Pro rates until it redirects on 2026-09-14', () => {
+  // It still runs on V4 Pro, so Flash rates would under-bill direct calls
+  // for the four days before the redirect.
+  assert.deepEqual(priceOf('deepseek', 'deepseek-v4-pro'), {
+    inputPerM: 0.66,
+    outputPerM: 1.98,
+    peak: { inputPerM: 1.32, outputPerM: 3.96 },
+  });
 });
 
 test('effectivePrice returns off-peak rates outside peak windows', () => {

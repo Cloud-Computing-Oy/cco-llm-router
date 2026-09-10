@@ -91,11 +91,14 @@ export const PRICING: Record<string, Price> = {
   // V4.1 Flash list price (2026-09-10): $0.15 / $0.6 off-peak, $0.3 / $1.2
   // peak. Priced at cache-MISS input: the usage tracker has no cache-hit
   // accounting, so this over-estimates spend (safe for the budget net).
-  // All three ids are served by V4.1 Flash — the legacy `deepseek-v4-flash`
-  // redirects, and `deepseek-v4-pro` starts redirecting 2026-09-14.
+  // `deepseek-flash` and the legacy `deepseek-v4-flash` id are both served by
+  // V4.1 Flash. `deepseek-v4-pro` still runs on V4 Pro until it starts
+  // redirecting on 2026-09-14, so it keeps V4 Pro rates ($0.66/$1.98 off-peak,
+  // $1.32/$3.96 peak) — pricing it at Flash rates early would under-bill every
+  // direct call in the meantime. Switch this entry to Flash rates on 2026-09-14.
   'deepseek:deepseek-flash': { inputPerM: 0.15, outputPerM: 0.6, peak: { inputPerM: 0.3, outputPerM: 1.2 } },
   'deepseek:deepseek-v4-flash': { inputPerM: 0.15, outputPerM: 0.6, peak: { inputPerM: 0.3, outputPerM: 1.2 } },
-  'deepseek:deepseek-v4-pro': { inputPerM: 0.15, outputPerM: 0.6, peak: { inputPerM: 0.3, outputPerM: 1.2 } },
+  'deepseek:deepseek-v4-pro': { inputPerM: 0.66, outputPerM: 1.98, peak: { inputPerM: 1.32, outputPerM: 3.96 } },
 
   // --- moonshot (Kimi Platform; cache-miss input for conservative budgets) ---
   'moonshot:kimi-k3': { inputPerM: 3, outputPerM: 15 },

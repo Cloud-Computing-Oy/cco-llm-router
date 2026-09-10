@@ -23,7 +23,7 @@ Provider SDKs are declared as optional extras; install with e.g.
 from .automatic_routing import select_automatic_alias
 from .budget import get_budget_usd, within_budget
 from .helpers import chat, chat_json
-from .pricing import PRICING, Price, estimate_cost_usd, price_of
+from .pricing import PRICING, Price, effective_price, estimate_cost_usd, price_of
 from .router import (
     DEFAULT_ALIASES,
     CallSpec,
@@ -49,6 +49,7 @@ __all__ = [
     "chat",
     "chat_json",
     "create_router",
+    "effective_price",
     "estimate_cost_usd",
     "get_budget_usd",
     "get_current_month_spend",
