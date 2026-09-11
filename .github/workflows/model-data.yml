@@ -4,7 +4,11 @@ on:
     - cron: "17 2 * * *"   # nightly, off-peak minute
   workflow_dispatch:
   push:
+    # Branch pushes only: the job commits the regenerated bundle back, and on a
+    # tag push the checkout is a detached HEAD, so that commit-back failed with
+    # "You are not currently on a branch" (seen on v0.22.0 / py-v0.9.0).
     # Spec §5 also names catalog.ts; the builder never reads it, so triggering on it would change nothing.
+    branches: [main]
     paths: ["data/pricing.json", "scripts/check-provider-models.ts", "scripts/build-model-data*.ts"]
 
 permissions:
