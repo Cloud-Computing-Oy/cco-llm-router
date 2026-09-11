@@ -1,0 +1,28 @@
+name: python-release
+on:
+  push:
+    tags: ["py-v*"]
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: npm ci
+      - run: python -m pip install build
+      - name: Verify tag matches py/pyproject.toml
+        run: node --import tsx scripts/check-py-tag.ts "${{ github.ref_name }}"
+      - run: python -m build py --outdir dist-py
+      - name: Publish wheel + sdist as release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" dist-py/* \
+            --title "Python cco-llm-router ${{ github.ref_name }}" \
+            --notes "Python sibling wheel + sdist for ${{ github.ref_name }}." \
+            || gh release upload "${{ github.ref_name }}" dist-py/* --clobber
