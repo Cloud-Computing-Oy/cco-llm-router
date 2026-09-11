@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-10T18:05:50.292Z",
+  "generatedAt": "2026-09-11T07:17:30.656Z",
   "models": [
     {
       "provider": "anthropic",
@@ -91,7 +91,7 @@
       "provider": "deepseek",
       "model": "deepseek-v4-flash",
       "status": "retired",
-      "retiredAt": "2026-09-10T18:05:50.292Z",
+      "retiredAt": "2026-09-11T07:17:30.656Z",
       "pricing": {
         "inputPerM": 0.15,
         "outputPerM": 0.6,
@@ -3347,7 +3347,17 @@
     },
     {
       "provider": "openrouter",
+      "model": "sakana/fugu-max",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
       "model": "sakana/fugu-ultra",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "sakana/fugu-ultra-v2",
       "status": "available"
     },
     {
