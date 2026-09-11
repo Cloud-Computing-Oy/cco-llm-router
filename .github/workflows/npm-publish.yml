@@ -1,0 +1,39 @@
+name: npm-publish
+# Publishing from CI because a local PAT needs write:packages; the repository's
+# own token already has it for the repo's packages, and every future release
+# gets the same path without a long-lived credential.
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: read
+  packages: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          registry-url: https://npm.pkg.github.com
+          scope: "@cloud-computing-oy"
+      - run: npm ci
+      - name: Verify tag matches package.json
+        # The tag arrives via env, never interpolated into the script: a tag
+        # name may contain shell metacharacters (run-shell-injection).
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          expected="v$(node -p "require('./package.json').version")"
+          if [ "$TAG" != "$expected" ]; then
+            echo "tag $TAG does not match package.json version $expected"
+            exit 1
+          fi
+      - run: npm publish
+        env:
+          # The checked-in .npmrc reads this variable name, and a project-level
+          # npmrc setting overrides the user config setup-node writes from
+          # NODE_AUTH_TOKEN — passing only the latter would publish with an
+          # empty credential (Codex P1 on PR #41).
+          NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
