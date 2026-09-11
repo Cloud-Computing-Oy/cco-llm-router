@@ -32,4 +32,8 @@ jobs:
           fi
       - run: npm publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # The checked-in .npmrc reads this variable name, and a project-level
+          # npmrc setting overrides the user config setup-node writes from
+          # NODE_AUTH_TOKEN — passing only the latter would publish with an
+          # empty credential (Codex P1 on PR #41).
+          NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
