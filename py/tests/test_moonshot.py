@@ -3,7 +3,7 @@ from cco_llm_router.router import DEFAULT_ALIASES, resolve_model
 
 
 def test_kimi_ships_in_top_tier_default_chains():
-    for alias in ("auto:smart", "auto:reasoning", "auto:big", "auto:paid"):
+    for alias in ("auto:smart", "auto:code", "auto:reasoning", "auto:big", "auto:paid"):
         assert any(
             spec.provider == "moonshot" and spec.model == "kimi-k3"
             for spec in DEFAULT_ALIASES[alias]
