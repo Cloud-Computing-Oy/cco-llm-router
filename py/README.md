@@ -23,8 +23,13 @@ Every `py-v*` tag publishes the wheel + sdist as release assets, so consumers
 can pin a version without a package index and without git in the image:
 
 ```bash
-pip install "cco-llm-router[all] @ https://github.com/Cloud-Computing-Oy/cco-llm-router/releases/download/py-v0.8.1/cco_llm_router-0.8.1-py3-none-any.whl"
+pip install "cco-llm-router[all] @ https://github.com/Cloud-Computing-Oy/cco-llm-router/releases/download/py-v0.8.1/cco_llm_router-0.8.1-py3-none-any.whl#sha256=9ef2e1be6b66fb48452dca38f612c65359fbb8bf62c102ed9749bca7a4e1750a"
 ```
+
+Pin the `#sha256=` fragment in consumer requirements: a release asset is
+mutable, so without it a re-uploaded asset or moved tag would change the code
+a consumer installs with no diff in that repo. Refresh means bumping **both**
+the version and the fragment (`sha256sum` the downloaded wheel).
 
 The asset is built by `.github/workflows/python-release.yml`; the tag version
 must equal `py/pyproject.toml`'s version or the workflow fails before building.
