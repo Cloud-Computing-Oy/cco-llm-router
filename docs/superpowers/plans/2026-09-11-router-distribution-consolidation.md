@@ -371,21 +371,28 @@ git tag v0.21.1 && git push origin v0.21.1
 
 ---
 
-### Task 6: Bump the eleven 0.19.0 consumers to ^0.21.1
+### Task 6: Bump the ten range-pinned consumers to ^0.21.1
 
 **Files (each own repo, own PR):** the `@cloud-computing-oy/llm-router` dependency line in `package.json`
 
-Repos and paths: `Invoicify/package.json`, `cc-os/package.json`,
-`LexAI-Web/web/package.json`, `Lakiapuri/package.json`,
-`Portfolio_Tracker/package.json`, `ai-cloudcomputing/package.json`,
-`ai-cloudcomputing-audio/package.json`, `ai-cloudcomputing-deps/package.json`,
-`expat-aivozone/package.json`, `cc-code/package.json`,
-`Dynamic-Site-Builder/package.json`.
+Verified pins (2026-09-11):
+
+- Exact `0.19.0` (9): `cc-os/package.json`, `LexAI-Web/web/package.json`,
+  `Lakiapuri/package.json`, `Portfolio_Tracker/package.json`,
+  `ai-cloudcomputing/package.json`, `ai-cloudcomputing-audio/package.json`,
+  `ai-cloudcomputing-deps/package.json`, `expat-aivozone/package.json`,
+  `cc-code/package.json`
+- Range `^0.10.0` (1): `Invoicify/package.json` (its lockfile has 0.19.0)
+
+`cc-code/dist-core/package.json` is a **generated** staging copy of
+`@cloud-computing-oy/cc-core` (`scripts/publish-core.ts` resolves versions from
+cc-code's root manifest). Do not hand-edit it — bumping cc-code's root pin is
+what regenerates it.
 
 For each repo, in batches of three:
 
 - [ ] **Step 1: Branch** — `git checkout main && git pull --ff-only && git checkout -b chore/router-0.21.1` (use `master` where that is the default branch).
-- [ ] **Step 2: Edit the pin** — set `"@cloud-computing-oy/llm-router": "^0.21.1"` (replacing `0.19.0` or an archive URL).
+- [ ] **Step 2: Edit the pin** — set `"@cloud-computing-oy/llm-router": "^0.21.1"` (replacing `0.19.0` or `^0.10.0`).
 - [ ] **Step 3: Install and verify**
 
 ```bash
