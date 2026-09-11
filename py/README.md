@@ -17,6 +17,18 @@ pip install 'cco-llm-router[google]'
 pip install 'cco-llm-router[anthropic]'
 ```
 
+### Installing a released wheel (no credentials, no git)
+
+Every `py-v*` tag publishes the wheel + sdist as release assets, so consumers
+can pin a version without a package index and without git in the image:
+
+```bash
+pip install "cco-llm-router[all] @ https://github.com/Cloud-Computing-Oy/cco-llm-router/releases/download/py-v0.8.1/cco_llm_router-0.8.1-py3-none-any.whl"
+```
+
+The asset is built by `.github/workflows/python-release.yml`; the tag version
+must equal `py/pyproject.toml`'s version or the workflow fails before building.
+
 ## Usage
 
 ```python
