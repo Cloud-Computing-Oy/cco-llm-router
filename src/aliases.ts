@@ -96,6 +96,7 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.3-70B-Instruct' },
     { provider: 'openai', model: 'gpt-5-mini' },
     { provider: 'zai', model: 'glm-5.3' },
+    { provider: 'moonshot', model: 'kimi-k3' },
   ],
   // Reasoning / planning / multi-step. Price-ordered after DeepSeek V4 Flash,
   // same $0.25/M tie rule as auto:smart above.

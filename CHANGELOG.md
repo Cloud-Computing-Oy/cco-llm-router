@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.22.0] - 2026-09-11
+
+### Changed
+
+- Kimi K3 joins `auto:code` as its last hop. The chain stays price-ordered —
+  Kimi's $3/$15 sits above every other hop, so it only answers when they all
+  fail, exactly as it already does in `auto:smart`, `auto:reasoning`,
+  `auto:big` and `auto:paid`. The Python sibling moves in lockstep to
+  **0.9.0**; this file tracks both lines (there is no separate Python
+  changelog).
+
+### Fixed
+
+- README and py/README list `auto:code` among the chains that carry Kimi.
+
 ## [0.21.1] - 2026-09-10
 
 ### Added

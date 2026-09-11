@@ -143,8 +143,8 @@ authorization.
 
 ### Kimi K3
 
-Kimi K3 ships in the top-tier default chains (`auto:smart`, `auto:reasoning`,
-`auto:big`, `auto:paid`) alongside Claude Sonnet and GPT-5, at the same
+Kimi K3 ships in the top-tier default chains (`auto:smart`, `auto:code`,
+`auto:reasoning`, `auto:big`, `auto:paid`) alongside Claude Sonnet and GPT-5, at the same
 $3/$15-per-M price point. No opt-in flag is required. Configure a Kimi
 Platform key to make the provider available:
 
