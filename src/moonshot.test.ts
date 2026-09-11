@@ -5,7 +5,7 @@ import { DEFAULT_ALIASES, createRouter } from './router';
 import { estimateCostUSD, priceOf } from './pricing';
 
 test('Kimi K3 ships in the top-tier default chains', () => {
-  for (const alias of ['auto:smart', 'auto:reasoning', 'auto:big', 'auto:paid']) {
+  for (const alias of ['auto:smart', 'auto:reasoning', 'auto:big', 'auto:paid', 'auto:code']) {
     assert.equal(
       DEFAULT_ALIASES[alias].some((spec) => spec.provider === 'moonshot' && spec.model === 'kimi-k3'),
       true,
@@ -13,7 +13,7 @@ test('Kimi K3 ships in the top-tier default chains', () => {
     );
   }
   // Cost-sensitive chains stay clear of Kimi K3's $3/$15 price point.
-  for (const alias of ['auto:fast', 'auto:translate', 'auto:code', 'auto:cheap', 'auto:local']) {
+  for (const alias of ['auto:fast', 'auto:translate', 'auto:cheap', 'auto:local']) {
     assert.equal(
       DEFAULT_ALIASES[alias].some((spec) => spec.provider === 'moonshot'),
       false,

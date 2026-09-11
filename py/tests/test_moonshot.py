@@ -8,7 +8,7 @@ def test_kimi_ships_in_top_tier_default_chains():
             spec.provider == "moonshot" and spec.model == "kimi-k3"
             for spec in DEFAULT_ALIASES[alias]
         ), alias
-    for alias in ("auto:fast", "auto:translate", "auto:code", "auto:cheap", "auto:local"):
+    for alias in ("auto:fast", "auto:translate", "auto:cheap", "auto:local"):
         assert all(spec.provider != "moonshot" for spec in DEFAULT_ALIASES[alias]), alias
 
 

@@ -67,8 +67,8 @@ Direct selectors obey the local budget guard by default. The
 
 ## Kimi K3
 
-Kimi K3 ships in the top-tier default chains (`auto:smart`, `auto:reasoning`,
-`auto:big`, `auto:paid`) alongside Claude Sonnet and GPT-5, at the same
+Kimi K3 ships in the top-tier default chains (`auto:smart`, `auto:code`,
+`auto:reasoning`, `auto:big`, `auto:paid`) alongside Claude Sonnet and GPT-5, at the same
 $3/$15-per-M price point — no opt-in required. Select it directly when needed:
 
 ```python

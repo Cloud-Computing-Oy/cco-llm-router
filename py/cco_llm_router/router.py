@@ -99,6 +99,7 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
         Spec("deepinfra", "meta-llama/Meta-Llama-3.3-70B-Instruct"),
         Spec("openai", "gpt-5-mini"),
         Spec("zai", "glm-5.3"),
+        Spec("moonshot", "kimi-k3"),
     ],
     # Price-ordered after DeepSeek V4 Flash, same $0.25/M tie rule as
     # auto:smart above.
