@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-11T07:17:30.656Z",
+  "generatedAt": "2026-09-12T07:09:36.124Z",
   "models": [
     {
       "provider": "anthropic",
@@ -91,7 +91,7 @@
       "provider": "deepseek",
       "model": "deepseek-v4-flash",
       "status": "retired",
-      "retiredAt": "2026-09-11T07:17:30.656Z",
+      "retiredAt": "2026-09-12T07:09:36.124Z",
       "pricing": {
         "inputPerM": 0.15,
         "outputPerM": 0.6,
@@ -1467,12 +1467,33 @@
     },
     {
       "provider": "openrouter",
+      "model": "~openai/gpt-astra-latest",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
       "model": "~openai/gpt-latest",
+      "status": "retired",
+      "retiredAt": "2026-09-12T07:09:36.124Z"
+    },
+    {
+      "provider": "openrouter",
+      "model": "~openai/gpt-luna-latest",
       "status": "available"
     },
     {
       "provider": "openrouter",
       "model": "~openai/gpt-mini-latest",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "~openai/gpt-sol-latest",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "~openai/gpt-terra-latest",
       "status": "available"
     },
     {
@@ -2107,7 +2128,22 @@
     },
     {
       "provider": "openrouter",
+      "model": "inclusionai/ling-3.0-flash-vl",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
       "model": "inclusionai/ling-3.0-flash-vl:free",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "inference-net/schematron-v2-small",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "inference-net/schematron-v2-turbo",
       "status": "available"
     },
     {
