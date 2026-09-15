@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-14T07:54:16.969Z",
+  "generatedAt": "2026-09-15T07:44:51.217Z",
   "models": [
     {
       "provider": "anthropic",
@@ -91,7 +91,7 @@
       "provider": "deepseek",
       "model": "deepseek-v4-flash",
       "status": "retired",
-      "retiredAt": "2026-09-14T07:54:16.969Z",
+      "retiredAt": "2026-09-15T07:44:51.217Z",
       "pricing": {
         "inputPerM": 0.15,
         "outputPerM": 0.6,
@@ -117,6 +117,11 @@
     {
       "provider": "google-paid",
       "model": "antigravity-preview-05-2026",
+      "status": "available"
+    },
+    {
+      "provider": "google-paid",
+      "model": "antigravity-preview-09-2026",
       "status": "available"
     },
     {
@@ -400,6 +405,11 @@
     {
       "provider": "google",
       "model": "antigravity-preview-05-2026",
+      "status": "available"
+    },
+    {
+      "provider": "google",
+      "model": "antigravity-preview-09-2026",
       "status": "available"
     },
     {
@@ -733,7 +743,8 @@
     {
       "provider": "groq",
       "model": "qwen/qwen3.6-27b",
-      "status": "available",
+      "status": "retired",
+      "retiredAt": "2026-09-15T07:44:51.217Z",
       "pricing": {
         "inputPerM": 0,
         "outputPerM": 0
@@ -1447,6 +1458,16 @@
     },
     {
       "provider": "openrouter",
+      "model": "~deepseek/deepseek-flash-latest",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "~deepseek/deepseek-pro-latest",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
       "model": "~deepseek/deepseek-v4-flash-latest",
       "status": "available"
     },
@@ -1474,7 +1495,7 @@
       "provider": "openrouter",
       "model": "~openai/gpt-latest",
       "status": "retired",
-      "retiredAt": "2026-09-14T07:54:16.969Z"
+      "retiredAt": "2026-09-15T07:44:51.217Z"
     },
     {
       "provider": "openrouter",
@@ -1904,7 +1925,8 @@
     {
       "provider": "openrouter",
       "model": "google/gemini-2.5-pro-preview-05-06",
-      "status": "available"
+      "status": "retired",
+      "retiredAt": "2026-09-15T07:44:51.217Z"
     },
     {
       "provider": "openrouter",
@@ -2589,7 +2611,8 @@
     {
       "provider": "openrouter",
       "model": "openai/gpt-4-turbo-preview",
-      "status": "available"
+      "status": "retired",
+      "retiredAt": "2026-09-15T07:44:51.217Z"
     },
     {
       "provider": "openrouter",
