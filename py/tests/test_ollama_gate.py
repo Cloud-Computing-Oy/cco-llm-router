@@ -33,7 +33,7 @@ def test_retired_groq_models_are_not_in_default_routes():
         for spec in chain
         if spec.provider == "groq"
     }
-    assert groq_models == {"qwen/qwen3.6-27b"}
+    assert groq_models == {"qwen/qwen3.8-27b"}
 
 
 def test_healthy_worker_allows_one_lease(monkeypatch):

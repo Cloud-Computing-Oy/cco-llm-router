@@ -91,5 +91,5 @@ test('Qwen family keeps the reviewed free route ahead of paid fallback', () => {
   const resolved = router.resolveModel('family:qwen', {
     perCallKeys: { groq: 'test-key', dashscope: 'test-key' },
   });
-  assert.deepEqual(resolved.specs, [{ provider: 'groq', model: 'qwen/qwen3.6-27b' }]);
+  assert.deepEqual(resolved.specs, [{ provider: 'groq', model: 'qwen/qwen3.8-27b' }]);
 });

@@ -67,7 +67,7 @@ export const PRICING: Record<string, Price> = {
   'openai:gpt-5-nano': { inputPerM: 0.05, outputPerM: 0.4 },
 
   // --- groq (free tier — billed at $0 until rate-limited) ---
-  'groq:qwen/qwen3.6-27b': Z,
+  'groq:qwen/qwen3.8-27b': Z,
 
   // --- openrouter (":free" models are zero; non-free OpenRouter is rare) ---
 
