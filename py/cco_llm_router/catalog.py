@@ -5,7 +5,7 @@ from .types import Spec
 
 MODEL_CATALOG = (
     (Spec("dashscope", "qwen3.8-max"), "qwen", "unknown"),
-    (Spec("groq", "qwen/qwen3.6-27b"), "qwen", "free"),
+    (Spec("groq", "qwen/qwen3.8-27b"), "qwen", "free"),
     (Spec("moonshot", "kimi-k3"), "kimi", "known"),
     (Spec("zai", "glm-5.3-flash"), "glm", "known"),
     (Spec("zai", "glm-5.3"), "glm", "known"),

@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.22.1] - 2026-09-19
+
+### Fixed
+
+- Groq retired `qwen/qwen3.6-27b`; the free Groq hop in `auto:fast`,
+  `auto:code`, `auto:cheap` and `family:qwen` now points at the available
+  `qwen/qwen3.8-27b`. Chain order, provider and every other model id are
+  unchanged, and the catalog, pricing tables and tests move with it. The
+  Python sibling moves in lockstep to **0.9.1**; this file tracks both lines
+  (there is no separate Python changelog).
+
 ## [0.22.0] - 2026-09-11
 
 ### Changed

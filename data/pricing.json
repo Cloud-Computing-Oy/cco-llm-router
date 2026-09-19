@@ -82,7 +82,7 @@
     },
     {
       "provider": "groq",
-      "model": "qwen/qwen3.6-27b",
+      "model": "qwen/qwen3.8-27b",
       "pricing": {
         "inputPerM": 0,
         "outputPerM": 0

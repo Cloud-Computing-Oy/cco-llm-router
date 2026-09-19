@@ -41,7 +41,7 @@ from .usage import record_usage
 # can't carry.
 #
 # Cost reference (input / output per M tokens, May 2026):
-#   groq:qwen3.6-27b                 free (rate-limited)
+#   groq:qwen3.8-27b                 free (rate-limited)
 #   google:gemini-2.5-flash          free tier — 1500 RPD per GCP project
 #   deepinfra:llama-3.1-8b           $0.04  / $0.04
 #   deepseek:deepseek-flash         $0.15  / $0.60   (V4.1 Flash, canonical id; peak 2x)
@@ -75,7 +75,7 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
         Spec("moonshot", "kimi-k3"),
     ],
     "auto:fast": [
-        Spec("groq", "qwen/qwen3.6-27b"),
+        Spec("groq", "qwen/qwen3.8-27b"),
         Spec("google", "gemini-2.5-flash"),
         Spec("deepinfra", "meta-llama/Meta-Llama-3.1-8B-Instruct"),
         Spec("google-paid", "gemini-2.5-flash"),
@@ -93,7 +93,7 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
     "auto:code": [
         Spec("deepseek", "deepseek-flash"),  # V4.1 Flash; canonical id (v4-flash retires upstream)
         Spec("google", "gemini-2.5-flash"),
-        Spec("groq", "qwen/qwen3.6-27b"),
+        Spec("groq", "qwen/qwen3.8-27b"),
         Spec("google-paid", "gemini-2.5-flash"),
         Spec("zai", "glm-5.3-flash"),
         Spec("deepinfra", "meta-llama/Meta-Llama-3.3-70B-Instruct"),
@@ -150,7 +150,7 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
         Spec("google-paid", "gemini-2.5-flash"),
     ],
     "auto:cheap": [
-        Spec("groq", "qwen/qwen3.6-27b"),
+        Spec("groq", "qwen/qwen3.8-27b"),
         Spec("google", "gemini-2.5-flash"),
         Spec("deepinfra", "meta-llama/Meta-Llama-3.1-8B-Instruct"),
         Spec("deepinfra", "meta-llama/Meta-Llama-3.3-70B-Instruct"),
@@ -168,7 +168,7 @@ DEFAULT_ALIASES: dict[str, list[Spec]] = {
         Spec("zai", "glm-5.3-flash"),
     ],
     "family:qwen": [
-        Spec("groq", "qwen/qwen3.6-27b"),
+        Spec("groq", "qwen/qwen3.8-27b"),
         Spec("dashscope", "qwen3.8-max"),
     ],
     "family:kimi": [Spec("moonshot", "kimi-k3")],
