@@ -31,7 +31,7 @@ test('does not route to Groq models retired from free and developer tiers', () =
     .filter((spec) => spec.provider === 'groq')
     .map((spec) => spec.model);
   assert.ok(groqModels.length > 0);
-  assert.deepEqual(new Set(groqModels), new Set(['qwen/qwen3.6-27b']));
+  assert.deepEqual(new Set(groqModels), new Set(['qwen/qwen3.8-27b']));
 });
 
 test.afterEach(() => {

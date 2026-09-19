@@ -7,7 +7,7 @@ import type { Spec } from './types';
  *
  * Cost reference (input / output per M tokens, May 2026):
  *   ollama:*                         free (compute on dev / local box)
- *   groq:qwen3.6-27b                 free (rate-limited)
+ *   groq:qwen3.8-27b                 free (rate-limited)
  *   openrouter:*:free                free (small daily cap per account)
  *   google:gemini-2.5-flash          free tier — 1500 RPD per GCP project
  *   deepinfra:llama-3.1-8b           $0.04 / $0.04   (ultra-cheap tier)
@@ -71,7 +71,7 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
   ],
   // Classification, language detection, short tasks.
   'auto:fast': [
-    { provider: 'groq', model: 'qwen/qwen3.6-27b' },
+    { provider: 'groq', model: 'qwen/qwen3.8-27b' },
     { provider: 'google', model: 'gemini-2.5-flash' },
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.1-8B-Instruct' },
     { provider: 'google-paid', model: 'gemini-2.5-flash' },
@@ -90,7 +90,7 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
   'auto:code': [
     { provider: 'deepseek', model: 'deepseek-flash' }, // V4.1 Flash; canonical id (v4-flash retires upstream)
     { provider: 'google', model: 'gemini-2.5-flash' },
-    { provider: 'groq', model: 'qwen/qwen3.6-27b' },
+    { provider: 'groq', model: 'qwen/qwen3.8-27b' },
     { provider: 'google-paid', model: 'gemini-2.5-flash' },
     { provider: 'zai', model: 'glm-5.3-flash' },
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.3-70B-Instruct' },
@@ -157,7 +157,7 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
   // Cost-first: free + ultra-cheap providers; expensive tiers excluded.
   // Excludes ollama (unreliable on CPU hosts) and openrouter:free (prose).
   'auto:cheap': [
-    { provider: 'groq', model: 'qwen/qwen3.6-27b' },
+    { provider: 'groq', model: 'qwen/qwen3.8-27b' },
     { provider: 'google', model: 'gemini-2.5-flash' },
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.1-8B-Instruct' },
     { provider: 'deepinfra', model: 'meta-llama/Meta-Llama-3.3-70B-Instruct' },
@@ -175,7 +175,7 @@ export const DEFAULT_ALIASES: Record<string, Spec[]> = {
     { provider: 'zai', model: 'glm-5.3-flash' },
   ],
   'family:qwen': [
-    { provider: 'groq', model: 'qwen/qwen3.6-27b' },
+    { provider: 'groq', model: 'qwen/qwen3.8-27b' },
     { provider: 'dashscope', model: 'qwen3.8-max' },
   ],
   'family:kimi': [{ provider: 'moonshot', model: 'kimi-k3' }],
