@@ -46,9 +46,17 @@ export function loadBundledDataset(): ModelDataDataset {
   return parsed.data;
 }
 
-let live: ModelDataDataset = loadBundledDataset();
+// Lazy: bundlers (Next.js transpilePackages) inline __dirname to a
+// build-time placeholder, so reading the file at module evaluation threw
+// ENOENT during page-data collection in consumer builds.
+let live: ModelDataDataset | null = null;
 
 export function getLiveDataset(): ModelDataDataset {
+  return ensureLive();
+}
+
+function ensureLive(): ModelDataDataset {
+  if (!live) live = initialDataset();
   return live;
 }
 
@@ -70,13 +78,32 @@ export function getModelDataStatus(): ModelDataStatus {
   return { ...status };
 }
 
+function emptyDataset(): ModelDataDataset {
+  return { schemaVersion: SUPPORTED_SCHEMA_VERSION, generatedAt: new Date(0).toISOString(), models: [] };
+}
+
+/**
+ * Initial dataset for the live snapshot. Returns the loaded dataset, or an
+ * empty one when loading fails (unreadable/invalid bundle file) — an empty
+ * dataset reproduces pre-dataset behavior: see router.hasReviewedPricing
+ * (MODEL_CATALOG fallback) and pricing.priceOf (static PRICING fallback).
+ */
+export function initialDataset(load: () => ModelDataDataset = loadBundledDataset): ModelDataDataset {
+  try {
+    return load();
+  } catch (err) {
+    status.lastError = (err as Error).message;
+    return emptyDataset();
+  }
+}
+
 function isRetiredIn(dataset: ModelDataDataset, provider: string, model: string): boolean {
   return dataset.models.some((m) => m.provider === provider && m.model === model && m.status === "retired");
 }
 
 function wouldBrickDefaultChains(next: ModelDataDataset): boolean {
   for (const chain of Object.values(DEFAULT_ALIASES)) {
-    const availableNow = chain.filter((s) => !isRetiredIn(live, s.provider, s.model));
+    const availableNow = chain.filter((s) => !isRetiredIn(ensureLive(), s.provider, s.model));
     if (availableNow.length === 0) continue;
     const availableNext = chain.filter((s) => !isRetiredIn(next, s.provider, s.model));
     if (availableNext.length === 0) return true;
@@ -126,7 +153,7 @@ export async function refreshNow(opts: { url?: string; fetchImpl?: typeof fetch 
     // Recompute age from the live dataset even when the refresh failed —
     // otherwise a stale dataset with failing refreshes never triggers the
     // age warning (the CI/network-down scenario the warning exists for).
-    const ageMs = Date.now() - Date.parse(live.generatedAt);
+    const ageMs = Date.now() - Date.parse(ensureLive().generatedAt);
     status.datasetAgeHours = Number.isFinite(ageMs) ? Math.max(0, ageMs / 3_600_000) : null;
     if ((status.datasetAgeHours ?? 0) > 7 * 24) {
       console.warn(`[cco-llm-router] model data is ${Math.round(status.datasetAgeHours! / 24)} days old and refreshes are failing — CI may be down`);

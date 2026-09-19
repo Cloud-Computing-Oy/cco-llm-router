@@ -1,7 +1,7 @@
 import "./test-ollama-env";
 import assert from "node:assert/strict";
 import test from "node:test";
-import { ModelDataSchema, SUPPORTED_SCHEMA_VERSION, loadBundledDataset, getLiveDataset, applyDataset, refreshNow, startModelDataRefresh, stopModelDataRefresh, getModelDataStatus, clampRefreshHours } from "./model-data";
+import { ModelDataSchema, SUPPORTED_SCHEMA_VERSION, loadBundledDataset, initialDataset, getLiveDataset, applyDataset, refreshNow, startModelDataRefresh, stopModelDataRefresh, getModelDataStatus, clampRefreshHours } from "./model-data";
 import { createRouter, DEFAULT_ALIASES, type PerCallKeys } from "./router";
 
 test("bundled dataset loads from the package data dir and validates", () => {
@@ -231,6 +231,37 @@ test("applyDataset rejects malformed datasets from untyped callers", () => {
   const bad = { schemaVersion: 1, generatedAt: "x" }; // models missing
   const r = applyDataset(bad as never);
   assert.equal(r.ok, false);
+});
+
+test("initialDataset falls back to an empty dataset when loading throws", () => {
+  const fallback = initialDataset(() => {
+    throw new Error("ENOENT");
+  });
+  assert.deepEqual(fallback, {
+    schemaVersion: SUPPORTED_SCHEMA_VERSION,
+    generatedAt: new Date(0).toISOString(),
+    models: [],
+  });
+  // The fallback must be a schema-valid dataset: consumers (applyDataset,
+  // getLiveDataset) treat it as one, so an unreadable bundle degrades to
+  // pre-dataset behavior instead of throwing on import.
+  assert.equal(ModelDataSchema.safeParse(fallback).success, true);
+});
+
+test("initialDataset returns the real bundled dataset by default", () => {
+  const loaded = initialDataset();
+  assert.equal(loaded.schemaVersion, SUPPORTED_SCHEMA_VERSION);
+  assert.ok(loaded.models.length > 0);
+  assert.deepEqual(loaded, loadBundledDataset());
+});
+
+test("getLiveDataset stays lazy but still returns the cached reference, and applyDataset swaps it", () => {
+  const first = getLiveDataset();
+  assert.equal(getLiveDataset(), first); // cached: no reload per call
+  assert.deepEqual(applyDataset(goodDataset), { ok: true });
+  const swapped = getLiveDataset();
+  assert.notEqual(swapped, first);
+  assert.equal(swapped.models.length, goodDataset.models.length);
 });
 
 test("refreshNow failure recomputes dataset age from the live dataset", async () => {
