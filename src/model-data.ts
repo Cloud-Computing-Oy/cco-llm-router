@@ -92,7 +92,13 @@ export function initialDataset(load: () => ModelDataDataset = loadBundledDataset
   try {
     return load();
   } catch (err) {
+    // Warn rather than fail: a bundler can inline a build-time placeholder for
+    // __dirname, and taking the whole consumer build down over it is worse than
+    // starting without the dataset. The result is cached — this is not retried
+    // on later calls — so a successful refresh (applyDataset) is what restores
+    // full dataset behaviour at runtime.
     status.lastError = (err as Error).message;
+    console.warn(`[cco-llm-router] bundled model-data.json unreadable (${status.lastError}) — starting with an empty dataset; a refresh will replace it`);
     return emptyDataset();
   }
 }

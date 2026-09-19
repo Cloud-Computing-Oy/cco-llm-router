@@ -234,9 +234,13 @@ test("applyDataset rejects malformed datasets from untyped callers", () => {
 });
 
 test("initialDataset falls back to an empty dataset when loading throws", () => {
+  const origWarn = console.warn;
+  const warnings: string[] = [];
+  console.warn = (...args: unknown[]) => void warnings.push(args.join(" "));
   const fallback = initialDataset(() => {
     throw new Error("ENOENT");
   });
+  console.warn = origWarn;
   assert.deepEqual(fallback, {
     schemaVersion: SUPPORTED_SCHEMA_VERSION,
     generatedAt: new Date(0).toISOString(),
@@ -246,6 +250,9 @@ test("initialDataset falls back to an empty dataset when loading throws", () => 
   // getLiveDataset) treat it as one, so an unreadable bundle degrades to
   // pre-dataset behavior instead of throwing on import.
   assert.equal(ModelDataSchema.safeParse(fallback).success, true);
+  // The degrade must be visible in logs, not silent.
+  assert.equal(warnings.length, 1);
+  assert.match(warnings[0], /bundled model-data\.json unreadable/);
 });
 
 test("initialDataset returns the real bundled dataset by default", () => {
