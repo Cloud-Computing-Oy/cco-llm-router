@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.22.2] - 2026-09-20
+
+### Fixed
+
+- The bundled dataset is no longer read at module evaluation. Bundlers inline
+  `__dirname` to a build-time placeholder, so importing the package inside a
+  `transpilePackages` consumer threw ENOENT during Next.js page-data
+  collection and broke `next build` — five consumer repos have had red builds
+  since 0.21.0 for this reason. `getLiveDataset()` now loads on first use, and
+  an unreadable bundle degrades to an empty dataset (recorded in
+  `status.lastError`) instead of throwing. That is the pre-dataset behaviour,
+  not a dropped-hops regression: `hasReviewedPricing` falls back to
+  `MODEL_CATALOG` and `priceOf` to the static `PRICING` table, and the refresh
+  poller swaps in the published dataset at runtime.
+- The Python sibling is unaffected — it carries its catalog and pricing as
+  inline constants rather than a bundled dataset — and stays at **0.9.1**;
+  this entry intentionally breaks the usual lockstep note.
+
 ## [0.22.1] - 2026-09-19
 
 ### Fixed
