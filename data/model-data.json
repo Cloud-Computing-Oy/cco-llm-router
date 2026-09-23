@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-22T07:42:55.326Z",
+  "generatedAt": "2026-09-23T07:45:50.557Z",
   "models": [
     {
       "provider": "anthropic",
@@ -91,7 +91,7 @@
       "provider": "deepseek",
       "model": "deepseek-v4-flash",
       "status": "retired",
-      "retiredAt": "2026-09-22T07:42:55.326Z",
+      "retiredAt": "2026-09-23T07:45:50.557Z",
       "pricing": {
         "inputPerM": 0.15,
         "outputPerM": 0.6,
@@ -739,13 +739,13 @@
       "provider": "groq",
       "model": "groq/compound",
       "status": "retired",
-      "retiredAt": "2026-09-22T07:42:55.326Z"
+      "retiredAt": "2026-09-23T07:45:50.557Z"
     },
     {
       "provider": "groq",
       "model": "groq/compound-mini",
       "status": "retired",
-      "retiredAt": "2026-09-22T07:42:55.326Z"
+      "retiredAt": "2026-09-23T07:45:50.557Z"
     },
     {
       "provider": "groq",
@@ -776,7 +776,7 @@
       "provider": "groq",
       "model": "qwen/qwen3.6-27b",
       "status": "retired",
-      "retiredAt": "2026-09-22T07:42:55.326Z",
+      "retiredAt": "2026-09-23T07:45:50.557Z",
       "pricing": {
         "inputPerM": 0,
         "outputPerM": 0
@@ -1224,6 +1224,16 @@
     },
     {
       "provider": "openai",
+      "model": "gpt-6-luna",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-6-sol",
+      "status": "available"
+    },
+    {
+      "provider": "openai",
       "model": "gpt-audio",
       "status": "available"
     },
@@ -1531,7 +1541,7 @@
       "provider": "openrouter",
       "model": "~openai/gpt-latest",
       "status": "retired",
-      "retiredAt": "2026-09-22T07:42:55.326Z"
+      "retiredAt": "2026-09-23T07:45:50.557Z"
     },
     {
       "provider": "openrouter",
@@ -1657,7 +1667,7 @@
       "provider": "openrouter",
       "model": "anthropic/claude-opus-4",
       "status": "retired",
-      "retiredAt": "2026-09-22T07:42:55.326Z"
+      "retiredAt": "2026-09-23T07:45:50.557Z"
     },
     {
       "provider": "openrouter",
@@ -1717,6 +1727,16 @@
     {
       "provider": "openrouter",
       "model": "anthropic/claude-opus-5:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "anthropic/claude-opus-5.5",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "anthropic/claude-opus-5.5:batch",
       "status": "available"
     },
     {
@@ -1811,6 +1831,11 @@
     },
     {
       "provider": "openrouter",
+      "model": "cohere/command-a-plus",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
       "model": "cohere/command-r-08-2024",
       "status": "available"
     },
@@ -1887,13 +1912,14 @@
     {
       "provider": "openrouter",
       "model": "deepseek/deepseek-v4-flash-0731:batch",
-      "status": "available"
+      "status": "retired",
+      "retiredAt": "2026-09-23T07:45:50.557Z"
     },
     {
       "provider": "openrouter",
       "model": "deepseek/deepseek-v4-flash-0731:free",
       "status": "retired",
-      "retiredAt": "2026-09-22T07:42:55.326Z"
+      "retiredAt": "2026-09-23T07:45:50.557Z"
     },
     {
       "provider": "openrouter",
@@ -1903,7 +1929,8 @@
     {
       "provider": "openrouter",
       "model": "deepseek/deepseek-v4-flash-vision-exp:batch",
-      "status": "available"
+      "status": "retired",
+      "retiredAt": "2026-09-23T07:45:50.557Z"
     },
     {
       "provider": "openrouter",
@@ -1918,11 +1945,17 @@
     {
       "provider": "openrouter",
       "model": "deepseek/deepseek-v4-pro-0813:batch",
-      "status": "available"
+      "status": "retired",
+      "retiredAt": "2026-09-23T07:45:50.557Z"
     },
     {
       "provider": "openrouter",
       "model": "deepseek/deepseek-v4.1-flash",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "deepseek/deepseek-v4.1-flash:batch",
       "status": "available"
     },
     {
@@ -1969,7 +2002,7 @@
       "provider": "openrouter",
       "model": "google/gemini-2.5-pro-preview-05-06",
       "status": "retired",
-      "retiredAt": "2026-09-22T07:42:55.326Z"
+      "retiredAt": "2026-09-23T07:45:50.557Z"
     },
     {
       "provider": "openrouter",
@@ -2130,7 +2163,7 @@
       "provider": "openrouter",
       "model": "google/gemma-4-31b-it:batch",
       "status": "retired",
-      "retiredAt": "2026-09-22T07:42:55.326Z"
+      "retiredAt": "2026-09-23T07:45:50.557Z"
     },
     {
       "provider": "openrouter",
@@ -2216,7 +2249,7 @@
       "provider": "openrouter",
       "model": "kwaipilot/kat-coder-pro-v2",
       "status": "retired",
-      "retiredAt": "2026-09-22T07:42:55.326Z"
+      "retiredAt": "2026-09-23T07:45:50.557Z"
     },
     {
       "provider": "openrouter",
@@ -2286,7 +2319,8 @@
     {
       "provider": "openrouter",
       "model": "meta/muse-glimmer-30b:batch",
-      "status": "available"
+      "status": "retired",
+      "retiredAt": "2026-09-23T07:45:50.557Z"
     },
     {
       "provider": "openrouter",
@@ -2367,7 +2401,7 @@
       "provider": "openrouter",
       "model": "minimax/minimax-m3:batch",
       "status": "retired",
-      "retiredAt": "2026-09-22T07:42:55.326Z"
+      "retiredAt": "2026-09-23T07:45:50.557Z"
     },
     {
       "provider": "openrouter",
@@ -2418,7 +2452,7 @@
       "provider": "openrouter",
       "model": "mistralai/mistral-large-2512",
       "status": "retired",
-      "retiredAt": "2026-09-22T07:42:55.326Z"
+      "retiredAt": "2026-09-23T07:45:50.557Z"
     },
     {
       "provider": "openrouter",
@@ -2670,7 +2704,7 @@
       "provider": "openrouter",
       "model": "openai/gpt-4-turbo-preview",
       "status": "retired",
-      "retiredAt": "2026-09-22T07:42:55.326Z"
+      "retiredAt": "2026-09-23T07:45:50.557Z"
     },
     {
       "provider": "openrouter",
@@ -3004,6 +3038,46 @@
     },
     {
       "provider": "openrouter",
+      "model": "openai/gpt-6-luna",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-6-luna-pro",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-6-luna-pro:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-6-luna:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-6-sol",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-6-sol-pro",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-6-sol-pro:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-6-sol:batch",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
       "model": "openai/gpt-audio",
       "status": "available"
     },
@@ -3026,7 +3100,7 @@
       "provider": "openrouter",
       "model": "openai/gpt-oss-120b:batch",
       "status": "retired",
-      "retiredAt": "2026-09-22T07:42:55.326Z"
+      "retiredAt": "2026-09-23T07:45:50.557Z"
     },
     {
       "provider": "openrouter",
@@ -3368,7 +3442,7 @@
       "provider": "openrouter",
       "model": "qwen/qwen3.5-9b:batch",
       "status": "retired",
-      "retiredAt": "2026-09-22T07:42:55.326Z"
+      "retiredAt": "2026-09-23T07:45:50.557Z"
     },
     {
       "provider": "openrouter",
@@ -3434,7 +3508,7 @@
       "provider": "openrouter",
       "model": "qwen/qwen3.8-2.4t-a95b:batch",
       "status": "retired",
-      "retiredAt": "2026-09-22T07:42:55.326Z"
+      "retiredAt": "2026-09-23T07:45:50.557Z"
     },
     {
       "provider": "openrouter",
@@ -3454,6 +3528,11 @@
     {
       "provider": "openrouter",
       "model": "qwen/qwen3.8-max-0902",
+      "status": "available"
+    },
+    {
+      "provider": "openrouter",
+      "model": "qwen/qwen3.8-omni-flash",
       "status": "available"
     },
     {
@@ -3515,7 +3594,7 @@
       "provider": "openrouter",
       "model": "stealth/union-alpha",
       "status": "retired",
-      "retiredAt": "2026-09-22T07:42:55.326Z"
+      "retiredAt": "2026-09-23T07:45:50.557Z"
     },
     {
       "provider": "openrouter",
@@ -3591,7 +3670,7 @@
       "provider": "openrouter",
       "model": "thinkingmachines/inkling-small:batch",
       "status": "retired",
-      "retiredAt": "2026-09-22T07:42:55.326Z"
+      "retiredAt": "2026-09-23T07:45:50.557Z"
     },
     {
       "provider": "openrouter",
@@ -3602,7 +3681,7 @@
       "provider": "openrouter",
       "model": "thinkingmachines/inkling:batch",
       "status": "retired",
-      "retiredAt": "2026-09-22T07:42:55.326Z"
+      "retiredAt": "2026-09-23T07:45:50.557Z"
     },
     {
       "provider": "openrouter",
@@ -3757,7 +3836,8 @@
     {
       "provider": "openrouter",
       "model": "z-ai/glm-5.2:batch",
-      "status": "available"
+      "status": "retired",
+      "retiredAt": "2026-09-23T07:45:50.557Z"
     },
     {
       "provider": "openrouter",
