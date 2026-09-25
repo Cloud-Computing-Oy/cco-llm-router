@@ -14,6 +14,7 @@ const DEFAULT_URL = 'https://api.typesafe.ai/v1/systemone';
 const DEFAULT_MODEL = 'jev-latest';
 const MAX_STATE_CHARS = 8_000;
 const MAX_CACHE_ENTRIES = 200;
+// Minimum probability for an accepted route and the risk-probability cutoff; both deliberately conservative so the second opinion can only add capability.
 const CHOICE_MIN_PROBABILITY = 0.6;
 const HIGH_RISK_THRESHOLD = 0.5;
 
@@ -22,7 +23,6 @@ const ALLOWED_ALIASES = [
   'auto:code',
   'auto:smart',
   'auto:reasoning',
-  'auto:big',
 ] as const;
 
 // Mirrors the small clamp helper in src/ollama-gate.ts, but reads from the
@@ -45,7 +45,6 @@ const QUESTIONS = {
       'auto:code': 'writing, changing, debugging or explaining code',
       'auto:smart': 'general writing or answering that needs a capable general model',
       'auto:reasoning': 'multi-step analysis, planning, evaluation or a high-stakes judgement',
-      'auto:big': 'very long input that needs a large context window',
     },
   },
   high_risk: {
@@ -62,8 +61,10 @@ type JevResponse = {
   };
 };
 
-// Keyed by the exact truncated state text; holds completed results, including
-// null, so a failed classification is not retried for the same request.
+// Keyed by the exact truncated state text; holds only successful, accepted
+// classifications. Failures and low-confidence answers are deliberately not
+// cached, so one transient error cannot permanently disable the feature for a
+// state. Eviction is FIFO by insertion order, not LRU.
 const cache = new Map<string, JevClassifyResult>();
 
 export function jevRoutingEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
@@ -139,12 +140,19 @@ export async function classifyWithJev(
   opts?: { fetchImpl?: typeof fetch; env?: NodeJS.ProcessEnv },
 ): Promise<JevClassifyResult> {
   const env = opts?.env ?? process.env;
-  const state = stateText(input);
 
+  // This exported entry point bypasses the deterministic classifier's data
+  // isolation, so it enforces the same public/synthetic-only rule itself
+  // (undefined is treated as internal). The refusal returns before the cache
+  // lookup and before any request, because the cache is keyed by state text
+  // alone: a refusal must never shadow a later allowed call.
+  if (input.dataClass !== 'public' && input.dataClass !== 'synthetic') return null;
+
+  const state = stateText(input);
   if (cache.has(state)) return cache.get(state) ?? null;
 
   const result = await requestJev(state, env, opts?.fetchImpl ?? fetch);
-  remember(state, result);
+  if (result) remember(state, result);
   return result;
 }
 

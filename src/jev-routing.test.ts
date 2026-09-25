@@ -3,7 +3,7 @@ import { createServer } from 'node:http';
 import test from 'node:test';
 import { selectAutomaticAliasAsync, type AutomaticRoutingInput } from './automatic-routing';
 import { resolveAutomaticAlias } from './helpers';
-import { __clearJevCache } from './jev-routing';
+import { __clearJevCache, classifyWithJev } from './jev-routing';
 
 const ENV_KEYS = [
   'CCO_ROUTER_JEV',
@@ -196,8 +196,11 @@ test('a server that never responds within the timeout falls back to the laptop',
     () => 'hang',
     { ...ENABLED, CCO_LLM_JEV_TIMEOUT_MS: '100' },
     async (stub) => {
+      const started = Date.now();
       assert.equal(await selectAutomaticAliasAsync(LAPTOP), 'auto:facf-laptop');
       assert.equal(stub.requests(), 1);
+      // Proves the abort actually fired rather than some other error path.
+      assert.ok(Date.now() - started >= 80, 'the call should have aborted at the timeout');
     },
   );
 });
@@ -227,5 +230,28 @@ test('chat alias resolution consults Jev when enabled', async () => {
       'auto:facf-laptop',
     );
     assert.equal(stub.requests(), 1);
+  });
+});
+
+test('classifyWithJev refuses internal, confidential and restricted data without a request', async () => {
+  await withStub(() => ({ status: 200, body: jevBody('auto:code', 0.91) }), ENABLED, async (stub) => {
+    const dataClasses = ['internal', 'confidential', 'restricted'] as const;
+    for (const dataClass of dataClasses) {
+      assert.equal(await classifyWithJev({ prompt: 'Summarise this short note.', dataClass }), null);
+    }
+    assert.equal(stub.requests(), 0);
+  });
+});
+
+test('selectAutomaticAliasAsync keeps confidential and restricted work off Jev', async () => {
+  await withStub(() => ({ status: 200, body: jevBody('auto:code', 0.91) }), ENABLED, async (stub) => {
+    const dataClasses = ['confidential', 'restricted'] as const;
+    for (const dataClass of dataClasses) {
+      assert.equal(
+        await selectAutomaticAliasAsync({ prompt: 'Summarise this short note.', dataClass }),
+        'auto:smart',
+      );
+    }
+    assert.equal(stub.requests(), 0);
   });
 });

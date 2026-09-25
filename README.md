@@ -94,13 +94,17 @@ The optional Jev second opinion is off by default and only runs when
 enabled it is consulted only for the otherwise ambiguous fallback case where
 the deterministic classifier would send public or synthetic work to
 `auto:facf-laptop`; internal, confidential and restricted prompts are never
-sent to Jev. It is a single POST to TypeSafe's System One endpoint that
-returns a choice plus a confidence and a true/false risk probability; the
-router accepts the model's route only when that option's probability is at
-least 0.6, and any risk probability of 0.5 or more forces `auto:reasoning`.
-Any timeout, HTTP error, malformed answer or low-confidence answer keeps the
-deterministic result, so the feature can only add capability and never remove
-it.
+sent to Jev. The same public/synthetic-only rule covers both entry points —
+the automatic routing path and the exported `classifyWithJev()` — so a direct
+call with an internal, confidential or restricted prompt returns `null`
+without any network request. It is a single POST to TypeSafe's System One
+endpoint that returns a choice plus a confidence and a true/false risk
+probability; the router accepts the model's route only when that option's
+probability is at least 0.6, and any risk probability of 0.5 or more forces
+`auto:reasoning`. Only a successful, accepted decision is cached; any timeout,
+HTTP error, malformed answer or low-confidence answer keeps the deterministic
+result and is not cached, so the feature can only add capability and never
+remove it.
 
 Available default aliases prioritize currently supported, reliable models.
 DeepSeek V4 Flash leads general, coding, reasoning, and large-context cloud
@@ -339,7 +343,10 @@ before applying.
 ## Optional Jev routing second opinion
 
 An optional second opinion from TypeSafe's Jev model refines only the
-ambiguous public/synthetic laptop fallback.
+ambiguous public/synthetic laptop fallback. The public/synthetic-only rule
+covers both entry points — the automatic path and the exported
+`classifyWithJev()` — so an internal, confidential or restricted prompt
+returns `null` with no network request.
 
 | Env var | Default | Meaning |
 |---------|---------|---------|
@@ -349,8 +356,9 @@ ambiguous public/synthetic laptop fallback.
 | `TYPESAFE_MODEL` | `jev-latest` | Model alias sent in the request |
 | `CCO_LLM_JEV_TIMEOUT_MS` | `1500` | Request timeout in milliseconds (minimum 100) |
 
-The decision is cached in-process per state string (200 entries), and
-enabling this adds one extra network hop to the otherwise-ambiguous
+Only a successful, accepted decision is cached in-process per state string
+(200 entries, FIFO eviction); failed or low-confidence answers are not cached,
+and enabling this adds one extra network hop to the otherwise-ambiguous
 public/synthetic short-work case only.
 
 ## Budget enforcement
