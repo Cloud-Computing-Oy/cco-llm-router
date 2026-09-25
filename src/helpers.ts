@@ -12,7 +12,7 @@ import { generateText as aiGenerateText, generateObject as aiGenerateObject } fr
 import type { z } from 'zod';
 import { resolveModel, type PerCallKeys } from './router';
 import {
-  selectAutomaticAlias,
+  selectAutomaticAliasAsync,
   type TaskKind,
   type TaskRisk,
 } from './automatic-routing';
@@ -60,8 +60,14 @@ function applyPromptCap(req: ChatRequest, selectedAlias: string): string {
   );
 }
 
-function automaticAlias(req: ChatRequest): string {
-  return selectAutomaticAlias({
+/**
+ * Resolve the automatic alias for a chat request. Delegates to the async
+ * classifier so the optional Jev second opinion can apply. With
+ * CCO_ROUTER_JEV unset this is the previous synchronous behaviour with no
+ * network call.
+ */
+export async function resolveAutomaticAlias(req: ChatRequest): Promise<string> {
+  return selectAutomaticAliasAsync({
     system: req.system,
     prompt: req.prompt,
     dataClass: req.dataClass,
@@ -71,7 +77,7 @@ function automaticAlias(req: ChatRequest): string {
 }
 
 export async function chat(req: ChatRequest): Promise<string> {
-  const selectedAlias = req.alias ?? automaticAlias(req);
+  const selectedAlias = req.alias ?? (await resolveAutomaticAlias(req));
   const { model } = resolveModel(selectedAlias, {
     perCallKeys: req.perCallKeys,
     dataClass: req.dataClass,

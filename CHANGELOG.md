@@ -1,5 +1,23 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- `selectAutomaticAliasAsync()` and the `resolveAutomaticAlias()` seam used
+  by `chat()` add an async routing path while keeping the existing
+  synchronous classifier as the deterministic default.
+- The optional, default-off Jev second opinion gated by `CCO_ROUTER_JEV` plus
+  `TYPESAFE_API_KEY` is consulted only for the `auto:facf-laptop` ambiguity
+  case, with a 0.6 choice-probability floor, a risk override to
+  `auto:reasoning`, in-process caching, and fail-open behaviour on every
+  error path. Both the automatic path and the exported `classifyWithJev()`
+  enforce the public/synthetic-only gate, so internal, confidential and
+  restricted prompts never reach Jev, and only successful, accepted decisions
+  are cached — failures and low-confidence answers are not.
+- `selectAutomaticAlias()` itself and all default alias chains are unchanged,
+  so existing callers and behaviour are unaffected.
+
 ## [0.22.2] - 2026-09-20
 
 ### Fixed

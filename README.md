@@ -89,6 +89,23 @@ on the corresponding stronger route. Callers may supply `taskKind` and
 `taskRisk` metadata or explicitly set `alias` to override the classifier.
 `chatJsonStrict()` remains on `auto:smart` by default for schema reliability.
 
+The optional Jev second opinion is off by default and only runs when
+`CCO_ROUTER_JEV` is `1`, `true` or `yes` and `TYPESAFE_API_KEY` is set. When
+enabled it is consulted only for the otherwise ambiguous fallback case where
+the deterministic classifier would send public or synthetic work to
+`auto:facf-laptop`; internal, confidential and restricted prompts are never
+sent to Jev. The same public/synthetic-only rule covers both entry points —
+the automatic routing path and the exported `classifyWithJev()` — so a direct
+call with an internal, confidential or restricted prompt returns `null`
+without any network request. It is a single POST to TypeSafe's System One
+endpoint that returns a choice plus a confidence and a true/false risk
+probability; the router accepts the model's route only when that option's
+probability is at least 0.6, and any risk probability of 0.5 or more forces
+`auto:reasoning`. Only a successful, accepted decision is cached; any timeout,
+HTTP error, malformed answer or low-confidence answer keeps the deterministic
+result and is not cached, so the feature can only add capability and never
+remove it.
+
 Available default aliases prioritize currently supported, reliable models.
 DeepSeek V4 Flash leads general, coding, reasoning, and large-context cloud
 routes for reliability. Everything after it in those four chains is ordered
@@ -322,6 +339,27 @@ and let CI regenerate the dataset.
 `applyDataset` validates shape but not semantics: the bricking guard covers
 default chains only — custom-chain consumers should inspect their datasets
 before applying.
+
+## Optional Jev routing second opinion
+
+An optional second opinion from TypeSafe's Jev model refines only the
+ambiguous public/synthetic laptop fallback. The public/synthetic-only rule
+covers both entry points — the automatic path and the exported
+`classifyWithJev()` — so an internal, confidential or restricted prompt
+returns `null` with no network request.
+
+| Env var | Default | Meaning |
+|---------|---------|---------|
+| `CCO_ROUTER_JEV` | unset (off) | Set to `1`, `true` or `yes` to enable the second opinion |
+| `TYPESAFE_API_KEY` | unset | TypeSafe API key; required for the feature to run |
+| `TYPESAFE_API_URL` | `https://api.typesafe.ai/v1/systemone` | Endpoint override, useful for tests |
+| `TYPESAFE_MODEL` | `jev-latest` | Model alias sent in the request |
+| `CCO_LLM_JEV_TIMEOUT_MS` | `1500` | Request timeout in milliseconds (minimum 100) |
+
+Only a successful, accepted decision is cached in-process per state string
+(200 entries, FIFO eviction); failed or low-confidence answers are not cached,
+and enabling this adds one extra network hop to the otherwise-ambiguous
+public/synthetic short-work case only.
 
 ## Budget enforcement
 
