@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.23.0] - 2026-09-25
 
 ### Added
 
@@ -17,6 +17,12 @@
   are cached — failures and low-confidence answers are not.
 - `selectAutomaticAlias()` itself and all default alias chains are unchanged,
   so existing callers and behaviour are unaffected.
+
+### Fixed
+
+- The Python sibling's `__version__` tracks `py/pyproject.toml` again, with a
+  test that keeps the two in step. No TypeScript code is affected. The Python
+  line is released separately and stays at **0.9.1** until its own tag.
 
 ## [0.22.2] - 2026-09-20
 
