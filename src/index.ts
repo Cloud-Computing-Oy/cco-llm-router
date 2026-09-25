@@ -12,15 +12,22 @@ export {
 } from './router';
 export {
   selectAutomaticAlias,
+  selectAutomaticAliasAsync,
   type AutomaticRoutingInput,
   type TaskKind,
   type TaskRisk,
 } from './automatic-routing';
 export {
+  classifyWithJev,
+  jevRoutingEnabled,
+  type JevClassifyResult,
+} from './jev-routing';
+export {
   chat,
   chatJson,
   chatJsonStrict,
   extractJson,
+  resolveAutomaticAlias,
   DEFAULT_CALL_TIMEOUT_MS,
   type ChatRequest,
 } from './helpers';

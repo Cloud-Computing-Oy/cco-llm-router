@@ -1,3 +1,5 @@
+import { classifyWithJev, jevRoutingEnabled } from './jev-routing';
+
 export type TaskRisk = 'low' | 'standard' | 'high';
 export type TaskKind = 'general' | 'light' | 'code' | 'reasoning' | 'large-context';
 
@@ -31,4 +33,24 @@ export function selectAutomaticAlias(input: AutomaticRoutingInput): string {
   if (input.taskRisk === 'standard' && REASONING.test(text)) return 'auto:reasoning';
   if (REASONING.test(text)) return 'auto:smart';
   return 'auto:facf-laptop';
+}
+
+/**
+ * Async variant that adds an optional, default-off Jev second opinion for the
+ * one ambiguous case: the auto:facf-laptop fallback. When Jev is disabled,
+ * unconfigured, slow, or wrong, the result is identical to the synchronous
+ * classifier. The model cannot weaken data isolation: the deterministic
+ * function only reaches the laptop fallback for public or synthetic data, so
+ * internal, confidential, and restricted prompts are never sent to Jev.
+ */
+export async function selectAutomaticAliasAsync(
+  input: AutomaticRoutingInput,
+  opts?: { fetchImpl?: typeof fetch; env?: NodeJS.ProcessEnv },
+): Promise<string> {
+  const deterministic = selectAutomaticAlias(input);
+  if (deterministic !== 'auto:facf-laptop' || !jevRoutingEnabled(opts?.env ?? process.env)) {
+    return deterministic;
+  }
+  const jev = await classifyWithJev(input, opts);
+  return jev ? jev.alias : deterministic;
 }
