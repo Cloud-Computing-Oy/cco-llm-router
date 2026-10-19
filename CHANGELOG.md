@@ -1,5 +1,39 @@
 # Changelog
 
+## [0.24.0] - 2026-10-19
+
+### Added
+
+- Served-candidate telemetry: `getServedCandidate()`, `withServedCandidate()`,
+  `runWithServedCandidate()` and `recordServedCandidate()` expose which provider
+  and model actually answered a routed call, so a caller can record the served
+  candidate instead of re-deriving it from the configured chain.
+- Per-candidate budget authority: `setBudgetHooks()`, `getBudgetHooks()`,
+  `getBudgetContext()`, `withBudgetContext()` and the
+  `BudgetHooks`/`BudgetPhase` types let a managed caller reserve before each
+  provider candidate and settle with the observed usage and served candidate.
+  A reservation failure is fail-closed and aborts the chain instead of being
+  recorded as a provider failure; `BudgetReservationError` lets a caller tell
+  that abort apart from a provider error.
+
+### Fixed
+
+- Direct and single-candidate routes now install the same budget-hook wrapper
+  as the multi-candidate path, so hooks are not bypassed by direct resolution.
+- Provider calls now run with the AI SDK's own intra-candidate retries
+  disabled (`maxRetries: 0`); retry and failover happen only through the
+  router's candidate chain, so in-band stream errors are recorded on the
+  served candidate.
+- Streams settle exactly once (finish, error, missing finish, or cancel) and a
+  detached settlement is awaited before the lease is released; a failed
+  cancellation settlement still releases the stream lease, and the Ollama
+  lease is released in a `finally` block.
+
+### Note
+
+- The Python sibling has no runtime changes and stays at **0.9.1**; its dev
+  tooling (ruff pin/rules) moves independently.
+
 ## [0.23.0] - 2026-09-25
 
 ### Added
