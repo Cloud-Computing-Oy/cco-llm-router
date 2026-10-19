@@ -28,17 +28,15 @@ export type ServedCandidate = {
   errorClass?: string;
 };
 
-type Store = { current?: ServedCandidate };
+export type ServedStore = { current?: ServedCandidate };
 
-const storage = new AsyncLocalStorage<Store>();
+const storage = new AsyncLocalStorage<ServedStore>();
 
 export function getServedCandidate(): ServedCandidate | undefined {
   return storage.getStore()?.current;
 }
 
-export function recordServedCandidate(candidate: ServedCandidate): void {
-  const store = storage.getStore();
-  if (store) store.current = candidate;
+function writeLog(candidate: ServedCandidate): void {
   const logPath = process.env.CCO_LLM_SERVED_LOG;
   if (!logPath) return;
   try {
@@ -46,6 +44,24 @@ export function recordServedCandidate(candidate: ServedCandidate): void {
   } catch {
     // Telemetry must never break inference.
   }
+}
+
+export function recordServedCandidate(candidate: ServedCandidate): void {
+  recordServedCandidateTo(storage.getStore(), candidate);
+}
+
+/** Write to a store captured before a ReadableStream was returned; ALS does
+ *  not propagate into later `pull` callbacks. */
+export function recordServedCandidateTo(
+  store: ServedStore | undefined,
+  candidate: ServedCandidate,
+): void {
+  if (store) store.current = candidate;
+  writeLog(candidate);
+}
+
+export function currentServedStore(): ServedStore | undefined {
+  return storage.getStore();
 }
 
 /** Run `fn` in the current store, or create one when no caller wrapped the call. */
@@ -58,20 +74,50 @@ export async function withServedCandidate<T>(
   fn: () => PromiseLike<T>,
 ): Promise<{ result: T; served?: ServedCandidate }> {
   return storage.run({}, async () => {
-    const result = await fn();
-    return { result, served: storage.getStore()?.current };
+    try {
+      const result = await fn();
+      return { result, served: storage.getStore()?.current };
+    } catch (error) {
+      // Preserve the error type but attach the last attempt for diagnostics.
+      if (error && typeof error === "object") {
+        (error as { servedCandidate?: ServedCandidate }).servedCandidate =
+          storage.getStore()?.current;
+      }
+      throw error;
+    }
   });
 }
 
 /** Stable, low-cardinality error class for telemetry. */
-export function errorClassOf(error: unknown): string {
+export type ErrorClass =
+  | "abort"
+  | "rate_limit"
+  | "quota"
+  | "timeout"
+  | "network"
+  | "unavailable"
+  | "provider_error";
+
+export function errorClassOf(error: unknown): ErrorClass {
   const name = error instanceof Error ? error.name : "";
   const message = error instanceof Error ? `${error.name} ${error.message}` : String(error);
-  if (name === "AbortError" || /abort/i.test(message)) return "abort";
-  if (/rate.?limit|429|tokens per minute/i.test(message)) return "rate_limit";
-  if (/quota|insufficient|402|payment required/i.test(message)) return "quota";
+  if (name === "AbortError" || /\babort/i.test(message)) return "abort";
+  if (/rate.?limit|\b429\b|tokens per minute/i.test(message)) return "rate_limit";
+  if (/quota|insufficient|\b402\b|payment required/i.test(message)) return "quota";
   if (/timeout|etimedout|timed out/i.test(message)) return "timeout";
   if (/econnrefused|econnreset|socket hang up|fetch failed/i.test(message)) return "network";
-  if (/service unavailable|503|overloaded/i.test(message)) return "unavailable";
+  if (/service unavailable|\b503\b|overloaded|ollama request exceeded/i.test(message)) {
+    return "unavailable";
+  }
   return "provider_error";
+}
+
+export function isRetryableClass(kind: ErrorClass): boolean {
+  return (
+    kind === "rate_limit" ||
+    kind === "quota" ||
+    kind === "timeout" ||
+    kind === "network" ||
+    kind === "unavailable"
+  );
 }

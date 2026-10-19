@@ -43,6 +43,8 @@ export {
   runWithServedCandidate,
   recordServedCandidate,
   errorClassOf,
+  isRetryableClass,
+  type ErrorClass,
   type ServedCandidate,
 } from './served';
 export {
