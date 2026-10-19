@@ -360,14 +360,19 @@ function tapStreamForUsage(
     async cancel(reason) {
       // A consumer may cancel after the finish part was recorded; settleOnce
       // keeps the successful record and does not overwrite it with an abort.
-      if (!recorded) {
-        recorded = true;
-        await settleOnce(
-          null,
-          servedRecord(c, chainIndex, attempt, false, undefined, 'abort'),
-        );
+      try {
+        if (!recorded) {
+          recorded = true;
+          await settleOnce(
+            null,
+            servedRecord(c, chainIndex, attempt, false, undefined, 'abort'),
+          );
+        }
+      } finally {
+        // Release the provider lease even when settlement rejects; the
+        // rejection still reaches the caller from cancel().
+        finish();
       }
-      finish();
       await reader.cancel(reason);
     },
   });
