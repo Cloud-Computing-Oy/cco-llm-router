@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.24.1] - 2026-10-19
+
+### Fixed
+
+- `resolveModel()` gains `managedTelemetry`. When set, direct and
+  single-candidate routes take the managed wrapper even without budget hooks,
+  so per-candidate served telemetry is recorded for callers that open a served
+  scope. Previously an explicit alias such as `deepseek:deepseek-flash`
+  recorded no served candidate, so a caller whose gate requires served
+  telemetry could not verify which provider answered. The option is explicit
+  and changes only opted-in calls; without hooks the wrapper still records
+  usage and telemetry but performs no budget reservation. Opted-in direct
+  routes now resolve to the wrapper model (`provider` reports `fallback`).
+
 ## [0.24.0] - 2026-10-19
 
 ### Added

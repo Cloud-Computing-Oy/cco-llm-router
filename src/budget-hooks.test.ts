@@ -302,3 +302,23 @@ test('single-candidate alias routes take the managed wrapper while hooks are ins
     setBudgetHooks(undefined);
   }
 });
+
+test('direct routes take the managed wrapper when the caller opts in', async () => {
+  setBudgetHooks(undefined);
+  const { createRouter } = await import('./router');
+  const router = createRouter();
+  const opts = { perCallKeys: { deepseek: 'sk-test' } };
+  assert.notEqual((router.resolveModel('deepseek:deepseek-flash', opts).model as { provider?: string }).provider, 'fallback');
+  const managed = router.resolveModel('deepseek:deepseek-flash', { ...opts, managedTelemetry: true });
+  assert.equal((managed.model as { provider?: string }).provider, 'fallback');
+});
+
+test('single-candidate alias routes take the managed wrapper when the caller opts in', async () => {
+  setBudgetHooks(undefined);
+  const { createRouter } = await import('./router');
+  const router = createRouter({ aliases: { 'test-single': [{ provider: 'deepseek', model: 'deepseek-flash' }] } });
+  const opts = { perCallKeys: { deepseek: 'sk-test' } };
+  assert.notEqual((router.resolveModel('test-single', opts).model as { provider?: string }).provider, 'fallback');
+  const managed = router.resolveModel('test-single', { ...opts, managedTelemetry: true });
+  assert.equal((managed.model as { provider?: string }).provider, 'fallback');
+});
