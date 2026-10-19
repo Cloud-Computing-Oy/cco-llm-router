@@ -12,7 +12,7 @@ import json
 import os
 import sys
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -43,7 +43,7 @@ def _state_path() -> Path:
 
 
 def _current_month() -> str:
-    d = datetime.now(timezone.utc)
+    d = datetime.now(UTC)
     return f"{d.year:04d}-{d.month:02d}"
 
 
