@@ -4,6 +4,7 @@ import type { Provider } from './types';
 import { recordUsage } from './usage';
 import { checkThresholds } from './budget';
 import { acquireOllamaLease } from './ollama-gate';
+import { getBudgetContext, getBudgetHooks } from './budget-hooks';
 import {
   currentServedStore,
   errorClassOf,
@@ -50,16 +51,72 @@ function candidateId(c: Inner, chainIndex: number, attempt: number): string {
   return `${c.provider}:${c.modelId}#${chainIndex}#${attempt}`;
 }
 
-function recordFailure(c: Inner, chainIndex: number, attempt: number, err: unknown): void {
-  recordServedCandidate({
+function servedRecord(
+  c: Inner,
+  chainIndex: number,
+  attempt: number,
+  served: boolean,
+  usage?: { inputTokens: number; outputTokens: number },
+  errorClass?: string,
+) {
+  return {
     candidateId: candidateId(c, chainIndex, attempt),
     chainIndex,
     provider: c.provider,
     model: c.modelId,
     attempt,
-    served: false,
-    errorClass: errorClassOf(err),
+    served,
+    ...(usage ? { usage } : {}),
+    ...(errorClass ? { errorClass } : {}),
+  };
+}
+
+function recordFailure(c: Inner, chainIndex: number, attempt: number, err: unknown): void {
+  recordServedCandidate(servedRecord(c, chainIndex, attempt, false, undefined, errorClassOf(err)));
+}
+
+/** Conservative input bound: UTF-16 chars / 2 plus room for tool schemas. */
+function estimateMaxInputTokens(options: unknown): number {
+  try {
+    return Math.ceil(JSON.stringify(options).length / 2) + 512;
+  } catch {
+    return 100_000;
+  }
+}
+
+async function reserveFor(
+  c: Inner,
+  chainIndex: number,
+  attempt: number,
+  options: unknown,
+): Promise<string | undefined> {
+  const hooks = getBudgetHooks();
+  if (!hooks) return undefined;
+  const context = getBudgetContext();
+  if (!context) throw new Error('budget context puuttuu managed callilta');
+  const maxOutputTokens =
+    (options as { maxOutputTokens?: number }).maxOutputTokens ?? 4096;
+  const result = await hooks.reserve({
+    taskId: context.taskId,
+    phase: context.phase,
+    candidateId: candidateId(c, chainIndex, attempt),
+    provider: c.provider,
+    model: c.modelId,
+    maxInputTokens: estimateMaxInputTokens(options),
+    maxOutputTokens,
   });
+  return result.reservationId;
+}
+
+async function settleFor(
+  reservationId: string | undefined,
+  usage: { inputTokens: number; outputTokens: number } | null,
+  served: ReturnType<typeof servedRecord>,
+): Promise<void> {
+  if (!reservationId) return;
+  const hooks = getBudgetHooks();
+  if (!hooks) return;
+  await hooks.settle({ reservationId, usage, served });
 }
 
 function tryRecord(c: Inner, usage: LanguageModelV3Usage | undefined): void {
@@ -87,29 +144,35 @@ async function attemptGenerate(
   let allTransient = true;
   for (let i = 0; i < candidates.length; i++) {
     const c = candidates[i];
+    const attempt = attemptOffset + i;
     let ollamaLease: Awaited<ReturnType<typeof acquireOllamaLease>> | undefined;
+    let reservationId: string | undefined;
     try {
+      reservationId = await reserveFor(c, i, attempt, options);
       if (c.provider === 'ollama') ollamaLease = await acquireOllamaLease(c.modelId);
       const operation = () => (c.model as LanguageModelV3).doGenerate(options);
       const result = ollamaLease ? await ollamaLease.run(operation) : await operation();
-      const attempt = attemptOffset + i;
-      recordServedCandidate({
-        candidateId: candidateId(c, i, attempt),
-        chainIndex: i,
-        provider: c.provider,
-        model: c.modelId,
-        attempt,
-        served: true,
-        usage: usageOf(result.usage),
-      });
+      const served = servedRecord(c, i, attempt, true, usageOf(result.usage));
+      recordServedCandidate(served);
       tryRecord(c, result.usage);
+      await settleFor(reservationId, usageOf(result.usage) ?? null, served);
       return { value: result, allTransient: false };
     } catch (err) {
       if (options.abortSignal?.aborted || isAbort(err)) {
-        recordFailure(c, i, attemptOffset + i, err);
+        recordFailure(c, i, attempt, err);
+        await settleFor(
+          reservationId,
+          null,
+          servedRecord(c, i, attempt, false, undefined, errorClassOf(err)),
+        );
         throw err;
       }
-      recordFailure(c, i, attemptOffset + i, err);
+      recordFailure(c, i, attempt, err);
+      await settleFor(
+        reservationId,
+        null,
+        servedRecord(c, i, attempt, false, undefined, errorClassOf(err)),
+      );
       lastErr = err;
       allTransient &&= isTransient(err);
       const reason = err instanceof Error ? err.message.slice(0, 120) : String(err).slice(0, 120);
@@ -134,28 +197,48 @@ async function attemptStream(
   let allTransient = true;
   for (let i = 0; i < candidates.length; i++) {
     const c = candidates[i];
+    const attempt = attemptOffset + i;
     let ollamaLease: Awaited<ReturnType<typeof acquireOllamaLease>> | undefined;
     let releaseWithStream = false;
+    let reservationId: string | undefined;
     try {
+      reservationId = await reserveFor(c, i, attempt, options);
       if (c.provider === 'ollama') ollamaLease = await acquireOllamaLease(c.modelId);
       const operation = () => (c.model as LanguageModelV3).doStream(options);
       const result = ollamaLease ? await ollamaLease.run(operation) : await operation();
       // Tap the stream: forward all parts to the consumer while capturing
       // the final usage block, then record on completion. This requires
       // teeing the stream through a TransformStream.
-      const attempt = attemptOffset + i;
       // Do not claim served before the stream finishes; the tap records the
       // final outcome.
       const store = currentServedStore();
-      const tapped = tapStreamForUsage(result.stream, c, i, attempt, store, ollamaLease?.release);
+      const tapped = tapStreamForUsage(
+        result.stream,
+        c,
+        i,
+        attempt,
+        store,
+        reservationId,
+        ollamaLease?.release,
+      );
       releaseWithStream = Boolean(ollamaLease);
       return { value: { ...result, stream: tapped }, allTransient: false };
     } catch (err) {
       if (options.abortSignal?.aborted || isAbort(err)) {
-        recordFailure(c, i, attemptOffset + i, err);
+        recordFailure(c, i, attempt, err);
+        await settleFor(
+          reservationId,
+          null,
+          servedRecord(c, i, attempt, false, undefined, errorClassOf(err)),
+        );
         throw err;
       }
-      recordFailure(c, i, attemptOffset + i, err);
+      recordFailure(c, i, attempt, err);
+      await settleFor(
+        reservationId,
+        null,
+        servedRecord(c, i, attempt, false, undefined, errorClassOf(err)),
+      );
       lastErr = err;
       allTransient &&= isTransient(err);
       const reason = err instanceof Error ? err.message.slice(0, 120) : String(err).slice(0, 120);
@@ -177,6 +260,7 @@ function tapStreamForUsage(
   chainIndex: number,
   attempt: number,
   store: ReturnType<typeof currentServedStore>,
+  reservationId: string | undefined,
   onDone?: () => void,
 ): StreamResult['stream'] {
   let done = false;
@@ -202,43 +286,34 @@ function tapStreamForUsage(
           // rejected read(); record the failed attempt before forwarding.
           if (!recorded) {
             recorded = true;
-            recordServedCandidateTo(store, {
-              candidateId: candidateId(c, chainIndex, attempt),
+            const served = servedRecord(
+              c,
               chainIndex,
-              provider: c.provider,
-              model: c.modelId,
               attempt,
-              served: false,
-              errorClass: errorClassOf(part.error),
-            });
+              false,
+              undefined,
+              errorClassOf(part.error),
+            );
+            recordServedCandidateTo(store, served);
+            void settleFor(reservationId, null, served).catch(() => undefined);
           }
         }
         if (part?.type === 'finish' && part.usage) {
           recorded = true;
-          recordServedCandidateTo(store, {
-            candidateId: candidateId(c, chainIndex, attempt),
-            chainIndex,
-            provider: c.provider,
-            model: c.modelId,
-            attempt,
-            served: true,
-            usage: usageOf(part.usage),
-          });
+          const served = servedRecord(c, chainIndex, attempt, true, usageOf(part.usage));
+          recordServedCandidateTo(store, served);
           tryRecord(c, part.usage);
+          void settleFor(reservationId, served.usage ?? null, served).catch((e) => {
+            console.error('[budget] stream settle failed:', e instanceof Error ? e.message : String(e));
+          });
         }
         controller.enqueue(result.value);
       } catch (error) {
         if (!recorded) {
           recorded = true;
-          recordServedCandidateTo(store, {
-            candidateId: candidateId(c, chainIndex, attempt),
-            chainIndex,
-            provider: c.provider,
-            model: c.modelId,
-            attempt,
-            served: false,
-            errorClass: errorClassOf(error),
-          });
+          const served = servedRecord(c, chainIndex, attempt, false, undefined, errorClassOf(error));
+          recordServedCandidateTo(store, served);
+          void settleFor(reservationId, null, served).catch(() => undefined);
         }
         finish();
         controller.error(error);
@@ -249,15 +324,9 @@ function tapStreamForUsage(
       // not overwrite a successful outcome with an abort.
       if (!recorded) {
         recorded = true;
-        recordServedCandidateTo(store, {
-          candidateId: candidateId(c, chainIndex, attempt),
-          chainIndex,
-          provider: c.provider,
-          model: c.modelId,
-          attempt,
-          served: false,
-          errorClass: 'abort',
-        });
+        const served = servedRecord(c, chainIndex, attempt, false, undefined, 'abort');
+        recordServedCandidateTo(store, served);
+        void settleFor(reservationId, null, served).catch(() => undefined);
       }
       finish();
       await reader.cancel(reason);
