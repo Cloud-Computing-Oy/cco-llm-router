@@ -185,6 +185,13 @@ export type ResolveOptions = {
   bypassBudget?: boolean;
   /** Allow models whose current token price has not been reviewed. */
   allowUnknownPricing?: boolean;
+  /**
+   * Managed call: wrap direct and single-candidate routes in the fallback
+   * model so per-candidate budget hooks and served-candidate telemetry apply.
+   * Deterministic, unlike gating on ambient AsyncLocalStorage state: the
+   * caller opts in when it is about to open a served/budget scope.
+   */
+  managedTelemetry?: boolean;
 };
 
 export type Router = {
@@ -231,8 +238,10 @@ export function createRouter(opts: RouterOptions = {}): Router {
         );
       }
       // Managed calls need the fallback wrapper even for a single candidate so
-      // the budget hook reserves before and settles after the provider call.
-      if (getBudgetHooks()) {
+      // the budget hook reserves before and settles after the provider call
+      // and served-candidate telemetry is recorded (WP2a review gate). The
+      // caller opts in explicitly; ambient state is deliberately not consulted.
+      if (getBudgetHooks() || callOpts.managedTelemetry) {
         return { model: singletonModel(spec, perCallKeys) as LanguageModel, specs: [spec] };
       }
       return { model: instantiate(spec, perCallKeys), specs: [spec] };
@@ -261,7 +270,7 @@ export function createRouter(opts: RouterOptions = {}): Router {
       );
     }
     if (available.length === 1 && available[0].provider !== 'ollama') {
-      if (getBudgetHooks()) {
+      if (getBudgetHooks() || callOpts.managedTelemetry) {
         return { model: singletonModel(available[0], perCallKeys) as LanguageModel, specs: available };
       }
       return { model: instantiate(available[0], perCallKeys), specs: available };
