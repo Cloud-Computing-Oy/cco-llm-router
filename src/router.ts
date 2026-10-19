@@ -16,6 +16,7 @@ import { minimaxAvailable, minimaxModel } from './providers/minimax';
 import { mistralAvailable, mistralModel } from './providers/mistral';
 import { nvidiaAvailable, nvidiaModel } from './providers/nvidia';
 import { createFallbackModel } from './fallback';
+import { getBudgetHooks } from './budget-hooks';
 import { withinBudget } from './budget';
 import { MODEL_CATALOG, requiresUnknownPricingApproval } from './catalog';
 import { DEFAULT_ALIASES } from './aliases';
@@ -129,6 +130,19 @@ function specLabel(s: Spec): string {
   return `${s.provider}:${s.model}${keyTag}`;
 }
 
+/** Wrap one spec in the fallback model so the budget hooks and served-candidate
+ *  recording apply to direct and single-candidate routes too. */
+function singletonModel(spec: Spec, perCallKeys?: PerCallKeys) {
+  return createFallbackModel([
+    {
+      label: specLabel(spec),
+      provider: spec.provider,
+      modelId: spec.model,
+      model: instantiate(spec, perCallKeys),
+    },
+  ]);
+}
+
 /**
  * Expand each `google` spec into N copies — one per available Google API
  * key. The fallback chain (createFallbackModel) rotates through them on
@@ -216,6 +230,11 @@ export function createRouter(opts: RouterOptions = {}): Router {
           `Pricing is not reviewed for ${specLabel(spec)}; set allowUnknownPricing=true`,
         );
       }
+      // Managed calls need the fallback wrapper even for a single candidate so
+      // the budget hook reserves before and settles after the provider call.
+      if (getBudgetHooks()) {
+        return { model: singletonModel(spec, perCallKeys) as LanguageModel, specs: [spec] };
+      }
       return { model: instantiate(spec, perCallKeys), specs: [spec] };
     }
     const chain = aliases[alias];
@@ -242,6 +261,9 @@ export function createRouter(opts: RouterOptions = {}): Router {
       );
     }
     if (available.length === 1 && available[0].provider !== 'ollama') {
+      if (getBudgetHooks()) {
+        return { model: singletonModel(available[0], perCallKeys) as LanguageModel, specs: available };
+      }
       return { model: instantiate(available[0], perCallKeys), specs: available };
     }
     const inner = available.map((s) => ({

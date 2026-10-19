@@ -38,6 +38,17 @@ export {
 } from './truncate';
 export { createFallbackModel } from './fallback';
 export {
+  setBudgetHooks,
+  getBudgetHooks,
+  getBudgetContext,
+  withBudgetContext,
+  type BudgetHooks,
+  type BudgetContext,
+  type BudgetPhase,
+  type ReserveHookInput,
+  type SettleHookInput,
+} from './budget-hooks';
+export {
   getServedCandidate,
   withServedCandidate,
   runWithServedCandidate,
