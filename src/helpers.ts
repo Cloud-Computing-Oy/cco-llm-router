@@ -85,6 +85,9 @@ export async function chat(req: ChatRequest): Promise<string> {
   });
   const { text } = await aiGenerateText({
     model,
+    // One SDK attempt per fallback candidate; SDK retries would restart the
+    // candidate attempt numbering and duplicate served telemetry.
+    maxRetries: 0,
     system: req.system,
     prompt: applyPromptCap(req, selectedAlias),
     temperature: req.temperature,
@@ -133,6 +136,7 @@ export async function chatJsonStrict<T>(req: ChatRequest & { schema: z.ZodSchema
   });
   const { object } = await aiGenerateObject({
     model,
+    maxRetries: 0,
     schema: req.schema,
     system: req.system,
     prompt: applyPromptCap(req, selectedAlias),

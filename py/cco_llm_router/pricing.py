@@ -8,7 +8,7 @@ OpenRouter ":free"). Add new paid models here when extending chains.
 """
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import NotRequired, TypedDict
 
 
@@ -41,8 +41,8 @@ def _is_peak_hour(provider: str, at: datetime) -> bool:
     if not windows:
         return False
     if at.tzinfo is None:
-        at = at.replace(tzinfo=timezone.utc)  # naive timestamps are UTC
-    at = at.astimezone(timezone.utc)
+        at = at.replace(tzinfo=UTC)  # naive timestamps are UTC
+    at = at.astimezone(UTC)
     if at.weekday() >= 5:  # Saturday = 5, Sunday = 6
         return False
     return any(start <= at.hour < end for start, end in windows)
@@ -125,7 +125,7 @@ def effective_price(provider: str, model: str, at: datetime | None = None) -> di
     """Rates in effect at `at` (default: now). Falls back to the list price
     outside peak windows and for providers without peak pricing."""
     base = price_of(provider, model)
-    ts = at if at is not None else datetime.now(timezone.utc)
+    ts = at if at is not None else datetime.now(UTC)
     rates = base["peak"] if ("peak" in base and _is_peak_hour(provider, ts)) else base
     return {"input_per_m": rates["input_per_m"], "output_per_m": rates["output_per_m"]}
 

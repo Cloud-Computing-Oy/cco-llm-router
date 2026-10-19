@@ -1,5 +1,5 @@
 """Peak/off-peak pricing parity with src/pricing.ts (DeepSeek V4.1 Flash)."""
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from cco_llm_router.pricing import effective_price, estimate_cost_usd, price_of
 
@@ -31,46 +31,46 @@ def test_effective_price_is_exported_from_the_package_root():
 
 
 def test_effective_price_off_peak_outside_windows():
-    at = datetime(2026, 9, 10, 12, 0, tzinfo=timezone.utc)
+    at = datetime(2026, 9, 10, 12, 0, tzinfo=UTC)
     assert effective_price("deepseek", "deepseek-flash", at) == OFF_PEAK
 
 
 def test_effective_price_peak_inside_window():
-    at = datetime(2026, 9, 10, 2, 0, tzinfo=timezone.utc)
+    at = datetime(2026, 9, 10, 2, 0, tzinfo=UTC)
     assert effective_price("deepseek", "deepseek-flash", at) == PEAK
 
 
 def test_peak_windows_are_half_open_at_utc_boundaries():
     cases = [
-        (datetime(2026, 9, 10, 1, 0, tzinfo=timezone.utc), PEAK),
-        (datetime(2026, 9, 10, 4, 0, tzinfo=timezone.utc), OFF_PEAK),
-        (datetime(2026, 9, 10, 6, 0, tzinfo=timezone.utc), PEAK),
-        (datetime(2026, 9, 10, 10, 0, tzinfo=timezone.utc), OFF_PEAK),
+        (datetime(2026, 9, 10, 1, 0, tzinfo=UTC), PEAK),
+        (datetime(2026, 9, 10, 4, 0, tzinfo=UTC), OFF_PEAK),
+        (datetime(2026, 9, 10, 6, 0, tzinfo=UTC), PEAK),
+        (datetime(2026, 9, 10, 10, 0, tzinfo=UTC), OFF_PEAK),
     ]
     for at, expected in cases:
         assert effective_price("deepseek", "deepseek-flash", at) == expected, at
 
 
 def test_weekends_are_off_peak_regardless_of_hour():
-    assert effective_price("deepseek", "deepseek-flash", datetime(2026, 9, 12, 2, 0, tzinfo=timezone.utc)) == OFF_PEAK
-    assert effective_price("deepseek", "deepseek-flash", datetime(2026, 9, 13, 7, 0, tzinfo=timezone.utc)) == OFF_PEAK
+    assert effective_price("deepseek", "deepseek-flash", datetime(2026, 9, 12, 2, 0, tzinfo=UTC)) == OFF_PEAK
+    assert effective_price("deepseek", "deepseek-flash", datetime(2026, 9, 13, 7, 0, tzinfo=UTC)) == OFF_PEAK
 
 
 def test_naive_datetimes_are_treated_as_utc():
     # Naiivi aikaleima on testin tarkoitus: se tulkitaan UTC:ksi.
-    naive = datetime(2026, 9, 10, 2, 0)  # noqa: DTZ001
+    naive = datetime(2026, 9, 10, 2, 0)
     assert effective_price("deepseek", "deepseek-flash", naive) == PEAK
 
 
 def test_providers_without_peak_rates_are_unaffected():
-    at = datetime(2026, 9, 10, 2, 0, tzinfo=timezone.utc)
+    at = datetime(2026, 9, 10, 2, 0, tzinfo=UTC)
     assert effective_price("moonshot", "kimi-k3", at) == {"input_per_m": 3.0, "output_per_m": 15.0}
     assert "peak" not in price_of("moonshot", "kimi-k3")
 
 
 def test_estimate_cost_bills_the_rate_in_effect_at_the_call_instant():
-    off = datetime(2026, 9, 10, 12, 0, tzinfo=timezone.utc)
-    peak = datetime(2026, 9, 10, 2, 0, tzinfo=timezone.utc)
+    off = datetime(2026, 9, 10, 12, 0, tzinfo=UTC)
+    peak = datetime(2026, 9, 10, 2, 0, tzinfo=UTC)
     assert estimate_cost_usd("deepseek", "deepseek-flash", 1_000_000, 1_000_000, off) == 0.75
     assert estimate_cost_usd("deepseek", "deepseek-flash", 1_000_000, 1_000_000, peak) == 1.5
 

@@ -4,6 +4,14 @@ import type { Provider } from './types';
 import { recordUsage } from './usage';
 import { checkThresholds } from './budget';
 import { acquireOllamaLease } from './ollama-gate';
+import {
+  currentServedStore,
+  errorClassOf,
+  isRetryableClass,
+  recordServedCandidate,
+  recordServedCandidateTo,
+  runWithServedCandidate,
+} from './served';
 
 type Inner = {
   label: string;
@@ -12,27 +20,8 @@ type Inner = {
   model: LanguageModel;
 };
 
-const TRANSIENT_PATTERNS = [
-  /rate.?limit/i,
-  /quota/i,
-  /429/,
-  /service unavailable/i,
-  /503/,
-  /tokens per minute/i,
-  /econnrefused/i,
-  /econnreset/i,
-  /etimedout/i,
-  /socket hang up/i,
-  /fetch failed/i,
-  /insufficient.*quota/i,
-  /payment.*required/i,
-  /402/,
-  /ollama request exceeded/i,
-];
-
 function isTransient(err: unknown): boolean {
-  const msg = err instanceof Error ? `${err.name} ${err.message}` : String(err);
-  return TRANSIENT_PATTERNS.some((p) => p.test(msg));
+  return isRetryableClass(errorClassOf(err));
 }
 
 function isAbort(err: unknown): boolean {
@@ -41,7 +30,37 @@ function isAbort(err: unknown): boolean {
 
 const RETRY_DELAY_MS = 8_000;
 
+/** Test seam: the retry delay is otherwise 8 s and makes pass-2 untestable. */
+function retryDelayMs(): number {
+  const raw = Number(process.env.CCO_LLM_FALLBACK_RETRY_DELAY_MS);
+  return Number.isFinite(raw) && raw >= 0 ? raw : RETRY_DELAY_MS;
+}
+
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
+function usageOf(usage: LanguageModelV3Usage | undefined): { inputTokens: number; outputTokens: number } | undefined {
+  if (!usage) return undefined;
+  return {
+    inputTokens: usage.inputTokens?.total ?? 0,
+    outputTokens: usage.outputTokens?.total ?? 0,
+  };
+}
+
+function candidateId(c: Inner, chainIndex: number, attempt: number): string {
+  return `${c.provider}:${c.modelId}#${chainIndex}#${attempt}`;
+}
+
+function recordFailure(c: Inner, chainIndex: number, attempt: number, err: unknown): void {
+  recordServedCandidate({
+    candidateId: candidateId(c, chainIndex, attempt),
+    chainIndex,
+    provider: c.provider,
+    model: c.modelId,
+    attempt,
+    served: false,
+    errorClass: errorClassOf(err),
+  });
+}
 
 function tryRecord(c: Inner, usage: LanguageModelV3Usage | undefined): void {
   if (!usage) return;
@@ -62,6 +81,7 @@ type StreamResult = Awaited<ReturnType<LanguageModelV3['doStream']>>;
 async function attemptGenerate(
   candidates: Inner[],
   options: Parameters<LanguageModelV3['doGenerate']>[0],
+  attemptOffset = 1,
 ): Promise<{ value?: GenerateResult; lastErr?: unknown; allTransient: boolean }> {
   let lastErr: unknown;
   let allTransient = true;
@@ -72,10 +92,24 @@ async function attemptGenerate(
       if (c.provider === 'ollama') ollamaLease = await acquireOllamaLease(c.modelId);
       const operation = () => (c.model as LanguageModelV3).doGenerate(options);
       const result = ollamaLease ? await ollamaLease.run(operation) : await operation();
+      const attempt = attemptOffset + i;
+      recordServedCandidate({
+        candidateId: candidateId(c, i, attempt),
+        chainIndex: i,
+        provider: c.provider,
+        model: c.modelId,
+        attempt,
+        served: true,
+        usage: usageOf(result.usage),
+      });
       tryRecord(c, result.usage);
       return { value: result, allTransient: false };
     } catch (err) {
-      if (options.abortSignal?.aborted || isAbort(err)) throw err;
+      if (options.abortSignal?.aborted || isAbort(err)) {
+        recordFailure(c, i, attemptOffset + i, err);
+        throw err;
+      }
+      recordFailure(c, i, attemptOffset + i, err);
       lastErr = err;
       allTransient &&= isTransient(err);
       const reason = err instanceof Error ? err.message.slice(0, 120) : String(err).slice(0, 120);
@@ -94,6 +128,7 @@ async function attemptGenerate(
 async function attemptStream(
   candidates: Inner[],
   options: Parameters<LanguageModelV3['doStream']>[0],
+  attemptOffset = 1,
 ): Promise<{ value?: StreamResult; lastErr?: unknown; allTransient: boolean }> {
   let lastErr: unknown;
   let allTransient = true;
@@ -108,11 +143,19 @@ async function attemptStream(
       // Tap the stream: forward all parts to the consumer while capturing
       // the final usage block, then record on completion. This requires
       // teeing the stream through a TransformStream.
-      const tapped = tapStreamForUsage(result.stream, c, ollamaLease?.release);
+      const attempt = attemptOffset + i;
+      // Do not claim served before the stream finishes; the tap records the
+      // final outcome.
+      const store = currentServedStore();
+      const tapped = tapStreamForUsage(result.stream, c, i, attempt, store, ollamaLease?.release);
       releaseWithStream = Boolean(ollamaLease);
       return { value: { ...result, stream: tapped }, allTransient: false };
     } catch (err) {
-      if (options.abortSignal?.aborted || isAbort(err)) throw err;
+      if (options.abortSignal?.aborted || isAbort(err)) {
+        recordFailure(c, i, attemptOffset + i, err);
+        throw err;
+      }
+      recordFailure(c, i, attemptOffset + i, err);
       lastErr = err;
       allTransient &&= isTransient(err);
       const reason = err instanceof Error ? err.message.slice(0, 120) : String(err).slice(0, 120);
@@ -131,9 +174,13 @@ async function attemptStream(
 function tapStreamForUsage(
   stream: StreamResult['stream'],
   c: Inner,
+  chainIndex: number,
+  attempt: number,
+  store: ReturnType<typeof currentServedStore>,
   onDone?: () => void,
 ): StreamResult['stream'] {
   let done = false;
+  let recorded = false;
   const finish = () => {
     if (done) return;
     done = true;
@@ -149,15 +196,69 @@ function tapStreamForUsage(
           controller.close();
           return;
         }
-        const part = result.value as { type?: string; usage?: LanguageModelV3Usage };
-        if (part?.type === 'finish' && part.usage) tryRecord(c, part.usage);
+        const part = result.value as { type?: string; usage?: LanguageModelV3Usage; error?: unknown };
+        if (part?.type === 'error') {
+          // Provider streaming failures often arrive in-band, not as a
+          // rejected read(); record the failed attempt before forwarding.
+          if (!recorded) {
+            recorded = true;
+            recordServedCandidateTo(store, {
+              candidateId: candidateId(c, chainIndex, attempt),
+              chainIndex,
+              provider: c.provider,
+              model: c.modelId,
+              attempt,
+              served: false,
+              errorClass: errorClassOf(part.error),
+            });
+          }
+        }
+        if (part?.type === 'finish' && part.usage) {
+          recorded = true;
+          recordServedCandidateTo(store, {
+            candidateId: candidateId(c, chainIndex, attempt),
+            chainIndex,
+            provider: c.provider,
+            model: c.modelId,
+            attempt,
+            served: true,
+            usage: usageOf(part.usage),
+          });
+          tryRecord(c, part.usage);
+        }
         controller.enqueue(result.value);
       } catch (error) {
+        if (!recorded) {
+          recorded = true;
+          recordServedCandidateTo(store, {
+            candidateId: candidateId(c, chainIndex, attempt),
+            chainIndex,
+            provider: c.provider,
+            model: c.modelId,
+            attempt,
+            served: false,
+            errorClass: errorClassOf(error),
+          });
+        }
         finish();
         controller.error(error);
       }
     },
     async cancel(reason) {
+      // A consumer may cancel after the finish part was recorded; that must
+      // not overwrite a successful outcome with an abort.
+      if (!recorded) {
+        recorded = true;
+        recordServedCandidateTo(store, {
+          candidateId: candidateId(c, chainIndex, attempt),
+          chainIndex,
+          provider: c.provider,
+          model: c.modelId,
+          attempt,
+          served: false,
+          errorClass: 'abort',
+        });
+      }
       finish();
       await reader.cancel(reason);
     },
@@ -181,24 +282,32 @@ export function createFallbackModel(candidates: Inner[]): LanguageModelV3 {
       return first.supportedUrls;
     },
     async doGenerate(options) {
-      const r1 = await attemptGenerate(candidates, options);
-      if (r1.value !== undefined) return r1.value;
-      if (!r1.allTransient) throw r1.lastErr;
-      console.warn(`[fallback] entire chain failed transiently, waiting ${RETRY_DELAY_MS}ms then retrying once`);
-      await sleep(RETRY_DELAY_MS);
-      const r2 = await attemptGenerate(candidates, options);
-      if (r2.value !== undefined) return r2.value;
-      throw r2.lastErr;
+      return runWithServedCandidate(async () => {
+        const r1 = await attemptGenerate(candidates, options, 1);
+        if (r1.value !== undefined) return r1.value;
+        if (!r1.allTransient) throw r1.lastErr;
+        console.warn(
+          `[fallback] entire chain failed transiently, waiting ${retryDelayMs()}ms then retrying once`,
+        );
+        await sleep(retryDelayMs());
+        const r2 = await attemptGenerate(candidates, options, candidates.length + 1);
+        if (r2.value !== undefined) return r2.value;
+        throw r2.lastErr;
+      });
     },
     async doStream(options) {
-      const r1 = await attemptStream(candidates, options);
-      if (r1.value !== undefined) return r1.value;
-      if (!r1.allTransient) throw r1.lastErr;
-      console.warn(`[fallback] entire chain failed transiently, waiting ${RETRY_DELAY_MS}ms then retrying once`);
-      await sleep(RETRY_DELAY_MS);
-      const r2 = await attemptStream(candidates, options);
-      if (r2.value !== undefined) return r2.value;
-      throw r2.lastErr;
+      return runWithServedCandidate(async () => {
+        const r1 = await attemptStream(candidates, options, 1);
+        if (r1.value !== undefined) return r1.value;
+        if (!r1.allTransient) throw r1.lastErr;
+        console.warn(
+          `[fallback] entire chain failed transiently, waiting ${retryDelayMs()}ms then retrying once`,
+        );
+        await sleep(retryDelayMs());
+        const r2 = await attemptStream(candidates, options, candidates.length + 1);
+        if (r2.value !== undefined) return r2.value;
+        throw r2.lastErr;
+      });
     },
   };
 }
