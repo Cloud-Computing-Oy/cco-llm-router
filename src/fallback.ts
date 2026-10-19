@@ -98,7 +98,7 @@ async function reserveFor(
   const hooks = getBudgetHooks();
   if (!hooks) return undefined;
   const context = getBudgetContext();
-  if (!context) throw new Error('budget context puuttuu managed callilta');
+  if (!context) throw new BudgetReservationError('budget context puuttuu managed callilta');
   const maxOutputTokens =
     (options as { maxOutputTokens?: number }).maxOutputTokens ?? 4096;
   try {
@@ -224,6 +224,9 @@ async function attemptStream(
       if (c.provider === 'ollama') ollamaLease = await acquireOllamaLease(c.modelId);
       const operation = () => (c.model as LanguageModelV3).doStream(options);
       result = ollamaLease ? await ollamaLease.run(operation) : await operation();
+      // The stream tap owns the lease from here; releasing in `finally` while
+      // the tap is still consuming would defeat MAX_CONCURRENT.
+      releaseWithStream = Boolean(ollamaLease);
     } catch (err) {
       if (err instanceof BudgetReservationError) throw err;
       if (options.abortSignal?.aborted || isAbort(err)) {
@@ -288,16 +291,14 @@ function tapStreamForUsage(
     done = true;
     onDone?.();
   };
-  const settleOnce = (
+  const settleOnce = async (
     usage: { inputTokens: number; outputTokens: number } | null,
     served: ReturnType<typeof servedRecord>,
-  ) => {
+  ): Promise<void> => {
     if (settled) return;
     settled = true;
     recordServedCandidateTo(store, served);
-    void settleFor(reservationId, usage, served).catch((e) => {
-      console.error('[budget] stream settle failed:', e instanceof Error ? e.message : String(e));
-    });
+    await settleFor(reservationId, usage, served);
   };
   const reader = stream.getReader();
   return new ReadableStream({
@@ -306,7 +307,7 @@ function tapStreamForUsage(
         const result = await reader.read();
         if (result.done) {
           // A stream that ends without a finish part is unknown, not a success.
-          settleOnce(
+          await settleOnce(
             null,
             servedRecord(c, chainIndex, attempt, false, undefined, 'provider_error'),
           );
@@ -328,23 +329,29 @@ function tapStreamForUsage(
               undefined,
               errorClassOf(part.error),
             );
-            settleOnce(null, served);
+            await settleOnce(null, served);
           }
         }
         if (part?.type === 'finish' && part.usage) {
           recorded = true;
           const served = servedRecord(c, chainIndex, attempt, true, usageOf(part.usage));
-          settleOnce(served.usage ?? null, served);
+          await settleOnce(served.usage ?? null, served);
           tryRecord(c, part.usage);
         }
         controller.enqueue(result.value);
       } catch (error) {
         if (!recorded) {
           recorded = true;
-          settleOnce(
-            null,
-            servedRecord(c, chainIndex, attempt, false, undefined, errorClassOf(error)),
-          );
+          try {
+            await settleOnce(
+              null,
+              servedRecord(c, chainIndex, attempt, false, undefined, errorClassOf(error)),
+            );
+          } catch (settleError) {
+            finish();
+            controller.error(settleError);
+            return;
+          }
         }
         finish();
         controller.error(error);
@@ -355,7 +362,7 @@ function tapStreamForUsage(
       // keeps the successful record and does not overwrite it with an abort.
       if (!recorded) {
         recorded = true;
-        settleOnce(
+        await settleOnce(
           null,
           servedRecord(c, chainIndex, attempt, false, undefined, 'abort'),
         );

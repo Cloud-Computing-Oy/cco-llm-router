@@ -273,3 +273,32 @@ test('hooks without a budget context fail closed; no hooks leaves routing unchan
   ] as never);
   await assert.doesNotReject(() => Promise.resolve(unmanaged.doGenerate({} as never)));
 });
+
+test('direct routes take the managed wrapper only while budget hooks are installed', async () => {
+  const { createRouter } = await import('./router');
+  const router = createRouter();
+  const opts = { perCallKeys: { deepseek: 'sk-test' } };
+  assert.notEqual((router.resolveModel('deepseek:deepseek-flash', opts).model as { provider?: string }).provider, 'fallback');
+  const recorded = hooksRecorder();
+  try {
+    assert.equal((router.resolveModel('deepseek:deepseek-flash', opts).model as { provider?: string }).provider, 'fallback');
+    assert.equal(recorded.reserves.length, 0, 'resolution alone must not reserve');
+  } finally {
+    setBudgetHooks(undefined);
+  }
+});
+
+test('single-candidate alias routes take the managed wrapper while hooks are installed', async () => {
+  const { createRouter } = await import('./router');
+  const router = createRouter({
+    aliases: { 'test-single': [{ provider: 'deepseek', model: 'deepseek-flash' }] },
+  });
+  const opts = { perCallKeys: { deepseek: 'sk-test' } };
+  assert.notEqual((router.resolveModel('test-single', opts).model as { provider?: string }).provider, 'fallback');
+  hooksRecorder();
+  try {
+    assert.equal((router.resolveModel('test-single', opts).model as { provider?: string }).provider, 'fallback');
+  } finally {
+    setBudgetHooks(undefined);
+  }
+});
