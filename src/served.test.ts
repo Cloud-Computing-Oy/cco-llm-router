@@ -172,3 +172,72 @@ test('errorClassOf is stable for the common provider failures', () => {
   assert.equal(isRetryableClass('unavailable'), true);
   assert.equal(isRetryableClass('provider_error'), false);
 });
+
+test('an in-band error part records a failed attempt', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'served-err-'));
+  const log = join(dir, 'served.jsonl');
+  process.env.CCO_LLM_SERVED_LOG = log;
+  try {
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue({ type: 'error', error: new Error('429 rate limit') });
+        controller.close();
+      },
+    });
+    const only = candidate('only', 'deepseek', 'deepseek-flash', {
+      doGenerate: async () => ({ usage: { inputTokens: { total: 1 }, outputTokens: { total: 1 } } }),
+      doStream: async () => ({ stream }),
+    });
+    const model = createFallbackModel([only] as never);
+    const { result } = await withServedCandidate(() => model.doStream({} as never));
+    const reader = result.stream.getReader();
+    for (;;) {
+      const next = await reader.read();
+      if (next.done) break;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    const lines = readFileSync(log, 'utf8')
+      .trim()
+      .split('\n')
+      .map((line) => JSON.parse(line) as { served: boolean; errorClass?: string });
+    assert.equal(lines.length, 1);
+    assert.equal(lines[0].served, false);
+    assert.equal(lines[0].errorClass, 'rate_limit');
+  } finally {
+    delete process.env.CCO_LLM_SERVED_LOG;
+  }
+});
+
+test('cancelling after a recorded finish does not overwrite the success', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'served-cancel-'));
+  const log = join(dir, 'served.jsonl');
+  process.env.CCO_LLM_SERVED_LOG = log;
+  try {
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue({
+          type: 'finish',
+          usage: { inputTokens: { total: 3 }, outputTokens: { total: 4 } },
+        });
+      },
+    });
+    const only = candidate('only', 'deepseek', 'deepseek-flash', {
+      doGenerate: async () => ({ usage: { inputTokens: { total: 1 }, outputTokens: { total: 1 } } }),
+      doStream: async () => ({ stream }),
+    });
+    const model = createFallbackModel([only] as never);
+    const { result } = await withServedCandidate(() => model.doStream({} as never));
+    const reader = result.stream.getReader();
+    await reader.read(); // the finish part
+    await reader.cancel('done');
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    const lines = readFileSync(log, 'utf8')
+      .trim()
+      .split('\n')
+      .map((line) => JSON.parse(line) as { served: boolean });
+    assert.equal(lines.length, 1, 'one candidate record, not a success plus an abort');
+    assert.equal(lines[0].served, true);
+  } finally {
+    delete process.env.CCO_LLM_SERVED_LOG;
+  }
+});

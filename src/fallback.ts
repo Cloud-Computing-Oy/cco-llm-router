@@ -180,6 +180,7 @@ function tapStreamForUsage(
   onDone?: () => void,
 ): StreamResult['stream'] {
   let done = false;
+  let recorded = false;
   const finish = () => {
     if (done) return;
     done = true;
@@ -195,8 +196,25 @@ function tapStreamForUsage(
           controller.close();
           return;
         }
-        const part = result.value as { type?: string; usage?: LanguageModelV3Usage };
+        const part = result.value as { type?: string; usage?: LanguageModelV3Usage; error?: unknown };
+        if (part?.type === 'error') {
+          // Provider streaming failures often arrive in-band, not as a
+          // rejected read(); record the failed attempt before forwarding.
+          if (!recorded) {
+            recorded = true;
+            recordServedCandidateTo(store, {
+              candidateId: candidateId(c, chainIndex, attempt),
+              chainIndex,
+              provider: c.provider,
+              model: c.modelId,
+              attempt,
+              served: false,
+              errorClass: errorClassOf(part.error),
+            });
+          }
+        }
         if (part?.type === 'finish' && part.usage) {
+          recorded = true;
           recordServedCandidateTo(store, {
             candidateId: candidateId(c, chainIndex, attempt),
             chainIndex,
@@ -210,6 +228,27 @@ function tapStreamForUsage(
         }
         controller.enqueue(result.value);
       } catch (error) {
+        if (!recorded) {
+          recorded = true;
+          recordServedCandidateTo(store, {
+            candidateId: candidateId(c, chainIndex, attempt),
+            chainIndex,
+            provider: c.provider,
+            model: c.modelId,
+            attempt,
+            served: false,
+            errorClass: errorClassOf(error),
+          });
+        }
+        finish();
+        controller.error(error);
+      }
+    },
+    async cancel(reason) {
+      // A consumer may cancel after the finish part was recorded; that must
+      // not overwrite a successful outcome with an abort.
+      if (!recorded) {
+        recorded = true;
         recordServedCandidateTo(store, {
           candidateId: candidateId(c, chainIndex, attempt),
           chainIndex,
@@ -217,22 +256,9 @@ function tapStreamForUsage(
           model: c.modelId,
           attempt,
           served: false,
-          errorClass: errorClassOf(error),
+          errorClass: 'abort',
         });
-        finish();
-        controller.error(error);
       }
-    },
-    async cancel(reason) {
-      recordServedCandidateTo(store, {
-        candidateId: candidateId(c, chainIndex, attempt),
-        chainIndex,
-        provider: c.provider,
-        model: c.modelId,
-        attempt,
-        served: false,
-        errorClass: 'abort',
-      });
       finish();
       await reader.cancel(reason);
     },
