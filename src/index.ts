@@ -38,6 +38,14 @@ export {
 } from './truncate';
 export { createFallbackModel } from './fallback';
 export {
+  getServedCandidate,
+  withServedCandidate,
+  runWithServedCandidate,
+  recordServedCandidate,
+  errorClassOf,
+  type ServedCandidate,
+} from './served';
+export {
   createAnthropicGateway,
   createClaudeChildEnvironment,
   listenAnthropicGateway,
