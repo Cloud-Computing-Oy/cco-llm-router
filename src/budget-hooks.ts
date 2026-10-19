@@ -35,6 +35,15 @@ export type SettleHookInput = {
   served: ServedCandidate | null;
 };
 
+/** A reservation failure is not a provider failure: abort the chain, do not
+ *  record the candidate as served=false, and do not try the next candidate. */
+export class BudgetReservationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'BudgetReservationError';
+  }
+}
+
 export type BudgetHooks = {
   reserve(input: ReserveHookInput): Promise<{ reservationId: string; upperBoundUsd: number }>;
   settle(input: SettleHookInput): Promise<void>;

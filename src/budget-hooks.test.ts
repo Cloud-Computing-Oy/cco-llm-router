@@ -100,6 +100,154 @@ test('a failed reservation prevents the provider call', async () => {
   }
 });
 
+test('a reservation failure aborts the chain without recording a provider failure', async () => {
+  let calls = 0;
+  setBudgetHooks({
+    reserve: async () => {
+      throw new Error('budget exceeded');
+    },
+    settle: async () => undefined,
+  });
+  try {
+    const model = createFallbackModel([
+      candidate('deepseek', 'deepseek-flash', {
+        doGenerate: async () => {
+          calls++;
+          return {};
+        },
+        doStream: async () => {
+          calls++;
+          return { stream: new ReadableStream() };
+        },
+      }),
+      candidate('google', 'gemini-2.5-flash', {
+        doGenerate: async () => {
+          calls++;
+          return {};
+        },
+        doStream: async () => {
+          calls++;
+          return { stream: new ReadableStream() };
+        },
+      }),
+    ] as never);
+    await assert.rejects(
+      () =>
+        withBudgetContext({ taskId: 'task-3', phase: 'artifact' }, () =>
+          Promise.resolve(model.doGenerate({} as never)),
+        ),
+      /budget exceeded/,
+    );
+    assert.equal(calls, 0);
+  } finally {
+    setBudgetHooks(undefined);
+  }
+});
+
+test('a settle failure on the success path is surfaced once and does not retry', async () => {
+  let providerCalls = 0;
+  let settleCalls = 0;
+  setBudgetHooks({
+    reserve: async () => ({ reservationId: `r-${providerCalls}`, upperBoundUsd: 1 }),
+    settle: async () => {
+      settleCalls++;
+      throw new Error('ledger down');
+    },
+  });
+  try {
+    const model = createFallbackModel([
+      candidate('deepseek', 'deepseek-flash', {
+        doGenerate: async () => {
+          providerCalls++;
+          return { usage: { inputTokens: { total: 1 }, outputTokens: { total: 1 } } };
+        },
+        doStream: async () => ({ stream: new ReadableStream() }),
+      }),
+      candidate('google', 'gemini-2.5-flash', {
+        doGenerate: async () => {
+          providerCalls++;
+          return {};
+        },
+        doStream: async () => ({ stream: new ReadableStream() }),
+      }),
+    ] as never);
+    await assert.rejects(
+      () =>
+        withBudgetContext({ taskId: 'task-4', phase: 'artifact' }, () =>
+          Promise.resolve(model.doGenerate({} as never)),
+        ),
+      /ledger down/,
+    );
+    assert.equal(providerCalls, 1);
+    assert.equal(settleCalls, 1);
+  } finally {
+    setBudgetHooks(undefined);
+  }
+});
+
+test('stream settle is once at finish, once on missing finish, and once on error', async () => {
+  let settles = 0;
+  setBudgetHooks({
+    reserve: async () => ({ reservationId: 'r-stream', upperBoundUsd: 1 }),
+    settle: async () => {
+      settles++;
+    },
+  });
+  try {
+    const finishStream = new ReadableStream({
+      start(controller) {
+        controller.enqueue({ type: 'text-delta', textDelta: 'hi' });
+        controller.enqueue({
+          type: 'finish',
+          usage: { inputTokens: { total: 3 }, outputTokens: { total: 4 } },
+        });
+        controller.close();
+      },
+    });
+    const finishModel = createFallbackModel([
+      candidate('deepseek', 'deepseek-flash', {
+        doGenerate: async () => ({}),
+        doStream: async () => ({ stream: finishStream }),
+      }),
+    ] as never);
+    const finishResult = await withBudgetContext({ taskId: 'task-5', phase: 'artifact' }, () =>
+      finishModel.doStream({} as never),
+    );
+    const finishReader = finishResult.stream.getReader();
+    for (;;) {
+      if ((await finishReader.read()).done) break;
+    }
+    finishReader.cancel().catch(() => undefined);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    assert.equal(settles, 1);
+
+    settles = 0;
+    const missingFinish = new ReadableStream({
+      start(controller) {
+        controller.enqueue({ type: 'text-delta', textDelta: 'hi' });
+        controller.close();
+      },
+    });
+    const missingModel = createFallbackModel([
+      candidate('deepseek', 'deepseek-flash', {
+        doGenerate: async () => ({}),
+        doStream: async () => ({ stream: missingFinish }),
+      }),
+    ] as never);
+    const missingResult = await withBudgetContext({ taskId: 'task-6', phase: 'artifact' }, () =>
+      missingModel.doStream({} as never),
+    );
+    const missingReader = missingResult.stream.getReader();
+    for (;;) {
+      if ((await missingReader.read()).done) break;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    assert.equal(settles, 1);
+  } finally {
+    setBudgetHooks(undefined);
+  }
+});
+
 test('hooks without a budget context fail closed; no hooks leaves routing unchanged', async () => {
   setBudgetHooks({
     reserve: async () => ({ reservationId: 'r', upperBoundUsd: 0.1 }),

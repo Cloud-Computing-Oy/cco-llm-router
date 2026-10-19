@@ -4,7 +4,11 @@ import type { Provider } from './types';
 import { recordUsage } from './usage';
 import { checkThresholds } from './budget';
 import { acquireOllamaLease } from './ollama-gate';
-import { getBudgetContext, getBudgetHooks } from './budget-hooks';
+import {
+  BudgetReservationError,
+  getBudgetContext,
+  getBudgetHooks,
+} from './budget-hooks';
 import {
   currentServedStore,
   errorClassOf,
@@ -41,10 +45,11 @@ const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 function usageOf(usage: LanguageModelV3Usage | undefined): { inputTokens: number; outputTokens: number } | undefined {
   if (!usage) return undefined;
-  return {
-    inputTokens: usage.inputTokens?.total ?? 0,
-    outputTokens: usage.outputTokens?.total ?? 0,
-  };
+  const input = usage.inputTokens?.total;
+  const output = usage.outputTokens?.total;
+  // A usage object with no totals is unknown, not a zero-token call.
+  if (input === undefined && output === undefined) return undefined;
+  return { inputTokens: input ?? 0, outputTokens: output ?? 0 };
 }
 
 function candidateId(c: Inner, chainIndex: number, attempt: number): string {
@@ -96,16 +101,22 @@ async function reserveFor(
   if (!context) throw new Error('budget context puuttuu managed callilta');
   const maxOutputTokens =
     (options as { maxOutputTokens?: number }).maxOutputTokens ?? 4096;
-  const result = await hooks.reserve({
-    taskId: context.taskId,
-    phase: context.phase,
-    candidateId: candidateId(c, chainIndex, attempt),
-    provider: c.provider,
-    model: c.modelId,
-    maxInputTokens: estimateMaxInputTokens(options),
-    maxOutputTokens,
-  });
-  return result.reservationId;
+  try {
+    const result = await hooks.reserve({
+      taskId: context.taskId,
+      phase: context.phase,
+      candidateId: candidateId(c, chainIndex, attempt),
+      provider: c.provider,
+      model: c.modelId,
+      maxInputTokens: estimateMaxInputTokens(options),
+      maxOutputTokens,
+    });
+    return result.reservationId;
+  } catch (error) {
+    throw new BudgetReservationError(
+      error instanceof Error ? error.message : String(error),
+    );
+  }
 }
 
 async function settleFor(
@@ -147,17 +158,15 @@ async function attemptGenerate(
     const attempt = attemptOffset + i;
     let ollamaLease: Awaited<ReturnType<typeof acquireOllamaLease>> | undefined;
     let reservationId: string | undefined;
+    let result: GenerateResult;
     try {
       reservationId = await reserveFor(c, i, attempt, options);
       if (c.provider === 'ollama') ollamaLease = await acquireOllamaLease(c.modelId);
       const operation = () => (c.model as LanguageModelV3).doGenerate(options);
-      const result = ollamaLease ? await ollamaLease.run(operation) : await operation();
-      const served = servedRecord(c, i, attempt, true, usageOf(result.usage));
-      recordServedCandidate(served);
-      tryRecord(c, result.usage);
-      await settleFor(reservationId, usageOf(result.usage) ?? null, served);
-      return { value: result, allTransient: false };
+      result = ollamaLease ? await ollamaLease.run(operation) : await operation();
     } catch (err) {
+      // A reservation failure aborts the chain before any provider call.
+      if (err instanceof BudgetReservationError) throw err;
       if (options.abortSignal?.aborted || isAbort(err)) {
         recordFailure(c, i, attempt, err);
         await settleFor(
@@ -181,9 +190,17 @@ async function attemptGenerate(
         return { lastErr: err, allTransient };
       }
       console.warn(`[fallback] ${c.label} failed: ${reason} — trying next`);
+      continue;
     } finally {
       ollamaLease?.release();
     }
+    // Success path is outside the provider catch: a settle failure must not be
+    // recorded as a provider failure or settle the same reservation twice.
+    const served = servedRecord(c, i, attempt, true, usageOf(result.usage));
+    recordServedCandidate(served);
+    tryRecord(c, result.usage);
+    await settleFor(reservationId, served.usage ?? null, served);
+    return { value: result, allTransient: false };
   }
   return { lastErr, allTransient };
 }
@@ -201,29 +218,14 @@ async function attemptStream(
     let ollamaLease: Awaited<ReturnType<typeof acquireOllamaLease>> | undefined;
     let releaseWithStream = false;
     let reservationId: string | undefined;
+    let result: StreamResult;
     try {
       reservationId = await reserveFor(c, i, attempt, options);
       if (c.provider === 'ollama') ollamaLease = await acquireOllamaLease(c.modelId);
       const operation = () => (c.model as LanguageModelV3).doStream(options);
-      const result = ollamaLease ? await ollamaLease.run(operation) : await operation();
-      // Tap the stream: forward all parts to the consumer while capturing
-      // the final usage block, then record on completion. This requires
-      // teeing the stream through a TransformStream.
-      // Do not claim served before the stream finishes; the tap records the
-      // final outcome.
-      const store = currentServedStore();
-      const tapped = tapStreamForUsage(
-        result.stream,
-        c,
-        i,
-        attempt,
-        store,
-        reservationId,
-        ollamaLease?.release,
-      );
-      releaseWithStream = Boolean(ollamaLease);
-      return { value: { ...result, stream: tapped }, allTransient: false };
+      result = ollamaLease ? await ollamaLease.run(operation) : await operation();
     } catch (err) {
+      if (err instanceof BudgetReservationError) throw err;
       if (options.abortSignal?.aborted || isAbort(err)) {
         recordFailure(c, i, attempt, err);
         await settleFor(
@@ -247,9 +249,24 @@ async function attemptStream(
         return { lastErr: err, allTransient };
       }
       console.warn(`[fallback] ${c.label} failed: ${reason} — trying next`);
+      continue;
     } finally {
       if (!releaseWithStream) ollamaLease?.release();
     }
+    // Do not claim served before the stream finishes; the tap records the
+    // final outcome.
+    const store = currentServedStore();
+    const tapped = tapStreamForUsage(
+      result.stream,
+      c,
+      i,
+      attempt,
+      store,
+      reservationId,
+      ollamaLease?.release,
+    );
+    releaseWithStream = Boolean(ollamaLease);
+    return { value: { ...result, stream: tapped }, allTransient: false };
   }
   return { lastErr, allTransient };
 }
@@ -265,10 +282,22 @@ function tapStreamForUsage(
 ): StreamResult['stream'] {
   let done = false;
   let recorded = false;
+  let settled = false;
   const finish = () => {
     if (done) return;
     done = true;
     onDone?.();
+  };
+  const settleOnce = (
+    usage: { inputTokens: number; outputTokens: number } | null,
+    served: ReturnType<typeof servedRecord>,
+  ) => {
+    if (settled) return;
+    settled = true;
+    recordServedCandidateTo(store, served);
+    void settleFor(reservationId, usage, served).catch((e) => {
+      console.error('[budget] stream settle failed:', e instanceof Error ? e.message : String(e));
+    });
   };
   const reader = stream.getReader();
   return new ReadableStream({
@@ -276,6 +305,11 @@ function tapStreamForUsage(
       try {
         const result = await reader.read();
         if (result.done) {
+          // A stream that ends without a finish part is unknown, not a success.
+          settleOnce(
+            null,
+            servedRecord(c, chainIndex, attempt, false, undefined, 'provider_error'),
+          );
           finish();
           controller.close();
           return;
@@ -294,39 +328,37 @@ function tapStreamForUsage(
               undefined,
               errorClassOf(part.error),
             );
-            recordServedCandidateTo(store, served);
-            void settleFor(reservationId, null, served).catch(() => undefined);
+            settleOnce(null, served);
           }
         }
         if (part?.type === 'finish' && part.usage) {
           recorded = true;
           const served = servedRecord(c, chainIndex, attempt, true, usageOf(part.usage));
-          recordServedCandidateTo(store, served);
+          settleOnce(served.usage ?? null, served);
           tryRecord(c, part.usage);
-          void settleFor(reservationId, served.usage ?? null, served).catch((e) => {
-            console.error('[budget] stream settle failed:', e instanceof Error ? e.message : String(e));
-          });
         }
         controller.enqueue(result.value);
       } catch (error) {
         if (!recorded) {
           recorded = true;
-          const served = servedRecord(c, chainIndex, attempt, false, undefined, errorClassOf(error));
-          recordServedCandidateTo(store, served);
-          void settleFor(reservationId, null, served).catch(() => undefined);
+          settleOnce(
+            null,
+            servedRecord(c, chainIndex, attempt, false, undefined, errorClassOf(error)),
+          );
         }
         finish();
         controller.error(error);
       }
     },
     async cancel(reason) {
-      // A consumer may cancel after the finish part was recorded; that must
-      // not overwrite a successful outcome with an abort.
+      // A consumer may cancel after the finish part was recorded; settleOnce
+      // keeps the successful record and does not overwrite it with an abort.
       if (!recorded) {
         recorded = true;
-        const served = servedRecord(c, chainIndex, attempt, false, undefined, 'abort');
-        recordServedCandidateTo(store, served);
-        void settleFor(reservationId, null, served).catch(() => undefined);
+        settleOnce(
+          null,
+          servedRecord(c, chainIndex, attempt, false, undefined, 'abort'),
+        );
       }
       finish();
       await reader.cancel(reason);
