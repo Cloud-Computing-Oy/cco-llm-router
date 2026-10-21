@@ -5,6 +5,17 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    ignore:
+      # The ai@7 / @ai-sdk/provider@4 migration is a breaking peer change:
+      # every router consumer has to move together. Keep majors out of the
+      # queue until that coordinated release lands; minor and patch updates
+      # still flow.
+      - dependency-name: "ai"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@ai-sdk/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "ai-sdk-ollama"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: pip
     directory: /py
     schedule:
