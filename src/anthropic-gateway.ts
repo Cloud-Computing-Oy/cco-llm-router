@@ -222,7 +222,7 @@ export const defaultGatewayGenerate: GatewayGenerate = async (request, config, s
   }
   const result = await generateText({
     model,
-    system: prompt.system,
+    instructions: prompt.system,
     messages: prompt.messages,
     allowSystemInMessages: true,
     tools: gatewayTools(request.tools),

@@ -1,4 +1,4 @@
-import type { LanguageModelV3, LanguageModelV3Usage } from '@ai-sdk/provider';
+import type { LanguageModelV4, LanguageModelV4Usage } from '@ai-sdk/provider';
 import type { LanguageModel } from 'ai';
 import type { Provider } from './types';
 import { recordUsage } from './usage';
@@ -43,7 +43,7 @@ function retryDelayMs(): number {
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
-function usageOf(usage: LanguageModelV3Usage | undefined): { inputTokens: number; outputTokens: number } | undefined {
+function usageOf(usage: LanguageModelV4Usage | undefined): { inputTokens: number; outputTokens: number } | undefined {
   if (!usage) return undefined;
   const input = usage.inputTokens?.total;
   const output = usage.outputTokens?.total;
@@ -130,7 +130,7 @@ async function settleFor(
   await hooks.settle({ reservationId, usage, served });
 }
 
-function tryRecord(c: Inner, usage: LanguageModelV3Usage | undefined): void {
+function tryRecord(c: Inner, usage: LanguageModelV4Usage | undefined): void {
   if (!usage) return;
   const inT = usage.inputTokens?.total ?? 0;
   const outT = usage.outputTokens?.total ?? 0;
@@ -143,12 +143,12 @@ function tryRecord(c: Inner, usage: LanguageModelV3Usage | undefined): void {
   }
 }
 
-type GenerateResult = Awaited<ReturnType<LanguageModelV3['doGenerate']>>;
-type StreamResult = Awaited<ReturnType<LanguageModelV3['doStream']>>;
+type GenerateResult = Awaited<ReturnType<LanguageModelV4['doGenerate']>>;
+type StreamResult = Awaited<ReturnType<LanguageModelV4['doStream']>>;
 
 async function attemptGenerate(
   candidates: Inner[],
-  options: Parameters<LanguageModelV3['doGenerate']>[0],
+  options: Parameters<LanguageModelV4['doGenerate']>[0],
   attemptOffset = 1,
 ): Promise<{ value?: GenerateResult; lastErr?: unknown; allTransient: boolean }> {
   let lastErr: unknown;
@@ -162,7 +162,7 @@ async function attemptGenerate(
     try {
       reservationId = await reserveFor(c, i, attempt, options);
       if (c.provider === 'ollama') ollamaLease = await acquireOllamaLease(c.modelId);
-      const operation = () => (c.model as LanguageModelV3).doGenerate(options);
+      const operation = () => (c.model as LanguageModelV4).doGenerate(options);
       result = ollamaLease ? await ollamaLease.run(operation) : await operation();
     } catch (err) {
       // A reservation failure aborts the chain before any provider call.
@@ -207,7 +207,7 @@ async function attemptGenerate(
 
 async function attemptStream(
   candidates: Inner[],
-  options: Parameters<LanguageModelV3['doStream']>[0],
+  options: Parameters<LanguageModelV4['doStream']>[0],
   attemptOffset = 1,
 ): Promise<{ value?: StreamResult; lastErr?: unknown; allTransient: boolean }> {
   let lastErr: unknown;
@@ -222,7 +222,7 @@ async function attemptStream(
     try {
       reservationId = await reserveFor(c, i, attempt, options);
       if (c.provider === 'ollama') ollamaLease = await acquireOllamaLease(c.modelId);
-      const operation = () => (c.model as LanguageModelV3).doStream(options);
+      const operation = () => (c.model as LanguageModelV4).doStream(options);
       result = ollamaLease ? await ollamaLease.run(operation) : await operation();
       // The stream tap owns the lease from here; releasing in `finally` while
       // the tap is still consuming would defeat MAX_CONCURRENT.
@@ -315,7 +315,7 @@ function tapStreamForUsage(
           controller.close();
           return;
         }
-        const part = result.value as { type?: string; usage?: LanguageModelV3Usage; error?: unknown };
+        const part = result.value as { type?: string; usage?: LanguageModelV4Usage; error?: unknown };
         if (part?.type === 'error') {
           // Provider streaming failures often arrive in-band, not as a
           // rejected read(); record the failed attempt before forwarding.
@@ -378,13 +378,22 @@ function tapStreamForUsage(
   });
 }
 
-export function createFallbackModel(candidates: Inner[]): LanguageModelV3 {
+export function createFallbackModel(candidates: Inner[]): LanguageModelV4 {
   if (candidates.length === 0) throw new Error('createFallbackModel: empty candidate list');
 
-  const first = candidates[0].model as LanguageModelV3;
+  for (const c of candidates) {
+    const spec = (c.model as { specificationVersion?: unknown }).specificationVersion;
+    if (spec !== 'v4') {
+      throw new Error(
+        `createFallbackModel: candidate ${c.label} uses specificationVersion ${String(spec)}; the router requires v4 models (ai@7 / @ai-sdk/provider@4)`,
+      );
+    }
+  }
+
+  const first = candidates[0].model as LanguageModelV4;
 
   return {
-    specificationVersion: 'v3',
+    specificationVersion: 'v4',
     get provider() {
       return 'fallback';
     },

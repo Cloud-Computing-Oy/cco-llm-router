@@ -15,7 +15,7 @@ type AnyModel = {
 };
 
 function candidate(provider: string, modelId: string, model: AnyModel) {
-  return { label: modelId, provider, modelId, model };
+  return { label: modelId, provider, modelId, model: { specificationVersion: 'v4', ...model } };
 }
 
 function hooksRecorder() {

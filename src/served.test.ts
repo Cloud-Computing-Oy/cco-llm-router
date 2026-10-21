@@ -17,7 +17,7 @@ type AnyModel = {
 };
 
 function candidate(label: string, provider: string, modelId: string, model: AnyModel) {
-  return { label, provider, modelId, model };
+  return { label, provider, modelId, model: { specificationVersion: 'v4', ...model } };
 }
 
 test('the served candidate is the one that answered, not the chain head', async () => {

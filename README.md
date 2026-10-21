@@ -23,6 +23,9 @@ when adding new providers or shifting model defaults.
 
 ## Install
 
+The router requires `ai@7` and `@ai-sdk/*@4` (peer ranges: `ai >=7 <8`,
+provider packages `>=4 <5`).
+
 The source repository is public. Until a public package-registry release is
 announced, install a pinned Git tag directly from GitHub:
 

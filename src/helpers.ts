@@ -88,7 +88,7 @@ export async function chat(req: ChatRequest): Promise<string> {
     // One SDK attempt per fallback candidate; SDK retries would restart the
     // candidate attempt numbering and duplicate served telemetry.
     maxRetries: 0,
-    system: req.system,
+    instructions: req.system,
     prompt: applyPromptCap(req, selectedAlias),
     temperature: req.temperature,
     maxOutputTokens: req.maxTokens,
@@ -138,7 +138,7 @@ export async function chatJsonStrict<T>(req: ChatRequest & { schema: z.ZodSchema
     model,
     maxRetries: 0,
     schema: req.schema,
-    system: req.system,
+    instructions: req.system,
     prompt: applyPromptCap(req, selectedAlias),
     temperature: req.temperature,
     maxOutputTokens: req.maxTokens,
