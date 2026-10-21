@@ -1,5 +1,17 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- AI SDK 7 migration. The router now targets ai@7 and @ai-sdk/provider@4
+  (peer ranges: ai >=7, @ai-sdk/provider >=4, provider packages >=4).
+  `createFallbackModel` implements `LanguageModelV4` and reports
+  `specificationVersion` v4; the V3 wrapper is gone. `generateText` /
+  `generateObject` calls use the new `instructions` option, and the Google
+  providers use `createGoogle`. This is a breaking release for consumers still
+  on ai@6; they must upgrade `ai` and the provider packages together.
+
 ## [0.24.1] - 2026-10-19
 
 ### Fixed

@@ -1,4 +1,4 @@
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { createGoogle } from '@ai-sdk/google';
 
 /**
  * Free / metered Google Gemini provider with multi-key support + BYOK.
@@ -45,14 +45,14 @@ function collectKeys(): string[] {
   return keys;
 }
 
-const envProviders = collectKeys().map((apiKey) => createGoogleGenerativeAI({ apiKey }));
+const envProviders = collectKeys().map((apiKey) => createGoogle({ apiKey }));
 
 export const googleAvailable = envProviders.length > 0;
 export const googleKeyCount = envProviders.length;
 
 export function googleModel(name: string, opts: { apiKey?: string; keyIndex?: number } = {}) {
   if (opts.apiKey) {
-    return createGoogleGenerativeAI({ apiKey: opts.apiKey })(name);
+    return createGoogle({ apiKey: opts.apiKey })(name);
   }
   const idx = opts.keyIndex ?? 0;
   const p = envProviders[idx];
