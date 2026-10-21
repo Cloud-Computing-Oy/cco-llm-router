@@ -5,12 +5,18 @@
 ### Changed
 
 - AI SDK 7 migration. The router now targets ai@7 and @ai-sdk/provider@4
-  (peer ranges: ai >=7, @ai-sdk/provider >=4, provider packages >=4).
+  (peer ranges: ai >=7 <8, @ai-sdk/provider >=4 <5, provider packages >=4 <5).
   `createFallbackModel` implements `LanguageModelV4` and reports
-  `specificationVersion` v4; the V3 wrapper is gone. `generateText` /
-  `generateObject` calls use the new `instructions` option, and the Google
-  providers use `createGoogle`. This is a breaking release for consumers still
-  on ai@6; they must upgrade `ai` and the provider packages together.
+  `specificationVersion` v4: its exported return type moved from
+  `LanguageModelV3` to `LanguageModelV4`, and it now rejects candidates whose
+  model is not a v4 model. `generateText` / `generateObject` calls use the new
+  `instructions` option, and the Google providers use `createGoogle`. This is a
+  breaking release for consumers still on ai@6; they must upgrade `ai` and the
+  provider packages together.
+- `zod` is now a required peer dependency (`^3.25.76 || ^4.1.8`, the ranges
+  ai@7 itself declares). ai@7 requires it, and `chatJsonStrict` exposes
+  `ZodSchema` in its public signature, so consumers must install a compatible
+  `zod` alongside the router.
 
 ## [0.24.1] - 2026-10-19
 

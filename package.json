@@ -23,12 +23,12 @@
     "claude-router": "dist/claude-router.cjs"
   },
   "peerDependencies": {
-    "@ai-sdk/anthropic": ">=4",
-    "@ai-sdk/google": ">=4",
-    "@ai-sdk/openai": ">=4",
-    "@ai-sdk/provider": ">=4",
-    "ai": ">=7",
-    "ai-sdk-ollama": ">=4",
+    "@ai-sdk/anthropic": ">=4 <5",
+    "@ai-sdk/google": ">=4 <5",
+    "@ai-sdk/openai": ">=4 <5",
+    "@ai-sdk/provider": ">=4 <5",
+    "ai": ">=7 <8",
+    "ai-sdk-ollama": ">=4 <5",
     "zod": "^3.25.76 || ^4.1.8"
   },
   "peerDependenciesMeta": {

@@ -381,6 +381,15 @@ function tapStreamForUsage(
 export function createFallbackModel(candidates: Inner[]): LanguageModelV4 {
   if (candidates.length === 0) throw new Error('createFallbackModel: empty candidate list');
 
+  for (const c of candidates) {
+    const spec = (c.model as { specificationVersion?: unknown }).specificationVersion;
+    if (spec !== 'v4') {
+      throw new Error(
+        `createFallbackModel: candidate ${c.label} uses specificationVersion ${String(spec)}; the router requires v4 models (ai@7 / @ai-sdk/provider@4)`,
+      );
+    }
+  }
+
   const first = candidates[0].model as LanguageModelV4;
 
   return {
